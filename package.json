@@ -1,0 +1,56 @@
+{
+  "name": "barber-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
+    "@mantine/modals": "^8.0.2",
+    "@mantine/notifications": "^8.0.2",
+    "@mantine/nprogress": "^8.0.2",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/auth-helpers-react": "^0.5.0",
+    "@supabase/supabase-js": "^2.50.0",
+    "@tabler/icons-react": "^3.33.0",
+    "lodash": "^4.17.21",
+    "next": "15.1.8",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.57.0",
+    "validator": "^13.15.15",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/lodash": "^4.17.17",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/validator": "^13.15.1",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "15.1.8",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.3",
+    "supabase": "^2.24.3",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
+}
