@@ -1,11 +1,7 @@
-import { Container, Title } from "@mantine/core";
+import HomePage from "./components/HomePage/HomePage";
 
 const Page = () => {
-  return (
-    <Container>
-      <Title order={1}>Home Page</Title>
-    </Container>
-  );
+  return <HomePage />;
 };
 
 export default Page;

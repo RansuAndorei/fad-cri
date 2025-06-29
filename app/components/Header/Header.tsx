@@ -1,5 +1,6 @@
 "use client";
 
+import { TAB_LIST } from "@/utils/constants";
 import {
   Box,
   Burger,
@@ -12,25 +13,16 @@ import {
   NavLink,
   ScrollArea,
   Stack,
-  Title,
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconHome, IconPhone, IconSparkles, IconWallet } from "@tabler/icons-react";
-import { capitalize, toLower } from "lodash";
+import { startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ColorSchemeToggle from "./ColorSchemeToggle";
 import classes from "./Header.module.css";
-
-const TAB_LIST = [
-  { label: "home", icon: <IconHome size={16} /> },
-  { label: "features", icon: <IconSparkles size={16} /> },
-  { label: "pricing", icon: <IconWallet size={16} /> },
-  { label: "contact us", icon: <IconPhone size={16} /> },
-];
 
 const Header = () => {
   const router = useRouter();
@@ -49,9 +41,9 @@ const Header = () => {
         <Group justify="space-between" h="100%">
           <Flex align="center" justify="center" gap="xs">
             <UnstyledButton onClick={() => router.push("/")} className={classes.logo}>
-              <Image alt="logo" width={35} height={40} src={"/logo.png"} />
+              <Image alt="logo" width={55} height={50} src={"/images/logo.png"} />
             </UnstyledButton>
-            <Title order={2}>Barbers</Title>
+
             <ColorSchemeToggle />
           </Flex>
 
@@ -63,7 +55,7 @@ const Header = () => {
                   key={label}
                   component={Link}
                   href={path}
-                  label={capitalize(label)}
+                  label={startCase(label)}
                   active={pathname === path}
                   w="auto"
                   className={classes.link}
@@ -73,10 +65,11 @@ const Header = () => {
           </Group>
 
           <Group visibleFrom="sm">
-            <Button variant="default" onClick={() => router.push("/log-in")}>
+            {/* <Button variant="default" onClick={() => router.push("/log-in")}>
               Log In
             </Button>
-            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button>
+            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button> */}
+            <Button onClick={() => router.push("/book")}>Book an Appointment</Button>
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" size={16} />
@@ -95,11 +88,8 @@ const Header = () => {
           <Center>
             <Flex align="center" justify="center">
               <UnstyledButton onClick={async () => router.push("/")}>
-                <Image src={"/logo.png"} width={35} height={40} alt="logo" />
+                <Image alt="logo" width={55} height={50} src={"/images/logo.png"} />
               </UnstyledButton>
-              <Title order={2} ml="xs">
-                Barbers
-              </Title>
             </Flex>
           </Center>
           <Divider my="sm" />
@@ -112,7 +102,7 @@ const Header = () => {
                   key={label}
                   component={Link}
                   href={path}
-                  label={capitalize(label)}
+                  label={startCase(label)}
                   leftSection={icon}
                   active={pathname === path}
                 />
@@ -122,10 +112,11 @@ const Header = () => {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default" onClick={() => router.push("/log-in")}>
+            {/* <Button variant="default" onClick={() => router.push("/log-in")}>
               Log In
             </Button>
-            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button>
+            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button> */}
+            <Button onClick={() => router.push("/book")}>Book an Appointment</Button>
           </Group>
         </ScrollArea>
       </Drawer>

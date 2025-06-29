@@ -8,19 +8,11 @@ export type UserTableRow = Database["public"]["Tables"]["user_table"]["Row"];
 export type UserTableInsert = Database["public"]["Tables"]["user_table"]["Insert"];
 export type UserTableUpdate = Database["public"]["Tables"]["user_table"]["Update"];
 
-export type AddressTableRow = Database["public"]["Tables"]["address_table"]["Row"];
-export type AddressTableInsert = Database["public"]["Tables"]["address_table"]["Insert"];
-export type AddressTableUpdate = Database["public"]["Tables"]["address_table"]["Update"];
-
 export type LogInFormValues = {
   email: string;
   password: string;
-  rememberMe: boolean;
 };
 
-export type SignUpFormValues = {
-  email: string;
-  password: string;
+export type SignUpFormValues = LogInFormValues & {
   confirmPassword: string;
-  termsAndCondition: boolean;
 };

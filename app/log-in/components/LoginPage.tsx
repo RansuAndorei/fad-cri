@@ -1,13 +1,11 @@
 "use client";
 
-import DownloadButton from "@/app/components/DownloadButton/DownloadButton";
 import OAuth from "@/app/components/OAuth/OAuth";
 import { SMALL_SCREEN } from "@/utils/constants";
 import {
   Box,
   Button,
   Center,
-  Checkbox,
   Container,
   Flex,
   PasswordInput,
@@ -27,7 +25,7 @@ const LoginPage = () => {
     <Flex style={{ height: "100%" }}>
       {!smallScreen ? (
         <Box pos="relative" style={{ flex: 2 }}>
-          <Image alt="background" fill src={"/background.jpg"} objectFit="cover" />
+          <Image alt="background" fill src={"/images/background-2.jpg"} objectFit="cover" />
         </Box>
       ) : null}
 
@@ -37,15 +35,7 @@ const LoginPage = () => {
           <Stack mt="xl" gap="md">
             <TextInput label="Email Address" placeholder="Type your email" type="email" />
             <PasswordInput label="Password" placeholder="Type your password" />
-            <Flex align="center" justify="space-between">
-              <Checkbox
-                label="Remember Me"
-                styles={{
-                  root: { cursor: "pointer" },
-                  label: { cursor: "pointer" },
-                  input: { cursor: "pointer" },
-                }}
-              />
+            <Flex align="center" justify="flex-end">
               <Link href="/forgot-password" style={{ textDecoration: "none" }}>
                 <Text c="blue" fz={14}>
                   Forgot Password
@@ -66,8 +56,6 @@ const LoginPage = () => {
                 </Link>
               </Text>
             </Center>
-
-            <DownloadButton />
           </Stack>
         </Container>
       </Box>
