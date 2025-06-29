@@ -1,4 +1,4 @@
-import { AspectRatio, Card, Container, Image, SimpleGrid, Text, Title } from "@mantine/core";
+import { AspectRatio, Box, Card, Container, Image, SimpleGrid, Text, Title } from "@mantine/core";
 import classes from "./DetailsSection.module.css";
 
 const data = [
@@ -26,7 +26,20 @@ const DetailsSection = () => {
   const cards = data.map((article) => (
     <Card key={article.title} p="md" radius="md" component="a" href="#" className={classes.card}>
       <AspectRatio ratio={1920 / 1080}>
-        <Image src={article.image} radius="md" />
+        <Box
+          style={{
+            position: "relative",
+            borderRadius: "var(--mantine-radius-md)",
+            overflow: "hidden",
+          }}
+        >
+          <Image
+            src={article.image}
+            alt={article.title}
+            style={{ objectFit: "cover" }}
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
+        </Box>
       </AspectRatio>
       <Title order={4} my="lg" mb="xs">
         {article.title}

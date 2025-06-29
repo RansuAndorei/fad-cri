@@ -65,11 +65,7 @@ const Header = () => {
           </Group>
 
           <Group visibleFrom="sm">
-            {/* <Button variant="default" onClick={() => router.push("/log-in")}>
-              Log In
-            </Button>
-            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button> */}
-            <Button onClick={() => router.push("/book")}>Book an Appointment</Button>
+            <Button onClick={() => router.push("/user/booking")}>Book an Appointment</Button>
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" size={16} />
@@ -112,11 +108,7 @@ const Header = () => {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            {/* <Button variant="default" onClick={() => router.push("/log-in")}>
-              Log In
-            </Button>
-            <Button onClick={() => router.push("/sign-up")}>Sign Up</Button> */}
-            <Button onClick={() => router.push("/book")}>Book an Appointment</Button>
+            <Button onClick={() => router.push("/user/booking")}>Book an Appointment</Button>
           </Group>
         </ScrollArea>
       </Drawer>

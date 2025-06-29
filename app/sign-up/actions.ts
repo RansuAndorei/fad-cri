@@ -28,3 +28,17 @@ export const getEmailResendTimer = async (
 
   return data as number;
 };
+
+export const signUpUser = async (
+  supabaseClient: SupabaseClient<Database>,
+  params: { email: string; password: string },
+) => {
+  const { data, error } = await supabaseClient.auth.signUp(params);
+  if (error) throw error;
+
+  if (data.user && data.user.identities && data.user.identities?.length > 0) {
+    return { data };
+  } else {
+    return { data, customError: "Email already registered." };
+  }
+};

@@ -3,17 +3,6 @@ CREATE TYPE gender AS ENUM(
   'FEMALE'
 );
 
-CREATE TABLE address_table(
-  address_id uuid DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  address_date_created timestamptz DEFAULT NOW() NOT NULL,
-  address_region text NOT NULL,
-  address_province text NOT NULL,
-  address_city text NOT NULL,
-  address_barangay text NOT NULL,
-  address_street text NOT NULL,
-  address_zip_code text NOT NULL
-);
-
 CREATE TABLE user_table(
   user_id uuid DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   user_date_created timestamptz DEFAULT NOW() NOT NULL,
@@ -24,8 +13,7 @@ CREATE TABLE user_table(
   user_phone_number text,
   user_avatar text,
   user_gender gender,
-  user_birth_date date,
-  user_address_id uuid REFERENCES address_table(address_id)
+  user_birth_date date
 );
 
 CREATE TABLE error_table(

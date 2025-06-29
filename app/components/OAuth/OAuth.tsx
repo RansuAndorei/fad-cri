@@ -1,16 +1,16 @@
-import { insertError } from "@/api/post";
-import { FacebookIcon } from "@/public/Icons/FacebookIcon";
-import { GoogleIcon } from "@/public/Icons/GoogleIcon";
-import { Database } from "@/utils/database";
+import { insertError } from "@/app/actions";
+import { FacebookIcon } from "@/public/icons/FacebookIcon";
+import { GoogleIcon } from "@/public/icons/GoogleIcon";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { Button, Divider, Flex } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+
 import { Provider } from "@supabase/supabase-js";
 import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 
 const OAuth = () => {
-  const supabaseClient = useSupabaseClient<Database>();
+  const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
 
   const handleSignin = async (provider: Provider) => {

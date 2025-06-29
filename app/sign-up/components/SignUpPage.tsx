@@ -1,10 +1,9 @@
 "use client";
 
-import { checkIfEmailExists } from "@/api/get";
-import { insertError, signUpUser } from "@/api/post";
+import { insertError } from "@/app/actions";
 import OAuth from "@/app/components/OAuth/OAuth";
 import { SMALL_SCREEN } from "@/utils/constants";
-import { Database } from "@/utils/database";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { SignUpFormValues } from "@/utils/types";
 import {
   Box,
@@ -17,10 +16,10 @@ import {
   Text,
   TextInput,
   Title,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { isError } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,22 +27,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import validator from "validator";
+import { checkIfEmailExists, signUpUser } from "../actions";
 import PasswordInputWithStrengthMeter from "./PasswordInputWithStrengthMeter";
 
 const SignUpPage = () => {
-  const supabaseClient = useSupabaseClient<Database>();
+  const supabaseClient = createSupabaseBrowserClient();
   const router = useRouter();
   const pathname = usePathname();
   const smallScreen = useMediaQuery(SMALL_SCREEN);
+  const { colorScheme } = useMantineColorScheme();
+
+  const isDark = colorScheme === "dark";
+  const overlayColor = isDark ? 85 : 256;
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const signUpFormMethods = useForm<SignUpFormValues>({
+  const formMethods = useForm<SignUpFormValues>({
     defaultValues: {
       email: "",
       password: "",
       confirmPassword: "",
-      termsAndCondition: false,
     },
   });
 
@@ -51,7 +54,7 @@ const SignUpPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = signUpFormMethods;
+  } = formMethods;
 
   const handleSignUp = async (data: SignUpFormValues) => {
     try {
@@ -95,6 +98,7 @@ const SignUpPage = () => {
           },
         });
       }
+    } finally {
       setIsLoading(false);
     }
   };
@@ -103,7 +107,24 @@ const SignUpPage = () => {
     <Flex style={{ height: "100%" }}>
       {!smallScreen ? (
         <Box pos="relative" style={{ flex: 2 }}>
-          <Image alt="background" fill src={"/images/background.jpg"} objectFit="cover" />
+          <Image
+            alt="background"
+            fill
+            src={"/images/signup.jpg"}
+            style={{ objectFit: "cover" }}
+            priority
+          />
+          <Box
+            pos="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            style={{
+              backgroundColor: `rgba(${overlayColor}, ${overlayColor}, ${overlayColor}, 0.2)`,
+              zIndex: 1,
+            }}
+          />
         </Box>
       ) : null}
 
@@ -122,7 +143,7 @@ const SignUpPage = () => {
                   validate: (value) => validator.isEmail(value) || "Email is invalid.",
                 })}
               />
-              <FormProvider {...signUpFormMethods}>
+              <FormProvider {...formMethods}>
                 <PasswordInputWithStrengthMeter />
               </FormProvider>
               <PasswordInput

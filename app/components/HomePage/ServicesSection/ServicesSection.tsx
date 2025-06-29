@@ -7,7 +7,7 @@ const ServicesSection = () => {
       <GridCol span={{ base: 12, md: 4 }}>
         <Image
           src="/images/service-1.jpg"
-          alt="Spa Pedicure"
+          alt="services"
           width={400}
           height={400}
           style={{ borderRadius: 8, objectFit: "cover", width: "100%", height: "auto" }}

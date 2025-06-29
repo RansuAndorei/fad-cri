@@ -1,6 +1,6 @@
 import LoginPage from "./components/LoginPage";
 
-const Page = () => {
+const Page = async () => {
   return <LoginPage />;
 };
 

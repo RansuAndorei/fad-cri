@@ -1,8 +1,7 @@
 "use client";
 
-import { getEmailResendTimer } from "@/api/get";
-import { insertError, resendEmail } from "@/api/post";
-import { Database } from "@/utils/database";
+import { insertError } from "@/app/actions";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Button,
   Center,
@@ -15,15 +14,16 @@ import {
   Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { IconCircleCheck } from "@tabler/icons-react";
+import { IconMail } from "@tabler/icons-react";
 import { isError } from "lodash";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getEmailResendTimer } from "../../actions";
+import { resendEmail } from "../actions";
 
 const SignUpSuccessPage = () => {
-  const supabaseClient = useSupabaseClient<Database>();
+  const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const emailQuery = searchParams.get("email");
@@ -113,8 +113,8 @@ const SignUpSuccessPage = () => {
       <Center mt={65}>
         <Paper px={{ base: 32, sm: 64 }} py={32} w={493} shadow="sm" radius="md">
           <Flex w="100%" justify="center" direction="column" align="center" ta="center" gap={16}>
-            <ThemeIcon size={84} color="green">
-              <IconCircleCheck size={84} />
+            <ThemeIcon size={84}>
+              <IconMail size={84} />
             </ThemeIcon>
 
             <Title size={20}>Check your mailbox</Title>
