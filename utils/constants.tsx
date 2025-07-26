@@ -21,3 +21,17 @@ export const HELP_TAB_LIST = [
   { label: "guidelines", icon: <IconListDetails size={16} /> },
   { label: "reservation", icon: <IconCalendarCheck size={16} /> },
 ];
+export const GENDER_OPTION = [
+  {
+    label: "Male",
+    value: "MALE",
+  },
+  {
+    label: "Female",
+    value: "FEMALE",
+  },
+  {
+    label: "Other",
+    value: "OTHER",
+  },
+];

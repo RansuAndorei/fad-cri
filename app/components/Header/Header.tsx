@@ -21,6 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import ProfileDropdown from "../ProfileDropdown/ProfileDropdown";
 import ColorSchemeToggle from "./ColorSchemeToggle";
 import classes from "./Header.module.css";
 
@@ -64,8 +65,9 @@ const Header = () => {
             })}
           </Group>
 
-          <Group visibleFrom="sm">
+          <Group visibleFrom="sm" gap="xs">
             <Button onClick={() => router.push("/user/booking")}>Book an Appointment</Button>
+            <ProfileDropdown />
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" size={16} />

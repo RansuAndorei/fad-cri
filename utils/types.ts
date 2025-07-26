@@ -8,6 +8,10 @@ export type UserTableRow = Database["public"]["Tables"]["user_table"]["Row"];
 export type UserTableInsert = Database["public"]["Tables"]["user_table"]["Insert"];
 export type UserTableUpdate = Database["public"]["Tables"]["user_table"]["Update"];
 
+export type GenderEnum = Database["public"]["Enums"]["gender"];
+
+export type AttachmentBucketType = "USER_AVATARS";
+
 export type LogInFormValues = {
   email: string;
   password: string;

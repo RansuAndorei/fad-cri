@@ -37,11 +37,11 @@ const LoginPage = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const isFromBooking = searchParams.get("booking");
   const isDark = colorScheme === "dark";
   const overlayColor = isDark ? 85 : 256;
-
-  const [isLoading, setIsLoading] = useState(false);
 
   const formMethods = useForm<LogInFormValues>({
     defaultValues: {
@@ -100,7 +100,7 @@ const LoginPage = () => {
         color: "green",
       });
 
-      router.push("/onboarding");
+      router.push("/user/onboarding");
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
@@ -109,7 +109,7 @@ const LoginPage = () => {
       setIsLoading(false);
       if (isError(e)) {
         await insertError(supabaseClient, {
-          errorTableRow: {
+          errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
             error_function: "handleLogin",

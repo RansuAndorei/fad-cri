@@ -27,7 +27,7 @@ const OAuth = () => {
       });
       if (isError(e)) {
         await insertError(supabaseClient, {
-          errorTableRow: {
+          errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
             error_function: "handleSignUp",

@@ -1,7 +1,7 @@
 import { Container } from "@mantine/core";
 
 const BookingPage = () => {
-  return <Container></Container>;
+  return <Container>Booking Page</Container>;
 };
 
 export default BookingPage;

@@ -26,7 +26,7 @@ export const getEmailResendTimer = async (
   });
   if (error) throw error;
 
-  return data as number;
+  return data;
 };
 
 export const signUpUser = async (

@@ -1,16 +1,47 @@
 "use client";
 
+import { useUserActions } from "@/stores/useUserStore";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
 import { ReactNode, useEffect, useState } from "react";
+import { getUserProfile } from "./actions";
 import ProgressBar from "./components/ProgressBar";
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  const { setUserProfile, setUserData } = useUserActions();
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const supabaseClient = createSupabaseBrowserClient();
+    let isMounted = true;
+
+    const fetchStoreData = async () => {
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      if (user && isMounted) {
+        setUserData(user);
+        const userProfile = await getUserProfile(supabaseClient, { userId: user.id });
+        if (userProfile) {
+          setUserProfile(userProfile);
+        }
+      }
+
+      setMounted(true);
+    };
+
+    fetchStoreData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!mounted) return null;
   return (
     <MantineProvider
       theme={{

@@ -1,5 +1,6 @@
-import { AppleStoreIcon } from "@/public/Icons/AppleStoreIcon";
-import { GooglePlayIcon } from "@/public/Icons/GooglePlayIcon";
+import { AppleStoreIcon } from "@/public/icons/AppleStoreIcon";
+import { GooglePlayIcon } from "@/public/icons/GooglePlayIcon";
+
 import { Button, Center, Flex, Stack, Text } from "@mantine/core";
 
 const DownloadButton = () => {

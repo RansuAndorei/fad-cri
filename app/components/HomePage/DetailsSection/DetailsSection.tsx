@@ -1,4 +1,7 @@
-import { AspectRatio, Box, Card, Container, Image, SimpleGrid, Text, Title } from "@mantine/core";
+"use client";
+
+import { AspectRatio, Box, Card, Container, SimpleGrid, Text, Title } from "@mantine/core";
+import Image from "next/image";
 import classes from "./DetailsSection.module.css";
 
 const data = [
@@ -36,6 +39,7 @@ const DetailsSection = () => {
           <Image
             src={article.image}
             alt={article.title}
+            fill
             style={{ objectFit: "cover" }}
             sizes="(max-width: 768px) 100vw, 33vw"
           />
