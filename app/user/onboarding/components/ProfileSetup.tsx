@@ -1,11 +1,11 @@
 "use client";
 
+import { OnboardingFormValues } from "@/utils/types";
 import { Box, Center, Paper, rem, Stack, Text, Title } from "@mantine/core";
 import { IconUpload } from "@tabler/icons-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { OnboardingFormValues } from "./OnboardingPage";
 
 const ProfileSetup = () => {
   const {

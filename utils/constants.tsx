@@ -35,3 +35,5 @@ export const GENDER_OPTION = [
     value: "OTHER",
   },
 ];
+
+export const FINGER_LABEL = ["Pinky", "Ring", "Middle", "Index", "Thumb"];

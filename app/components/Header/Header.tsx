@@ -66,7 +66,7 @@ const Header = () => {
           </Group>
 
           <Group visibleFrom="sm" gap="xs">
-            <Button onClick={() => router.push("/user/booking")}>Book an Appointment</Button>
+            <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
             <ProfileDropdown />
           </Group>
 
@@ -110,7 +110,7 @@ const Header = () => {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button onClick={() => router.push("/user/booking")}>Book an Appointment</Button>
+            <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
           </Group>
         </ScrollArea>
       </Drawer>

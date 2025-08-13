@@ -1,6 +1,7 @@
 "use client";
 
 import { mobileNumberFormatter } from "@/utils/functions";
+import { OnboardingFormValues } from "@/utils/types";
 import { Avatar, Divider, Flex, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import {
   IconCake,
@@ -12,7 +13,6 @@ import {
 import dayjs from "dayjs";
 import { capitalize } from "lodash";
 import { useFormContext } from "react-hook-form";
-import { OnboardingFormValues } from "./OnboardingPage";
 
 const Summary = () => {
   const { watch } = useFormContext<OnboardingFormValues>();

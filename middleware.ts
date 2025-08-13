@@ -46,7 +46,7 @@ const userMiddleware = async (supabaseClient: SupabaseClient<Database>, request:
     }
   } else {
     if (isOnboarding) {
-      return NextResponse.redirect(new URL("/user/booking", request.url));
+      return NextResponse.redirect(new URL("/user/booking-info", request.url));
     }
   }
 
@@ -58,7 +58,7 @@ const noUserMiddleware = async (supabaseClient: SupabaseClient<Database>, reques
     data: { user },
   } = await supabaseClient.auth.getUser();
   if (user) {
-    return NextResponse.redirect(new URL("/user/booking", request.url));
+    return NextResponse.redirect(new URL("/user/booking-info", request.url));
   }
 
   return NextResponse.next();

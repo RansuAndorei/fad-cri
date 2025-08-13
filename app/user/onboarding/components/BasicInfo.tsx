@@ -1,6 +1,6 @@
+import { OnboardingFormValues } from "@/utils/types";
 import { Paper, Stack, TextInput, Title } from "@mantine/core";
 import { useFormContext } from "react-hook-form";
-import { OnboardingFormValues } from "./OnboardingPage";
 
 const BasicInfo = () => {
   const {

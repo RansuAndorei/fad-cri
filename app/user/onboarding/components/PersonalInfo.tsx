@@ -1,8 +1,8 @@
 import { GENDER_OPTION } from "@/utils/constants";
+import { OnboardingFormValues } from "@/utils/types";
 import { Paper, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { Controller, useFormContext } from "react-hook-form";
-import { OnboardingFormValues } from "./OnboardingPage";
 
 const PersonalInfo = () => {
   const {
@@ -45,7 +45,6 @@ const PersonalInfo = () => {
               {...field}
               error={errors.user_birth_date?.message}
               withAsterisk
-              
             />
           )}
         />

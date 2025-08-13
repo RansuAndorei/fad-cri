@@ -5,7 +5,7 @@ import { useIsLoading, useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserActions, useUserData } from "@/stores/useUserStore";
 import { formatDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { GenderEnum } from "@/utils/types";
+import { GenderEnum, OnboardingFormValues } from "@/utils/types";
 import { Button, Container, Group, Stepper, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -17,16 +17,6 @@ import BasicInfo from "./BasicInfo";
 import PersonalInfo from "./PersonalInfo";
 import ProfileSetup from "./ProfileSetup";
 import Summary from "./Summary";
-
-export type OnboardingFormValues = {
-  user_first_name: string;
-  user_last_name: string;
-  user_email: string;
-  user_gender: string;
-  user_birth_date: Date | null;
-  user_phone_number: string;
-  user_avatar: File | null;
-};
 
 const OnboardingPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -57,10 +47,11 @@ const OnboardingPage = () => {
       user_avatar: null,
     },
   });
+  const { trigger, handleSubmit } = methods;
 
   const handleStepChange = async (nextStep: number) => {
     const isOutOfBounds = nextStep > 3 || nextStep < 0;
-    const valid = await methods.trigger();
+    const valid = await trigger();
 
     if (isOutOfBounds || !valid) return;
 
@@ -94,7 +85,7 @@ const OnboardingPage = () => {
       });
       setUserProfile(newUserData);
 
-      router.push("/user/booking");
+      router.push("/user/booking-info");
 
       notifications.show({
         message: "Profile completed.",
@@ -124,7 +115,7 @@ const OnboardingPage = () => {
     <FormProvider {...methods}>
       <Container size="sm" py="xl">
         <Title>Onboarding</Title>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <Stepper
             active={active}
             onStepClick={setActive}

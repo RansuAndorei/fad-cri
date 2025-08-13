@@ -20,3 +20,23 @@ export type LogInFormValues = {
 export type SignUpFormValues = LogInFormValues & {
   confirmPassword: string;
 };
+
+export type OnboardingFormValues = {
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
+  user_gender: string;
+  user_birth_date: Date | null;
+  user_phone_number: string;
+  user_avatar: File | null;
+};
+
+export type BookingFormValues = {
+  type: string;
+  removal: string;
+  removalType: string;
+  inspoLeft: (File | null)[];
+  inspoRight: (File | null)[];
+  scheduleDate: Date | null;
+  scheduleTime: string;
+};

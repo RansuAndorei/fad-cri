@@ -17,7 +17,6 @@ export function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
     const supabaseClient = createSupabaseBrowserClient();
     let isMounted = true;
-
     const fetchStoreData = async () => {
       const {
         data: { user },

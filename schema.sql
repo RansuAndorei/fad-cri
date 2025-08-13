@@ -49,6 +49,12 @@ CREATE TABLE email_resend_table(
   email_resend_email varchar(4000) NOT NULL
 );
 
+CREATE TABLE appointment_type_table(
+  appointment_type_id uuid DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  appointment_type_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  appointment_type_label TEXT NOT NULL,
+);
+
 CREATE OR REPLACE FUNCTION get_email_resend_timer(input_data JSONB)
 RETURNS INTEGER
 AS $$

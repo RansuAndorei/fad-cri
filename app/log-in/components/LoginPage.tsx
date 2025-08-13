@@ -2,6 +2,7 @@
 
 import { insertError } from "@/app/actions";
 import OAuth from "@/app/components/OAuth/OAuth";
+import { useUserActions } from "@/stores/useUserStore";
 import { SMALL_SCREEN } from "@/utils/constants";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { LogInFormValues } from "@/utils/types";
@@ -36,6 +37,7 @@ const LoginPage = () => {
   const { colorScheme } = useMantineColorScheme();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { setUserData } = useUserActions();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -100,7 +102,15 @@ const LoginPage = () => {
         color: "green",
       });
 
-      router.push("/user/onboarding");
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+      if (user) {
+        setUserData(user);
+        router.push("/user/onboarding");
+      } else {
+        throw new Error("User not found");
+      }
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
