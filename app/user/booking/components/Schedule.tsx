@@ -39,6 +39,7 @@ const Schedule = () => {
               error={errors.scheduleDate?.message}
               value={field.value || null}
               required
+              minDate={new Date()}
             />
           )}
         />

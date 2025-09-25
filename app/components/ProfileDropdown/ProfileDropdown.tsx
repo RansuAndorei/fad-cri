@@ -1,5 +1,6 @@
 import { insertError } from "@/app/actions";
 import { useIsLoading, useLoadingActions } from "@/stores/useLoadingStore";
+import { useUserData } from "@/stores/useUserStore";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { Avatar, Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -11,9 +12,11 @@ const ProfileDropdown = () => {
   const pathname = usePathname();
   const router = useRouter();
   const isLoading = useIsLoading();
+  const userData = useUserData();
   const { setIsLoading } = useLoadingActions();
 
   const handleLogout = async () => {
+    if (!userData) return;
     try {
       setIsLoading(true);
       await supabaseClient.auth.signOut();
@@ -31,6 +34,8 @@ const ProfileDropdown = () => {
             error_message: e.message,
             error_url: pathname,
             error_function: "handleLogout",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
           },
         });
       }

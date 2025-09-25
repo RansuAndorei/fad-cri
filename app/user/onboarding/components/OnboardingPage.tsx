@@ -111,6 +111,7 @@ const OnboardingPage = () => {
       }
     }
   };
+
   return (
     <FormProvider {...methods}>
       <Container size="sm" py="xl">

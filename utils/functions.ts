@@ -1,4 +1,5 @@
 import { rem, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { toNumber } from "lodash";
 import moment from "moment";
 
 export const mobileNumberFormatter = (number: string) => {
@@ -38,4 +39,18 @@ export const useNailBoxStyle = () => {
       backgroundColor: isDark ? theme.colors.dark[6] : theme.colors.gray[0],
     };
   };
+};
+
+export const formatDecimal = (value: number | string, places = 2): string => {
+  return toNumber(value).toFixed(places);
+};
+
+export const combineDateTime = (date: Date, time: string) => {
+  return moment(date)
+    .set({
+      hour: parseInt(time.split(":")[0], 10),
+      minute: parseInt(time.split(":")[1], 10),
+      second: 0,
+    })
+    .toDate();
 };

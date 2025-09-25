@@ -37,6 +37,6 @@ export type BookingFormValues = {
   removalType: string;
   inspoLeft: (File | null)[];
   inspoRight: (File | null)[];
-  scheduleDate: Date | null;
+  scheduleDate: string;
   scheduleTime: string;
 };

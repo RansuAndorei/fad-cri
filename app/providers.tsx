@@ -63,6 +63,19 @@ export function Providers({ children }: { children: ReactNode }) {
               },
             },
           },
+          Radio: {
+            styles: {
+              radio: {
+                cursor: "pointer",
+              },
+              label: {
+                cursor: "pointer",
+              },
+              icon: {
+                cursor: "pointer",
+              },
+            },
+          },
         },
       }}
     >

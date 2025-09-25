@@ -1,6 +1,5 @@
 import { BookingFormValues } from "@/utils/types";
 import { Paper, Radio, Select, Stack, Title } from "@mantine/core";
-import { createStyles } from "@mantine/styles";
 import { Controller, useFormContext } from "react-hook-form";
 
 const appointmentTypes = [
@@ -11,20 +10,7 @@ const appointmentTypes = [
   "Gel-X Extension",
 ];
 
-const useStyles = createStyles(() => ({
-  radio: {
-    input: {
-      cursor: "pointer",
-    },
-    label: {
-      cursor: "pointer",
-    },
-  },
-}));
-
 const AppointmentType = () => {
-  const { classes } = useStyles();
-
   const {
     formState: { errors },
     control,
@@ -73,12 +59,8 @@ const AppointmentType = () => {
               }}
             >
               <Stack mt="sm">
-                <Radio value="with" label="With Removal" classNames={{ root: classes.radio }} />
-                <Radio
-                  value="without"
-                  label="Without Removal"
-                  classNames={{ root: classes.radio }}
-                />
+                <Radio value="with" label="With Removal" />
+                <Radio value="without" label="Without Removal" />
               </Stack>
             </Radio.Group>
           )}
@@ -101,12 +83,8 @@ const AppointmentType = () => {
                 }}
               >
                 <Stack mt="sm">
-                  <Radio value="fad" label="Fad Cri's Work" classNames={{ root: classes.radio }} />
-                  <Radio
-                    value="not_fad"
-                    label="Not Fad Cri's Work"
-                    classNames={{ root: classes.radio }}
-                  />
+                  <Radio value="fad" label="Fad Cri's Work" />
+                  <Radio value="not_fad" label="Not Fad Cri's Work" />
                 </Stack>
               </Radio.Group>
             )}
