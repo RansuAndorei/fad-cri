@@ -1,10 +1,11 @@
 "use client";
 
-import { insertError } from "@/app/actions";
+import { insertError, uploadImage } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
+import { FINGER_LABEL } from "@/utils/constants";
 import { formatDecimal } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { BookingFormValues } from "@/utils/types";
+import { BookingFormValues, PaymentMethod } from "@/utils/types";
 import {
   Alert,
   Button,
@@ -19,13 +20,13 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { isError } from "lodash";
+import { isError, toUpper } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { getBookingFee } from "../actions";
 
-type PaymentMethod = "gcash" | "card";
+
 
 const Payment = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -70,9 +71,16 @@ const Payment = () => {
 
   const handlePay = async () => {
     if (isLoading || isFetchingFee || !userData) return;
+
     setIsLoading(true);
     try {
       const bookingData = getValues();
+
+      const inspoData = await handleUploadInspo(
+        userData.id,
+        bookingData.inspoLeft,
+        bookingData.inspoRight,
+      );
 
       const res = await fetch("/api/payments/create-checkout", {
         method: "POST",
@@ -81,6 +89,7 @@ const Payment = () => {
           amount: bookingFee * 100, // PayMongo expects centavos (500.00 = 50000)
           method,
           bookingData,
+          inspoData,
           userId: userData.id,
           userEmail: userData.email,
         }),
@@ -93,10 +102,9 @@ const Payment = () => {
       const data = await res.json();
 
       if (data.checkout_url) {
-        window.location.href = data.checkout_url; // Redirect to PayMongo checkout
+        window.location.href = data.checkout_url;
       }
     } catch (e) {
-      console.log(e);
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",
@@ -112,9 +120,48 @@ const Payment = () => {
           },
         });
       }
-    } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleUploadInspo = async (
+    userId: string,
+    inspoLeft: (File | null)[],
+    inspoRight: (File | null)[],
+  ) => {
+    const inspoList: { file: File | null; hand: string; finger: string }[] = [
+      ...(inspoLeft || []).map((file, i) => ({
+        file,
+        hand: "LEFT",
+        finger: toUpper(FINGER_LABEL[i]),
+      })),
+      ...(inspoRight || []).map((file, i) => ({
+        file,
+        hand: "RIGHT",
+        finger: toUpper(FINGER_LABEL[FINGER_LABEL.length - 1 - i]),
+      })),
+    ];
+    const uploadPromises = inspoList.map(async ({ file, hand, finger }) => {
+      if (!file) return null;
+
+      const { publicUrl } = await uploadImage(supabaseClient, {
+        image: file,
+        bucket: "NAIL_INSPO",
+        fileName: `${userId}/${hand}-${finger}-${Date.now()}`,
+      });
+
+      return {
+        imageUrl: publicUrl,
+        hand,
+        finger,
+      };
+    });
+
+    const uploadedUrls = (await Promise.all(uploadPromises)).filter(
+      (result): result is { imageUrl: string; hand: string; finger: string } => result !== null,
+    );
+
+    return uploadedUrls;
   };
 
   return (

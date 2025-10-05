@@ -1,6 +1,6 @@
 import AppointmentListPage from "./components/AppointmentListPage";
 
 const Page = () => {
-  return <AppointmentListPage />
-
+  return <AppointmentListPage />;
+};
 export default Page;

@@ -76,6 +76,13 @@ export function Providers({ children }: { children: ReactNode }) {
               },
             },
           },
+          Checkbox: {
+            styles: {
+              input: {
+                cursor: "pointer",
+              },
+            },
+          },
         },
       }}
     >

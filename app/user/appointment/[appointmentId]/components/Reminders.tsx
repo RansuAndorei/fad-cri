@@ -2,7 +2,7 @@ import { List, Paper, Space, Stack, Text, Title } from "@mantine/core";
 
 const Reminders = () => {
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper p="xl" shadow="xl" withBorder style={{ borderTop: 0 }}>
       <Stack gap="md">
         <Title c="dimmed" order={3} mb="xs">
           Reminders and Message

@@ -54,3 +54,18 @@ export const combineDateTime = (date: Date, time: string) => {
     })
     .toDate();
 };
+
+export const statusToColor = (status: string) => {
+  switch (status) {
+    case "PAID":
+    case "COMPLETED":
+      return "green";
+    case "FAILED":
+      return "red";
+    case "CANCELLED":
+      return "gray";
+    case "PENDING":
+    case "SCHEDULED":
+      return "blue";
+  }
+};

@@ -14,7 +14,7 @@ import Reminders from "./Reminders";
 import Schedule from "./Schedule";
 import Summary from "./Summary";
 
-const BookingFormStepper = () => {
+const BookingPage = () => {
   const isLoading = useIsLoading();
 
   const [active, setActive] = useState(0);
@@ -142,4 +142,4 @@ const BookingFormStepper = () => {
   );
 };
 
-export default BookingFormStepper;
+export default BookingPage;

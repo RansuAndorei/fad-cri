@@ -10,3 +10,9 @@ export const getBookingFee = async (supabaseClient: SupabaseClient<Database>) =>
   if (error) throw error;
   return Number(data.system_setting_value);
 };
+
+export const getServerTime = async (supabaseClient: SupabaseClient<Database>) => {
+  const { data, error } = await supabaseClient.rpc("get_server_time");
+  if (error) throw error;
+  return data;
+};

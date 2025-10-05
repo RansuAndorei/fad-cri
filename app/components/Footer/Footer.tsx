@@ -98,7 +98,7 @@ const Footer = () => {
       <Divider size="sm" color="cyan" />
       <Container className={classes.inner}>
         <UnstyledButton onClick={() => router.push("/")} className={classes.logo}>
-          <Image alt="logo" width={35} height={40} src={"/images/logo.png"} />
+          <Image alt="logo" width={35} height={40} src={"/images/logo.png"} priority />
         </UnstyledButton>
         <Group gap={0} className={classes.links} justify="flex-end" wrap="nowrap">
           <ActionIcon

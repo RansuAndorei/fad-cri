@@ -8,9 +8,31 @@ export type UserTableRow = Database["public"]["Tables"]["user_table"]["Row"];
 export type UserTableInsert = Database["public"]["Tables"]["user_table"]["Insert"];
 export type UserTableUpdate = Database["public"]["Tables"]["user_table"]["Update"];
 
+export type AppointmentTableRow = Database["public"]["Tables"]["appointment_table"]["Row"];
+export type AppointmentTableInsert = Database["public"]["Tables"]["appointment_table"]["Insert"];
+export type AppointmentTableUpdate = Database["public"]["Tables"]["appointment_table"]["Update"];
+
+export type AppointmentDetailTableRow =
+  Database["public"]["Tables"]["appointment_detail_table"]["Row"];
+export type AppointmentDetailTableInsert =
+  Database["public"]["Tables"]["appointment_detail_table"]["Insert"];
+export type AppointmentDetailTableUpdate =
+  Database["public"]["Tables"]["appointment_detail_table"]["Update"];
+
+export type AppointmentNailDesignTableRow =
+  Database["public"]["Tables"]["appointment_nail_design_table"]["Row"];
+export type AppointmentNailDesignTableInsert =
+  Database["public"]["Tables"]["appointment_nail_design_table"]["Insert"];
+export type AppointmentNailDesignTableUpdate =
+  Database["public"]["Tables"]["appointment_nail_design_table"]["Update"];
+
+export type PaymentTableRow = Database["public"]["Tables"]["payment_table"]["Row"];
+export type PaymentTableInsert = Database["public"]["Tables"]["payment_table"]["Insert"];
+export type PaymentTableUpdate = Database["public"]["Tables"]["payment_table"]["Update"];
+
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 
-export type AttachmentBucketType = "USER_AVATARS";
+export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO";
 
 export type LogInFormValues = {
   email: string;
@@ -40,3 +62,12 @@ export type BookingFormValues = {
   scheduleDate: string;
   scheduleTime: string;
 };
+
+export type AppointmentType = AppointmentTableRow & {
+  appointment_detail: AppointmentDetailTableRow & {
+    appointment_nail_design: AppointmentNailDesignTableRow[];
+  };
+  payment: PaymentTableRow;
+};
+
+export type PaymentMethod = "gcash" | "card";

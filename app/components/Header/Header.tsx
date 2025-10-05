@@ -42,7 +42,7 @@ const Header = () => {
         <Group justify="space-between" h="100%">
           <Flex align="center" justify="center" gap="xs">
             <UnstyledButton onClick={() => router.push("/")} className={classes.logo}>
-              <Image alt="logo" width={55} height={50} src={"/images/logo.png"} />
+              <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
             </UnstyledButton>
 
             <ColorSchemeToggle />
@@ -86,7 +86,7 @@ const Header = () => {
           <Center>
             <Flex align="center" justify="center">
               <UnstyledButton onClick={async () => router.push("/")}>
-                <Image alt="logo" width={55} height={50} src={"/images/logo.png"} />
+                <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
               </UnstyledButton>
             </Flex>
           </Center>
