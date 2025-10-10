@@ -6,8 +6,8 @@ type Store = {
   userData: User | null;
   userProfile: UserTableRow | null;
   actions: {
-    setUserProfile: (profile: UserTableRow) => void;
-    setUserData: (user: User) => void;
+    setUserProfile: (profile: UserTableRow | null) => void;
+    setUserData: (user: User | null) => void;
   };
   reset: () => void;
 };

@@ -23,13 +23,12 @@ const ProfileDropdown = () => {
       setIsLoading(true);
       await supabaseClient.auth.signOut();
       router.push("/");
-      setIsLoading(false);
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      setIsLoading(false);
+
       if (isError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
@@ -41,6 +40,8 @@ const ProfileDropdown = () => {
           },
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,6 +72,22 @@ const ProfileDropdown = () => {
 
           <Menu.Divider />
 
+          <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
+            Logout
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    );
+  } else if (pathname.includes("admin")) {
+    return (
+      <Menu shadow="md" width={200}>
+        <Menu.Target>
+          <ActionIcon variant="subtle" radius="xl" size="lg">
+            <Avatar src={userProfile?.user_avatar} radius="xl" />
+          </ActionIcon>
+        </Menu.Target>
+
+        <Menu.Dropdown>
           <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
             Logout
           </Menu.Item>

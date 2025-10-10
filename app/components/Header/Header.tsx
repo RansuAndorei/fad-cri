@@ -36,9 +36,14 @@ const Header = () => {
   const supabaseClient = createSupabaseBrowserClient();
   const router = useRouter();
   const pathname = usePathname();
-  const { setIsLoading } = useLoadingActions();
   const userData = useUserData();
+  const { setIsLoading } = useLoadingActions();
+
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+
+  const isAdmin = userData?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isOnboarding = pathname === "/user/onboarding";
+  const isNotAdminRoute = !pathname.includes("/admin");
 
   const handleLogout = async () => {
     if (!userData) return;
@@ -46,13 +51,12 @@ const Header = () => {
       setIsLoading(true);
       await supabaseClient.auth.signOut();
       router.push("/");
-      setIsLoading(false);
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      setIsLoading(false);
+
       if (isError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
@@ -64,6 +68,8 @@ const Header = () => {
           },
         });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,7 +109,13 @@ const Header = () => {
           </Group>
 
           <Group visibleFrom="sm" gap="xs">
-            <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
+            {!isOnboarding && isAdmin && isNotAdminRoute ? (
+              <Button onClick={() => router.push("/admin/dashboard")}>Admin Dashboard</Button>
+            ) : null}
+            {!isOnboarding && !isAdmin ? (
+              <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
+            ) : null}
+
             <ProfileDropdown />
           </Group>
 
@@ -146,11 +158,13 @@ const Header = () => {
           </Stack>
           <Divider my="sm" />
 
-          <Group justify="center" grow pb="xl" px="md">
-            <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
-          </Group>
+          {!isOnboarding && !isAdmin ? (
+            <Group justify="center" grow pb="xl" px="md">
+              <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
+            </Group>
+          ) : null}
 
-          {pathname.includes("user") ? (
+          {!isOnboarding && pathname.includes("user") ? (
             <Stack px="md" gap="xs">
               <Divider label="Profile" />
               <Button leftSection={<IconSettings size={14} />} variant="light">
@@ -164,6 +178,22 @@ const Header = () => {
                 Appointments
               </Button>
 
+              <Button color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
+                Logout
+              </Button>
+            </Stack>
+          ) : null}
+
+          {isOnboarding && pathname.includes("user") ? (
+            <Stack px="md" gap="xs">
+              <Button color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
+                Logout
+              </Button>
+            </Stack>
+          ) : null}
+
+          {pathname.includes("admin") ? (
+            <Stack px="md" gap="xs">
               <Button color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
                 Logout
               </Button>
