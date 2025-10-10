@@ -35,5 +35,11 @@ export const GENDER_OPTION = [
     value: "OTHER",
   },
 ];
-
 export const FINGER_LABEL = ["Pinky", "Ring", "Middle", "Index", "Thumb"];
+export const ROW_PER_PAGE = 10;
+export const APPOINTMENT_STATUS_OPTIONS = [
+  { label: "Pending", value: "PENDING" },
+  { label: "Scheduled", value: "SCHEDULED" },
+  { label: "Completed", value: "COMPLETED" },
+  { label: "Cancelled", value: "CANCELLED" },
+];

@@ -2,15 +2,11 @@ import { BookingFormValues } from "@/utils/types";
 import { Paper, Radio, Select, Stack, Title } from "@mantine/core";
 import { Controller, useFormContext } from "react-hook-form";
 
-const appointmentTypes = [
-  "Gel Polish",
-  "Structured Gel Polish",
-  "BIAB",
-  "Polygel Overlay",
-  "Gel-X Extension",
-];
+type Props = {
+  appointmentTypeOptions: string[];
+};
 
-const AppointmentType = () => {
+const AppointmentType = ({ appointmentTypeOptions }: Props) => {
   const {
     formState: { errors },
     control,
@@ -33,7 +29,7 @@ const AppointmentType = () => {
           render={({ field }) => (
             <Select
               label="Type of Appointment"
-              data={appointmentTypes}
+              data={appointmentTypeOptions}
               placeholder="Choose type"
               {...field}
               error={errors.type?.message}

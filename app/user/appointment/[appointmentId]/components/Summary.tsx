@@ -2,7 +2,7 @@ import { insertError } from "@/app/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/action";
 import { useUserData } from "@/stores/useUserStore";
 import { FINGER_LABEL } from "@/utils/constants";
-import { combineDateTime, useNailBoxStyle } from "@/utils/functions";
+import { combineDateTime, formatWordDate, useNailBoxStyle } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AppointmentNailDesignTableRow, AppointmentType } from "@/utils/types";
 import {
@@ -339,7 +339,7 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
         />
         <Stack gap="xs">
           <Text>
-            <strong>Date:</strong> {new Date(schedule).toLocaleDateString()}
+            <strong>Date:</strong> {formatWordDate(new Date(schedule))}
           </Text>
           <Text>
             <strong>Time:</strong> {moment(schedule).format("h:mm A")}

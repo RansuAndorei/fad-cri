@@ -14,7 +14,11 @@ import Reminders from "./Reminders";
 import Schedule from "./Schedule";
 import Summary from "./Summary";
 
-const BookingPage = () => {
+type Props = {
+  appointmentTypeOptions: string[];
+};
+
+const BookingPage = ({ appointmentTypeOptions }: Props) => {
   const isLoading = useIsLoading();
 
   const [active, setActive] = useState(0);
@@ -71,7 +75,7 @@ const BookingPage = () => {
               description="Type and Removal"
               allowStepSelect={shouldAllowSelectStep(0)}
             >
-              <AppointmentType />
+              <AppointmentType appointmentTypeOptions={appointmentTypeOptions} />
             </Stepper.Step>
 
             <Stepper.Step

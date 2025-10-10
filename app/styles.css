@@ -2,3 +2,7 @@
   font-family: "CorporateAProRegular";
   src: url("/fonts/CorporateAProRegular.ttf") format("truetype");
 }
+
+.custom-appointment-table thead th:hover {
+  background-color: #0c8599 !important; /* cyan[8] for a darker hover */
+}

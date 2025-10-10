@@ -10,6 +10,14 @@ export const formatDate = (dateValue: Date) => {
   return moment(dateValue).format("YYYY-MM-DD");
 };
 
+export const formatTime = (dateValue: Date) => {
+  return moment(dateValue).format("hh:mm A");
+};
+
+export const formatWordDate = (dateValue: Date) => {
+  return moment(dateValue).format("MMMM D, YYYY");
+};
+
 export const nailShapeMap: Record<string, { width: number; height: number; radius: number }> = {
   Thumb: { width: 72, height: 90, radius: 38 },
   Index: { width: 62, height: 88, radius: 34 },
@@ -65,7 +73,8 @@ export const statusToColor = (status: string) => {
     case "CANCELLED":
       return "gray";
     case "PENDING":
-    case "SCHEDULED":
       return "blue";
+    case "SCHEDULED":
+      return "lime";
   }
 };

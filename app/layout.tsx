@@ -1,14 +1,16 @@
 import "@mantine/carousel/styles.css";
-import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/nprogress/styles.css";
+import "mantine-datatable/styles.css";
+import "./styles.css";
+
+import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import { ReactNode, Suspense } from "react";
 import HomeLayout from "./components/HomeLayout/HomeLayout";
 import LoadingOverlay from "./components/LoadingOverlay/LoadingOverlay";
 import { Providers } from "./providers";
-import "./styles.css";
 
 export const metadata = {
   title: "FadCri",

@@ -11,6 +11,7 @@ type Props = {
   params: Promise<{ appointmentId: string }>;
   searchParams?: Promise<{ status: string }>;
 };
+
 const Page = async ({ params, searchParams }: Props) => {
   const { appointmentId } = await params;
   const { status } = (await searchParams) ?? {};

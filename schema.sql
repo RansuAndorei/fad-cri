@@ -355,3 +355,11 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO PUBLIC;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO POSTGRES;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
+
+INSERT INTO appointment_type_table (appointment_type_label) 
+VALUES
+('Gel Polish'),
+('Structured Gel Polish'),
+('BIAB'),
+('Polygel Overlay'),
+('Gel-X Extension');

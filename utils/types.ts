@@ -31,6 +31,7 @@ export type PaymentTableInsert = Database["public"]["Tables"]["payment_table"]["
 export type PaymentTableUpdate = Database["public"]["Tables"]["payment_table"]["Update"];
 
 export type GenderEnum = Database["public"]["Enums"]["gender"];
+export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];
 
 export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO";
 
@@ -71,3 +72,7 @@ export type AppointmentType = AppointmentTableRow & {
 };
 
 export type PaymentMethod = "gcash" | "card";
+
+export type AppointmentTableType = AppointmentTableRow & {
+  appointment_detail: AppointmentDetailTableRow;
+};
