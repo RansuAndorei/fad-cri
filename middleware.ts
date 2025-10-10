@@ -1,5 +1,4 @@
 import { SupabaseClient, User } from "@supabase/supabase-js";
-import { isError } from "lodash";
 import { NextRequest, NextResponse } from "next/server";
 import { insertError } from "./app/actions";
 import { Database } from "./utils/database";
@@ -128,4 +127,10 @@ const logMiddlewareError = (
       console.error("Failed to log middleware error", e);
     }
   }
+};
+
+const isError = (error: unknown): error is Error => {
+  return (
+    error instanceof Error || (typeof error === "object" && error !== null && "message" in error)
+  );
 };
