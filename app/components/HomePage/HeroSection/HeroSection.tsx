@@ -1,11 +1,13 @@
 "use client";
 
 import { Box, Button, Text, Title, useMantineColorScheme } from "@mantine/core";
+import { useRouter } from "next/navigation";
 
 const HeroSection = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
   const overlayColor = isDark ? 85 : 256;
+  const router = useRouter();
 
   return (
     <Box
@@ -51,7 +53,7 @@ const HeroSection = () => {
           LOREM IPSUM
         </Text>
         <Title mb={20}>Ut sagittis sollicitudin velit eget fermentum.</Title>
-        <Button>Book an Appointment</Button>
+        <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
       </Box>
     </Box>
   );

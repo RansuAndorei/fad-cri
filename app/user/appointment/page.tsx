@@ -33,7 +33,7 @@ const Page = async () => {
             columnAccessor: "appointment_date_created",
             direction: "desc",
           },
-          userId: null,
+          userId: user.id,
           type: null,
           status: null,
         }),

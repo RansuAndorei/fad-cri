@@ -71,7 +71,7 @@ const ProfileDropdown = () => {
 
           <Menu.Divider />
 
-          <Menu.Item color="red" leftSection={<IconLogout size={14} />}>
+          <Menu.Item color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
             Logout
           </Menu.Item>
         </Menu.Dropdown>

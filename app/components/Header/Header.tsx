@@ -1,6 +1,11 @@
 "use client";
 
+import { insertError } from "@/app/actions";
+
+import { useLoadingActions } from "@/stores/useLoadingStore";
+import { useUserData } from "@/stores/useUserStore";
 import { TAB_LIST } from "@/utils/constants";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Box,
   Burger,
@@ -16,7 +21,9 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { startCase, toLower } from "lodash";
+import { notifications } from "@mantine/notifications";
+import { IconCalendar, IconLogout, IconSettings } from "@tabler/icons-react";
+import { isError, startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,9 +33,39 @@ import ColorSchemeToggle from "./ColorSchemeToggle";
 import classes from "./Header.module.css";
 
 const Header = () => {
+  const supabaseClient = createSupabaseBrowserClient();
   const router = useRouter();
   const pathname = usePathname();
+  const { setIsLoading } = useLoadingActions();
+  const userData = useUserData();
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+
+  const handleLogout = async () => {
+    if (!userData) return;
+    try {
+      setIsLoading(true);
+      await supabaseClient.auth.signOut();
+      router.push("/");
+      setIsLoading(false);
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      setIsLoading(false);
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleLogout",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     if (drawerOpened) {
@@ -112,6 +149,26 @@ const Header = () => {
           <Group justify="center" grow pb="xl" px="md">
             <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
           </Group>
+
+          {pathname.includes("user") ? (
+            <Stack px="md" gap="xs">
+              <Divider label="Profile" />
+              <Button leftSection={<IconSettings size={14} />} variant="light">
+                Settings
+              </Button>
+              <Button
+                leftSection={<IconCalendar size={14} />}
+                onClick={() => router.push("/user/appointment")}
+                variant="light"
+              >
+                Appointments
+              </Button>
+
+              <Button color="red" leftSection={<IconLogout size={14} />} onClick={handleLogout}>
+                Logout
+              </Button>
+            </Stack>
+          ) : null}
         </ScrollArea>
       </Drawer>
     </Box>

@@ -1,11 +1,13 @@
 "use client";
 
 import { Box, Button, Title, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { useRouter } from "next/navigation";
 
 const DividerSection = () => {
   const { colorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
   const isDark = colorScheme === "dark";
+  const router = useRouter();
 
   const gradientColor = isDark
     ? [theme.colors.cyan[9], theme.colors.gray[8]]
@@ -22,7 +24,9 @@ const DividerSection = () => {
       <Title order={2} mb={20}>
         Phasellus maximus ultrices dolor.
       </Title>
-      <Button variant="outline">Book an Appointment</Button>
+      <Button variant="outline" onClick={() => router.push("/user/booking-info")}>
+        Book an Appointment
+      </Button>
     </Box>
   );
 };
