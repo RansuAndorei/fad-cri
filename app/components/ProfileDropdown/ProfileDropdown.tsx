@@ -6,6 +6,7 @@ import { ActionIcon, Avatar, Button, Menu } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconCalendar, IconLogout, IconSettings } from "@tabler/icons-react";
 import { isError } from "lodash";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const ProfileDropdown = () => {
@@ -65,7 +66,8 @@ const ProfileDropdown = () => {
           <Menu.Item leftSection={<IconSettings size={14} />}>Settings</Menu.Item>
           <Menu.Item
             leftSection={<IconCalendar size={14} />}
-            onClick={() => router.push("/user/appointment")}
+            component={Link}
+            href="/user/appointment"
           >
             Appointments
           </Menu.Item>

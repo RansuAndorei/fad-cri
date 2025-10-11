@@ -84,7 +84,7 @@ const Header = () => {
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           <Flex align="center" justify="center" gap="xs">
-            <UnstyledButton onClick={() => router.push("/")} className={classes.logo}>
+            <UnstyledButton component={Link} href="/" className={classes.logo}>
               <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
             </UnstyledButton>
 
@@ -110,10 +110,14 @@ const Header = () => {
 
           <Group visibleFrom="sm" gap="xs">
             {!isOnboarding && isAdmin && isNotAdminRoute ? (
-              <Button onClick={() => router.push("/admin/dashboard")}>Admin Dashboard</Button>
+              <Button component={Link} href="/admin/dashboard">
+                Admin Dashboard
+              </Button>
             ) : null}
             {!isOnboarding && !isAdmin ? (
-              <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
+              <Button component={Link} href="/user/booking-info">
+                Book an Appointment
+              </Button>
             ) : null}
 
             <ProfileDropdown />
@@ -134,7 +138,7 @@ const Header = () => {
         <ScrollArea h="calc(100vh - 80px)" mx="-md">
           <Center>
             <Flex align="center" justify="center">
-              <UnstyledButton onClick={async () => router.push("/")}>
+              <UnstyledButton component={Link} href="/">
                 <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
               </UnstyledButton>
             </Flex>
@@ -160,7 +164,9 @@ const Header = () => {
 
           {!isOnboarding && !isAdmin ? (
             <Group justify="center" grow pb="xl" px="md">
-              <Button onClick={() => router.push("/user/booking-info")}>Book an Appointment</Button>
+              <Button component={Link} href="/user/booking-info">
+                Book an Appointment
+              </Button>
             </Group>
           ) : null}
 
@@ -172,7 +178,8 @@ const Header = () => {
               </Button>
               <Button
                 leftSection={<IconCalendar size={14} />}
-                onClick={() => router.push("/user/appointment")}
+                component={Link}
+                href="/user/appointment"
                 variant="light"
               >
                 Appointments

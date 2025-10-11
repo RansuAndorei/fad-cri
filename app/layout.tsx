@@ -6,7 +6,6 @@ import "@mantine/nprogress/styles.css";
 import "mantine-datatable/styles.css";
 import "./styles.css";
 
-import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import { ReactNode } from "react";
 import HomeLayout from "./components/HomeLayout/HomeLayout";
@@ -19,11 +18,6 @@ export const metadata = {
 };
 
 const Layout = async ({ children }: { children: ReactNode }) => {
-  const supabaseClient = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabaseClient.auth.getUser();
-
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
@@ -31,7 +25,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
         <link rel="shortcut icon" href="/images/logo.png" />
       </head>
       <body>
-        <Providers user={user}>
+        <Providers>
           <LoadingOverlay />
           <HomeLayout>{children}</HomeLayout>
         </Providers>

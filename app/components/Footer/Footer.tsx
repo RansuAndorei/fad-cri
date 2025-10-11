@@ -25,11 +25,9 @@ import {
 import { startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import classes from "./Footer.module.css";
 
 const Footer = () => {
-  const router = useRouter();
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
   const theme = useMantineTheme();
@@ -50,7 +48,6 @@ const Footer = () => {
                     href={path}
                     label={startCase(label)}
                     leftSection={icon}
-                    variant="subtle"
                   />
                 );
               })}
@@ -63,7 +60,13 @@ const Footer = () => {
                 const formattedLabel = label === "faqs" ? "FAQs" : startCase(label);
                 const path = `/${label.split(" ").join("-")}`;
                 return (
-                  <NavLink label={formattedLabel} leftSection={icon} key={label} href={path} />
+                  <NavLink
+                    key={label}
+                    component={Link}
+                    href={path}
+                    label={formattedLabel}
+                    leftSection={icon}
+                  />
                 );
               })}
             </Stack>
@@ -97,7 +100,7 @@ const Footer = () => {
 
       <Divider size="sm" color="cyan" />
       <Container className={classes.inner}>
-        <UnstyledButton onClick={() => router.push("/")} className={classes.logo}>
+        <UnstyledButton component={Link} href="/" className={classes.logo}>
           <Image alt="logo" width={35} height={40} src={"/images/logo.png"} priority />
         </UnstyledButton>
         <Group gap={0} className={classes.links} justify="flex-end" wrap="nowrap">

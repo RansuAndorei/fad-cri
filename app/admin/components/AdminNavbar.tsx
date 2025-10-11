@@ -9,7 +9,8 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconCalendar, IconDashboard, IconSettings } from "@tabler/icons-react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinkList = [
   {
@@ -27,7 +28,6 @@ const navLinkList = [
 
 const AdminNavbar = () => {
   const pathname = usePathname();
-  const router = useRouter();
   const { colors } = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
@@ -58,7 +58,8 @@ const AdminNavbar = () => {
                   </Box>
                 }
                 active={pathname.includes(href)}
-                onClick={() => router.push(href)}
+                component={Link}
+                href={href}
               />
             ))}
           </Stack>
