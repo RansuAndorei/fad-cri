@@ -1,13 +1,14 @@
 import { rem, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { toNumber } from "lodash";
 import moment from "moment";
+import { DEFAULT_MANTINE_COLOR_LIST } from "./constants";
 
 export const mobileNumberFormatter = (number: string) => {
   return `+63 (${number.slice(0, 3)}) ${number.slice(3, 6)} ${number.slice(6)}`;
 };
 
 export const formatDate = (dateValue: Date) => {
-  return moment(dateValue).format("YYYY-MM-DD");
+  return moment(dateValue).format("MM-DD-YYYY");
 };
 
 export const formatTime = (dateValue: Date) => {
@@ -77,4 +78,25 @@ export const statusToColor = (status: string) => {
     case "SCHEDULED":
       return "lime";
   }
+};
+
+export const statusToColorHex = (status: string) => {
+  switch (status) {
+    case "PAID":
+    case "COMPLETED":
+      return "#40C057";
+    case "FAILED":
+      return "#FA5252";
+    case "CANCELLED":
+      return "#868E96";
+    case "PENDING":
+      return "#228BE6";
+    case "SCHEDULED":
+      return "#82C91E";
+  }
+};
+
+export const getAvatarColor = (number: number) => {
+  const randomColor = DEFAULT_MANTINE_COLOR_LIST[number % DEFAULT_MANTINE_COLOR_LIST.length];
+  return randomColor;
 };

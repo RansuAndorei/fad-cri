@@ -87,6 +87,7 @@ CREATE TABLE appointment_table(
   appointment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   appointment_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   appointment_date_updated TIMESTAMPTZ,
+  appointment_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
   appointment_schedule TIMESTAMPTZ NOT NULL,
   appointment_status appointment_status DEFAULT 'PENDING' NOT NULL,
   appointment_is_rescheduled BOOLEAN DEFAULT FALSE NOT NULL,
@@ -304,7 +305,9 @@ BEGIN
             )
           )
         FROM public.appointment_detail_table
-        WHERE appointment_detail_appointment_id = appointment_id
+        WHERE
+          appointment_is_disabled = false
+          AND appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
       -- Aggregate payments ordered by date
       (
@@ -315,7 +318,9 @@ BEGIN
         LIMIT 1
       ) AS payment
     FROM public.appointment_table
-    WHERE appointment_id = input_appointment_id
+    WHERE
+      appointment_is_disabled = false
+      AND appointment_id = input_appointment_id
       AND appointment_user_id = input_user_id
   )
   SELECT TO_JSONB(base.*) INTO return_data FROM base;
@@ -344,6 +349,234 @@ BEGIN
   END IF;
 
   RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_appointment_status_count(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
+  input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
+  input_appointment_status_list public.appointment_status[] := ARRAY(
+    SELECT jsonb_array_elements_text((input_data->'appointmentStatusList')::JSONB)
+  );
+
+  var_status public.appointment_status;
+  var_status_count INTEGER;
+  var_data JSONB := '[]'::JSONB;
+  var_total_count INTEGER := 0;
+
+  return_data JSONB;
+BEGIN
+  FOREACH var_status IN ARRAY input_appointment_status_list LOOP
+    SELECT COUNT(*)
+    INTO var_status_count
+    FROM public.appointment_table
+    WHERE
+      appointment_is_disabled = false
+      AND appointment_status = var_status
+      AND appointment_date_created >= input_start_date
+      AND appointment_date_created <= input_end_date;
+
+    var_data := var_data || jsonb_build_array(
+      jsonb_build_object(
+        'label', var_status,
+        'value', var_status_count
+      )
+    );
+
+    var_total_count := var_total_count + var_status_count;
+  END LOOP;
+
+  return_data := jsonb_build_object(
+    'data', var_data,
+    'totalCount', var_total_count
+  );
+
+  RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_dashboard_client_list(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_offset INTEGER := (input_data->>'offset')::INTEGER;
+  input_limit INTEGER := (input_data->>'limit')::INTEGER;
+  input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
+  input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
+  return_data JSONB;
+BEGIN
+  SELECT COALESCE(
+    JSONB_AGG(
+      JSONB_BUILD_OBJECT(
+        'appointment', JSONB_BUILD_ARRAY(
+          JSONB_BUILD_OBJECT('label', 'PENDING', 'value', pending_count),
+          JSONB_BUILD_OBJECT('label', 'SCHEDULED', 'value', scheduled_count),
+          JSONB_BUILD_OBJECT('label', 'COMPLETED', 'value', completed_count),
+          JSONB_BUILD_OBJECT('label', 'CANCELLED', 'value', cancelled_count)
+        ),
+        'total', client_count,
+        'userData', JSONB_BUILD_OBJECT(
+          'userId', appointment_user_id,
+          'firstName', user_first_name,
+          'lastName', user_last_name,
+          'avatar', user_avatar
+        )
+      )
+    ),
+    '[]'::JSONB
+  )
+  INTO return_data
+  FROM (
+    SELECT
+      appointment_user_id,
+      COUNT(*) AS client_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'PENDING') AS pending_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'SCHEDULED') AS scheduled_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'COMPLETED') AS completed_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'CANCELLED') AS cancelled_count,
+      user_first_name,
+      user_last_name,
+      user_avatar
+    FROM public.appointment_table
+    INNER JOIN public.user_table
+      ON user_id = appointment_user_id
+    WHERE
+      appointment_is_disabled = FALSE
+      AND appointment_date_created BETWEEN input_start_date AND input_end_date
+    GROUP BY appointment_user_id, user_first_name, user_last_name, user_avatar
+    ORDER BY COUNT(*) DESC
+    OFFSET input_offset
+    LIMIT input_limit
+  ) AS sub;
+
+  RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_dashboard_Type_list(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_offset INTEGER := (input_data->>'offset')::INTEGER;
+  input_limit INTEGER := (input_data->>'limit')::INTEGER;
+  input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
+  input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
+  return_data JSONB;
+BEGIN
+  SELECT COALESCE(
+    JSONB_AGG(
+      JSONB_BUILD_OBJECT(
+        'type', JSONB_BUILD_ARRAY(
+          JSONB_BUILD_OBJECT('label', 'PENDING', 'value', pending_count),
+          JSONB_BUILD_OBJECT('label', 'SCHEDULED', 'value', scheduled_count),
+          JSONB_BUILD_OBJECT('label', 'COMPLETED', 'value', completed_count),
+          JSONB_BUILD_OBJECT('label', 'CANCELLED', 'value', cancelled_count)
+        ),
+        'total', type_count,
+        'typeLabel', appointment_detail_type
+      )
+    ),
+    '[]'::JSONB
+  )
+  INTO return_data
+  FROM (
+    SELECT
+      COUNT(*) AS type_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'PENDING') AS pending_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'SCHEDULED') AS scheduled_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'COMPLETED') AS completed_count,
+      COUNT(*) FILTER (WHERE appointment_status = 'CANCELLED') AS cancelled_count,
+      appointment_detail_type
+    FROM public.appointment_table
+    INNER JOIN public.appointment_detail_table
+      ON appointment_id = appointment_detail_appointment_id
+    WHERE
+      appointment_is_disabled = FALSE
+      AND appointment_date_created BETWEEN input_start_date AND input_end_date
+    GROUP BY appointment_detail_type
+    ORDER BY COUNT(*) DESC
+    OFFSET input_offset
+    LIMIT input_limit
+  ) AS sub;
+
+  RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_appointment_status_monthly_count(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_month_ranges JSONB := input_data->'monthRanges';
+
+  var_status_list TEXT[] := ARRAY['PENDING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'];
+  var_month JSONB;
+  var_status public.appointment_status;
+  var_request_status_count INTEGER;
+  var_status_data JSONB;
+  var_monthly_data JSONB := '[]'::JSONB;
+BEGIN
+  FOR var_month IN SELECT * FROM jsonb_array_elements(input_month_ranges)
+  LOOP
+    DECLARE
+      var_start_of_month TIMESTAMPTZ := (var_month->>'start_of_month')::TIMESTAMPTZ;
+      var_end_of_month TIMESTAMPTZ := (var_month->>'end_of_month')::TIMESTAMPTZ;
+      var_month_status_data JSONB := '{}'::JSONB;
+    BEGIN
+      FOREACH var_status IN ARRAY var_status_list
+      LOOP
+        SELECT COUNT(*)
+        INTO var_request_status_count
+        FROM public.appointment_table
+        WHERE
+          appointment_is_disabled = FALSE
+          AND appointment_status = var_status
+          AND appointment_date_created >= var_start_of_month
+          AND appointment_date_created <= var_end_of_month;
+
+        var_month_status_data := var_month_status_data || JSONB_BUILD_OBJECT(var_status, var_request_status_count);
+      END LOOP;
+
+      var_monthly_data := var_monthly_data || JSONB_BUILD_OBJECT(
+        'month', var_start_of_month,
+        'pending', (var_month_status_data->>'PENDING')::INTEGER,
+        'scheduled', (var_month_status_data->>'SCHEDULED')::INTEGER,
+        'completed', (var_month_status_data->>'COMPLETED')::INTEGER,
+        'cancelled', (var_month_status_data->>'CANCELLED')::INTEGER
+      );
+    END;
+  END LOOP;
+
+  RETURN var_monthly_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_appointment_total_count(input_data JSONB)
+RETURNS INTEGER
+SET search_path TO ''
+AS $$
+DECLARE
+  input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
+  input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
+
+  var_total_count INTEGER := 0;
+BEGIN
+  SELECT COUNT(*)
+  INTO var_total_count
+  FROM public.appointment_table
+  WHERE
+    appointment_is_disabled = FALSE
+    AND appointment_date_created >= input_start_date
+    AND appointment_date_created <= input_end_date;
+
+  RETURN var_total_count;
 END;
 $$ LANGUAGE plpgsql;
 

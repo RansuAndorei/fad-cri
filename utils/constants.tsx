@@ -43,3 +43,37 @@ export const APPOINTMENT_STATUS_OPTIONS = [
   { label: "Completed", value: "COMPLETED" },
   { label: "Cancelled", value: "CANCELLED" },
 ];
+
+export const DEFAULT_MANTINE_COLOR_LIST = [
+  "dark",
+  "gray",
+  "red",
+  "pink",
+  "grape",
+  "violet",
+  "indigo",
+  "blue",
+  "cyan",
+  "green",
+  "lime",
+  "yellow",
+  "orange",
+  "teal",
+];
+
+export const DEFAULT_MANTINE_COLOR_HEX_LIST = [
+  "#25262B",
+  "#868E96",
+  "#FA5252",
+  "#E64980",
+  "#BE4BDB",
+  "#7950F2",
+  "#4C6EF5",
+  "#228BE6",
+  "#15AABF",
+  "#12B886",
+  "#40C057",
+  "#82C91E",
+  "#FAB005",
+  "#FD7E14",
+];

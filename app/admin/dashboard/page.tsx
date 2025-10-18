@@ -1,6 +1,6 @@
 import AdminDashboardPage from "./components/AdminDashboardPage";
 
-const Page = () => {
+const Page = async () => {
   return <AdminDashboardPage />;
 };
 

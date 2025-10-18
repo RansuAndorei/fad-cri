@@ -20,7 +20,8 @@ export const getAppointmentList = async (
 
   let query = supabaseClient
     .from("appointment_table")
-    .select("*, appointment_detail: appointment_detail_table!inner(*)", { count: "exact" });
+    .select("*, appointment_detail: appointment_detail_table!inner(*)", { count: "exact" })
+    .eq("appointment_is_disabled", false);
   if (userId) {
     query = query.eq("appointment_user_id", userId);
   }

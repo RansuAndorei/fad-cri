@@ -76,3 +76,33 @@ export type PaymentMethod = "gcash" | "card";
 export type AppointmentTableType = AppointmentTableRow & {
   appointment_detail: AppointmentDetailTableRow;
 };
+
+export type DashboardClientType = {
+  total: number;
+  appointment: { label: string; value: number }[];
+  userData: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: string;
+  };
+};
+
+export type DashboardTypeType = {
+  total: number;
+  type: { label: string; value: number }[];
+  typeLabel: string;
+};
+
+export type MonthlySalesDataTypeWithTotal = {
+  data: StackedBarChartDataType[];
+  totalCount: number;
+};
+
+export type StackedBarChartDataType = {
+  month: string;
+  pending: number;
+  scheduled: number;
+  completed: number;
+  cancelled: number;
+};
