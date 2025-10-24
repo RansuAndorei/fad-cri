@@ -10,12 +10,9 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  // ⛔ Add ignores FIRST
   {
     ignores: ["node_modules", "dist", "utils/database.ts"],
   },
-
-  // ✅ Then extend Next.js / TS configs
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
