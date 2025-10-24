@@ -252,6 +252,24 @@ export type Database = {
           },
         ];
       };
+      schedule_slot_table: {
+        Row: {
+          schedule_slot_day: Database["public"]["Enums"]["day"];
+          schedule_slot_id: string;
+          schedule_slot_time: string;
+        };
+        Insert: {
+          schedule_slot_day: Database["public"]["Enums"]["day"];
+          schedule_slot_id?: string;
+          schedule_slot_time: string;
+        };
+        Update: {
+          schedule_slot_day?: Database["public"]["Enums"]["day"];
+          schedule_slot_id?: string;
+          schedule_slot_time?: string;
+        };
+        Relationships: [];
+      };
       system_setting_table: {
         Row: {
           system_setting_date_created: string;
@@ -320,10 +338,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      get_appointment: {
-        Args: { input_data: Json };
-        Returns: Json;
-      };
+      get_appointment: { Args: { input_data: Json }; Returns: Json };
+      get_appointment_by_admin: { Args: { input_data: Json }; Returns: Json };
       get_appointment_status_count: {
         Args: { input_data: Json };
         Returns: Json;
@@ -336,29 +352,17 @@ export type Database = {
         Args: { input_data: Json };
         Returns: number;
       };
-      get_dashboard_client_list: {
-        Args: { input_data: Json };
-        Returns: Json;
-      };
-      get_dashboard_type_list: {
-        Args: { input_data: Json };
-        Returns: Json;
-      };
-      get_email_resend_timer: {
-        Args: { input_data: Json };
-        Returns: number;
-      };
-      get_server_time: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      insert_appointment: {
-        Args: { input_data: Json };
-        Returns: string;
-      };
+      get_dashboard_client_list: { Args: { input_data: Json }; Returns: Json };
+      get_dashboard_type_list: { Args: { input_data: Json }; Returns: Json };
+      get_email_resend_timer: { Args: { input_data: Json }; Returns: number };
+      get_schedule: { Args: { input_data: Json }; Returns: Json };
+      get_server_time: { Args: never; Returns: string };
+      insert_appointment: { Args: { input_data: Json }; Returns: string };
+      seed_appointment_data: { Args: never; Returns: undefined };
     };
     Enums: {
       appointment_status: "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
+      day: "SUNDAY" | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY";
       finger: "PINKY" | "RING" | "MIDDLE" | "INDEX" | "THUMB";
       gender: "MALE" | "FEMALE" | "OTHER";
       hand: "LEFT" | "RIGHT";
@@ -489,6 +493,7 @@ export const Constants = {
   public: {
     Enums: {
       appointment_status: ["PENDING", "SCHEDULED", "COMPLETED", "CANCELLED"],
+      day: ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
       finger: ["PINKY", "RING", "MIDDLE", "INDEX", "THUMB"],
       gender: ["MALE", "FEMALE", "OTHER"],
       hand: ["LEFT", "RIGHT"],

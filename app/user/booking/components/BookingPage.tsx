@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsLoading } from "@/stores/useLoadingStore";
-import { BookingFormValues } from "@/utils/types";
+import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
 import { Button, Container, Group, Stepper, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconCalendarPlus } from "@tabler/icons-react";
@@ -16,9 +16,11 @@ import Summary from "./Summary";
 
 type Props = {
   appointmentTypeOptions: string[];
+  scheduleSlot: ScheduleSlotTableRow[];
+  maxScheduleDate: string;
 };
 
-const BookingPage = ({ appointmentTypeOptions }: Props) => {
+const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: Props) => {
   const isLoading = useIsLoading();
 
   const [active, setActive] = useState(0);
@@ -40,6 +42,7 @@ const BookingPage = ({ appointmentTypeOptions }: Props) => {
       inspoRight: [null, null, null, null, null],
       scheduleDate: "",
       scheduleTime: "",
+      availableSlot: [],
     },
   });
   const { trigger } = methods;
@@ -91,7 +94,7 @@ const BookingPage = ({ appointmentTypeOptions }: Props) => {
               description="Date and Time"
               allowStepSelect={shouldAllowSelectStep(2)}
             >
-              <Schedule />
+              <Schedule scheduleSlot={scheduleSlot} maxScheduleDate={maxScheduleDate} />
             </Stepper.Step>
 
             <Stepper.Step

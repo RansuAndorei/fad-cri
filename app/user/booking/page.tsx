@@ -1,9 +1,11 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getAppointmentType } from "./actions";
+import { getAppointmentType, getMaxScheduleDate, getScheduleSlot } from "./actions";
 import BookingPage from "./components/BookingPage";
+import moment from "moment";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -16,16 +18,24 @@ const Page = async () => {
   }
 
   let appointmentTypeOptions: string[] = [];
+  let scheduleSlot: ScheduleSlotTableRow[] = [];
+  let maxDateNumberOfMonths: number = 5;
+  let maxScheduleDate: string = "";
   try {
-    appointmentTypeOptions = await getAppointmentType(supabaseClient);
+    [appointmentTypeOptions, scheduleSlot, maxDateNumberOfMonths] = await Promise.all([
+      getAppointmentType(supabaseClient),
+      getScheduleSlot(supabaseClient),
+      getMaxScheduleDate(supabaseClient),
+    ]);
+
+    maxScheduleDate = moment().add(maxDateNumberOfMonths, "months").format();
   } catch (e) {
     if (isError(e)) {
-      const pathname = "/user/booking";
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
-          error_url: pathname,
-          error_function: "getAppointmentType",
+          error_url: "/user/booking",
+          error_function: "fetchBookingInitialData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -34,7 +44,13 @@ const Page = async () => {
     redirect("/500");
   }
 
-  return <BookingPage appointmentTypeOptions={appointmentTypeOptions} />;
+  return (
+    <BookingPage
+      appointmentTypeOptions={appointmentTypeOptions}
+      scheduleSlot={scheduleSlot}
+      maxScheduleDate={maxScheduleDate}
+    />
+  );
 };
 
 export default Page;

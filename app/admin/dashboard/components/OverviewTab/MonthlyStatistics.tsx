@@ -1,4 +1,4 @@
-import { formatDate, statusToColorHex } from "@/utils/functions";
+import { formatWordDate, statusToColorHex } from "@/utils/functions";
 import { MonthlySalesDataTypeWithTotal } from "@/utils/types";
 import { Box, Center, Flex, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconChartBar, IconSquareRoundedFilled } from "@tabler/icons-react";
@@ -56,8 +56,8 @@ const MonthlyStatistics = ({ startDateFilter, endDateFilter, monthlyChartData }:
     setChartData(newChartData);
   };
 
-  const startDate = formatDate(startDateFilter ?? new Date());
-  const endDate = formatDate(endDateFilter ?? new Date());
+  const startDate = formatWordDate(startDateFilter ?? new Date());
+  const endDate = formatWordDate(endDateFilter ?? new Date());
   const xAxisChartLabel = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
 
   useEffect(() => {

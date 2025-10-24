@@ -77,3 +77,13 @@ export const DEFAULT_MANTINE_COLOR_HEX_LIST = [
   "#FAB005",
   "#FD7E14",
 ];
+
+export const DAYS_OF_THE_WEEK = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];

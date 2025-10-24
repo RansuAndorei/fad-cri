@@ -1,5 +1,16 @@
 "use client";
-import { Button, Checkbox, Container, Group, List, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  Button,
+  Checkbox,
+  Container,
+  Flex,
+  Group,
+  List,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import {
   IconAlertTriangle,
   IconExclamationCircle,
@@ -21,10 +32,15 @@ const BookingInfoPage = () => {
 
   return (
     <Container size="md" py="xl">
-      <Group mb="md" wrap="nowrap">
-        <IconSparkles color="#fab005" />
-        <Title order={2}>Before You Book: Policy and Guidelines</Title>
-      </Group>
+      <Flex align="center" justify="space-between" wrap="wrap" mb="md">
+        <Group wrap="nowrap">
+          <IconSparkles color="#fab005" />
+          <Title order={2}>Before You Book: Policy and Guidelines</Title>
+        </Group>
+        <Button variant="light" onClick={() => router.push("/user/appointment")}>
+          View My Appointments
+        </Button>
+      </Flex>
       <Paper withBorder p="lg" radius="md" shadow="lg">
         <Stack gap="md">
           <Group>

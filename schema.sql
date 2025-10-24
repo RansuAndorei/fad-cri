@@ -47,6 +47,16 @@ CREATE TYPE payment_status AS ENUM (
   'CANCELLED'
 );
 
+CREATE TYPE day AS ENUM (
+  'SUNDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY'
+);
+
 CREATE TABLE user_table(
   user_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   user_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
@@ -155,9 +165,13 @@ CREATE TABLE payment_table (
   payment_appointment_id UUID REFERENCES appointment_table(appointment_id) NOT NULL
 );
 
+CREATE TABLE schedule_slot_table (
+  schedule_slot_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  schedule_slot_day day NOT NULL,
+  schedule_slot_time TIME WITH TIME ZONE NOT NULL,
 
-INSERT INTO system_setting_table (system_setting_key, system_setting_value)
-VALUES ('BOOKING_FEE', '500.00');
+  UNIQUE(schedule_slot_day, schedule_slot_time)
+);
 
 CREATE OR REPLACE FUNCTION get_server_time()
 RETURNS TIMESTAMPTZ
@@ -290,7 +304,6 @@ BEGIN
   WITH base AS (
     SELECT
       appointment_table.*,
-      -- Aggregate appointment details and nested nail designs
       (
         SELECT TO_JSONB(appointment_detail_table.*)
           || JSONB_BUILD_OBJECT(
@@ -309,7 +322,6 @@ BEGIN
           appointment_is_disabled = false
           AND appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
-      -- Aggregate payments ordered by date
       (
         SELECT TO_JSONB(payment_table.*)
         FROM public.payment_table
@@ -339,13 +351,70 @@ BEGIN
     SET payment_status = 'CANCELLED'
     WHERE payment_id = var_latest_payment_id;
 
-    -- Reflect change in return_data
     return_data := JSONB_SET(
       return_data,
       '{payment, payment_status}',
       '"CANCELLED"',
       false
     );
+  END IF;
+
+  RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_appointment_by_admin(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_appointment_id UUID := (input_data->>'appointmentId')::UUID;
+
+  var_latest_payment_id UUID;
+  var_latest_payment_status TEXT;
+  var_latest_payment_date TIMESTAMPTZ; 
+
+  return_data JSONB;
+BEGIN
+  WITH base AS (
+    SELECT
+      appointment_table.*,
+      (
+        SELECT TO_JSONB(appointment_detail_table.*)
+          || JSONB_BUILD_OBJECT(
+            'appointment_nail_design',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(TO_JSONB(appointment_nail_design_table.*))
+                FROM public.appointment_nail_design_table
+                WHERE appointment_nail_design_appointment_detail_id = appointment_detail_id
+              ),
+              '[]'::JSONB
+            )
+          )
+        FROM public.appointment_detail_table
+        WHERE
+          appointment_is_disabled = false
+          AND appointment_detail_appointment_id = appointment_id
+      ) AS appointment_detail,
+      (
+        SELECT TO_JSONB(payment_table.*)
+        FROM public.payment_table
+        WHERE payment_appointment_id = appointment_id
+        ORDER BY payment_date_created DESC
+        LIMIT 1
+      ) AS payment
+    FROM public.appointment_table
+    WHERE
+      appointment_is_disabled = false
+      AND appointment_id = input_appointment_id
+  )
+  SELECT TO_JSONB(base.*) INTO return_data FROM base;
+
+  IF (return_data->'payment') IS NOT NULL THEN
+    var_latest_payment_id := (return_data->'payment'->>'payment_id')::UUID;
+    var_latest_payment_status := (return_data->'payment'->>'payment_status')::TEXT;
+    var_latest_payment_date := (return_data->'payment'->>'payment_date_created')::TIMESTAMPTZ;
   END IF;
 
   RETURN return_data;
@@ -580,6 +649,53 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION get_schedule(input_data JSONB)
+RETURNS JSONB
+SET search_path TO ''
+AS $$
+DECLARE
+  input_start_date TIMESTAMPTZ := (input_data->>'startDate')::TIMESTAMPTZ;
+  input_end_date TIMESTAMPTZ := (input_data->>'endDate')::TIMESTAMPTZ;
+
+  return_data JSONB;
+BEGIN
+  WITH scheduleData AS (
+    SELECT *
+    FROM public.appointment_table
+    INNER JOIN public.user_table
+      ON user_id = appointment_user_id
+      AND user_is_disabled = false
+    WHERE
+      appointment_is_disabled = false
+      AND appointment_schedule >= input_start_date
+      AND appointment_schedule <= input_end_date
+      AND appointment_status IN ('SCHEDULED', 'COMPLETED')
+    ORDER BY appointment_schedule
+  )
+  SELECT JSONB_AGG(
+    JSONB_BUILD_OBJECT(
+      'appointment_id', appointment_id,
+      'appointment_date_created', appointment_date_created,
+      'appointment_date_updated', appointment_date_updated,
+      'appointment_schedule', appointment_schedule,
+      'appointment_status', appointment_status,
+      'appointment_is_rescheduled', appointment_is_rescheduled,
+      'appointment_user', JSONB_BUILD_OBJECT(
+        'user_id', user_id,
+        'user_first_name', user_first_name,
+        'user_last_name', user_last_name,
+        'user_email', user_email,
+        'user_avatar', user_avatar
+      )
+    )
+  )
+  FROM scheduleData
+  INTO return_data;
+
+  RETURN COALESCE(return_data, '[]'::JSONB);
+END;
+$$ LANGUAGE plpgsql;
+
 ALTER TABLE user_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE error_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE email_resend_table DISABLE ROW LEVEL SECURITY;
@@ -589,6 +705,12 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO POSTGRES;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
 
+
+INSERT INTO system_setting_table (system_setting_key, system_setting_value)
+VALUES 
+('BOOKING_FEE', '500.00'),
+('MAX_SCHEDULE_DATE', '3');
+
 INSERT INTO appointment_type_table (appointment_type_label) 
 VALUES
 ('Gel Polish'),
@@ -596,3 +718,39 @@ VALUES
 ('BIAB'),
 ('Polygel Overlay'),
 ('Gel-X Extension');
+
+INSERT INTO user_table (user_id, user_first_name, user_last_name, user_email, user_phone_number, user_gender, user_birth_date) VALUES
+('554fa57b-00a6-457e-9361-287aa7694807', 'Admin', 'Admin', 'admin@gmail.com', '09999999999', 'MALE', '01-01-2000'),
+('1d7645ed-3372-485e-9237-de3a8cd5fece', 'Dolor', 'Sit', 'dolorsit@gmail.com', '09123456789', 'FEMALE', '04-12-2000'),
+('47dac5cd-cf2e-4e28-89d1-2f8ede52d30e', 'Jane', 'Doe', 'janedoe@gmail.com', '0956325784', 'FEMALE', '12-11-2001'),
+('e2f572f7-1715-4ce8-9a1b-8c70fbaf3765', 'Lorem', 'Ipsum', 'loremipsum@gmail.com', '09659875121', 'FEMALE', '08-23-1999'),
+('fa9d8410-f565-483b-ae21-e6ba882ee59c', 'John', 'Doe', 'johndoe@gmail.com', '09563269796', 'MALE', '06-29-2002');
+
+INSERT INTO schedule_slot_table (schedule_slot_day, schedule_slot_time) VALUES
+('SUNDAY', '12:00:00+08'),
+('SUNDAY', '15:00:00+08'),
+('SUNDAY', '18:00:00+08'),
+
+('MONDAY', '12:00:00+08'),
+('MONDAY', '15:00:00+08'),
+('MONDAY', '18:00:00+08'),
+
+('TUESDAY', '12:00:00+08'),
+('TUESDAY', '15:00:00+08'),
+('TUESDAY', '18:00:00+08'),
+
+('WEDNESDAY', '12:00:00+08'),
+('WEDNESDAY', '15:00:00+08'),
+('WEDNESDAY', '18:00:00+08'),
+
+('THURSDAY', '12:00:00+08'),
+('THURSDAY', '15:00:00+08'),
+('THURSDAY', '18:00:00+08'),
+
+('FRIDAY', '12:00:00+08'),
+('FRIDAY', '15:00:00+08'),
+('FRIDAY', '18:00:00+08'),
+
+('SATURDAY', '12:00:00+08'),
+('SATURDAY', '15:00:00+08'),
+('SATURDAY', '18:00:00+08');

@@ -30,6 +30,10 @@ export type PaymentTableRow = Database["public"]["Tables"]["payment_table"]["Row
 export type PaymentTableInsert = Database["public"]["Tables"]["payment_table"]["Insert"];
 export type PaymentTableUpdate = Database["public"]["Tables"]["payment_table"]["Update"];
 
+export type ScheduleSlotTableRow = Database["public"]["Tables"]["schedule_slot_table"]["Row"];
+export type ScheduleSlotTableInsert = Database["public"]["Tables"]["schedule_slot_table"]["Insert"];
+export type ScheduleSlotTableUpdate = Database["public"]["Tables"]["schedule_slot_table"]["Update"];
+
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];
 
@@ -62,6 +66,7 @@ export type BookingFormValues = {
   inspoRight: (File | null)[];
   scheduleDate: string;
   scheduleTime: string;
+  availableSlot: string[];
 };
 
 export type AppointmentType = AppointmentTableRow & {
@@ -105,4 +110,8 @@ export type StackedBarChartDataType = {
   scheduled: number;
   completed: number;
   cancelled: number;
+};
+
+export type ScheduleType = AppointmentTableRow & {
+  appointment_user: UserTableRow;
 };

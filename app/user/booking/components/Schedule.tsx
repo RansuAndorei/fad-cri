@@ -1,24 +1,88 @@
-import { BookingFormValues } from "@/utils/types";
-import { Paper, Select, Stack, Title } from "@mantine/core";
+import { insertError } from "@/app/actions";
+import { useUserData } from "@/stores/useUserStore";
+import { formatWordDate } from "@/utils/functions";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
+import { Loader, Paper, Select, Stack, Title } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
+import { notifications } from "@mantine/notifications";
+import { isError, toUpper } from "lodash";
+import moment from "moment";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
+import { getDateAppointments } from "../actions";
 
-const Schedule = () => {
+type Props = {
+  scheduleSlot: ScheduleSlotTableRow[];
+  maxScheduleDate: string;
+};
+
+const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
+  const supabaseClient = createSupabaseBrowserClient();
+  const pathname = usePathname();
+  const userData = useUserData();
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     formState: { errors },
+    watch,
+    setValue,
   } = useFormContext<BookingFormValues>();
 
-  const timeOptions = Array.from({ length: 20 }, (_, i) => {
-    const hour = 10 + Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    const ampmHour = hour > 12 ? hour - 12 : hour;
-    const period = hour >= 12 ? "PM" : "AM";
-    return {
-      value: `${hour.toString().padStart(2, "0")}:${minute}`,
-      label: `${ampmHour}:${minute} ${period}`,
-    };
-  });
+  const watchDate = watch("scheduleDate");
+  const availableSlot = watch("availableSlot") || [];
+
+  const handleDateChange = async (value: string) => {
+    try {
+      setIsLoading(true);
+      const appointmentList = await getDateAppointments(supabaseClient, { date: value });
+
+      const dayName = moment(value).format("dddd");
+      const scheduleSlotForTheDay = scheduleSlot.filter(
+        (slot) => slot.schedule_slot_day === toUpper(dayName),
+      );
+
+      const availableSlot = scheduleSlotForTheDay
+        .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
+        .map((value) => moment(value.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"));
+
+      setValue("availableSlot", availableSlot);
+      if (availableSlot.length) {
+        setValue("scheduleDate", value);
+      } else {
+        setValue("scheduleDate", "");
+        setValue("availableSlot", []);
+        notifications.show({
+          message: `${formatWordDate(new Date(value))} is fully booked. Please select another date.`,
+          color: "orange",
+        });
+      }
+    } catch (e) {
+      setValue("scheduleDate", "");
+      setValue("availableSlot", []);
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "fetchOverviewData",
+            error_user_email: userData?.email,
+            error_user_id: userData?.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      setValue("scheduleTime", "");
+    }
+  };
 
   return (
     <Paper p="xl" shadow="xl" withBorder>
@@ -33,13 +97,21 @@ const Schedule = () => {
           rules={{ required: "Date is required" }}
           render={({ field }) => (
             <DatePickerInput
+              {...field}
               label="Date"
               placeholder="Pick a date"
-              {...field}
               error={errors.scheduleDate?.message}
-              value={field.value || null}
               required
-              minDate={new Date()}
+              minDate={moment().format()}
+              value={field.value || null}
+              onChange={(value) => {
+                if (value) {
+                  handleDateChange(value);
+                }
+              }}
+              disabled={isLoading}
+              rightSection={isLoading ? <Loader size={14} /> : null}
+              maxDate={maxScheduleDate}
             />
           )}
         />
@@ -50,13 +122,16 @@ const Schedule = () => {
           rules={{ required: "Time is required" }}
           render={({ field }) => (
             <Select
+              {...field}
               label="Time"
               placeholder="Pick a time"
-              data={timeOptions}
-              {...field}
+              data={availableSlot}
               error={errors.scheduleTime?.message}
               searchable
               required
+              disabled={!Boolean(watchDate) || isLoading}
+              value={field.value || null}
+              rightSection={isLoading ? <Loader size={14} /> : null}
             />
           )}
         />
