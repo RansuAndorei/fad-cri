@@ -1,5 +1,5 @@
-import { AppleStoreIcon } from "@/public/icons/AppleStoreIcon";
-import { GooglePlayIcon } from "@/public/icons/GooglePlayIcon";
+import { AppleStoreIcon } from "@/utils/icons/AppleStoreIcon";
+import { GooglePlayIcon } from "@/utils/icons/GooglePlayIcon";
 
 import { Button, Center, Flex, Stack, Text } from "@mantine/core";
 

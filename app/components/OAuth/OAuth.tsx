@@ -1,6 +1,6 @@
 import { insertError } from "@/app/actions";
-import { FacebookIcon } from "@/public/icons/FacebookIcon";
-import { GoogleIcon } from "@/public/icons/GoogleIcon";
+import { FacebookIcon } from "@/utils/icons/FacebookIcon";
+import { GoogleIcon } from "@/utils/icons/GoogleIcon";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { Button, Divider, Flex } from "@mantine/core";
 import { notifications } from "@mantine/notifications";

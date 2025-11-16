@@ -13,7 +13,7 @@ export function GooglePlayIcon(props: React.ComponentPropsWithoutRef<"svg">) {
       <g id="SVGRepo_iconCarrier">
         <mask
           id="mask0_87_8320"
-          style={{ maskType: "alpha" }} 
+          style={{ maskType: "alpha" }}
           maskUnits="userSpaceOnUse"
           x="7"
           y="3"
