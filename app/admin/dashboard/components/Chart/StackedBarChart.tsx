@@ -54,19 +54,19 @@ const StackedBarChart: React.FC<StackedBarChartProps> = ({ data, xAxisLabel, yAx
       {
         ...defaultProps,
         label: "Scheduled",
-        data: data.map((d) => d.completed),
+        data: data.map((d) => d.scheduled),
         backgroundColor: statusToColorHex("SCHEDULED"),
       },
       {
         ...defaultProps,
         label: "Completed",
-        data: data.map((d) => d.pending),
+        data: data.map((d) => d.completed),
         backgroundColor: statusToColorHex("COMPLETED"),
       },
       {
         ...defaultProps,
         label: "Cancelled",
-        data: data.map((d) => d.pending),
+        data: data.map((d) => d.cancelled),
         backgroundColor: statusToColorHex("CANCELLED"),
       },
     ],
