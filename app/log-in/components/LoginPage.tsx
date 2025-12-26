@@ -75,26 +75,26 @@ const LoginPage = () => {
         password: data.password,
       });
 
-      if (error && error.message?.toLowerCase().includes("invalid login credentials")) {
-        notifications.show({
-          message: "Invalid login credentials.",
-          color: "red",
-        });
-        setIsLoading(false);
-        return;
-      } else if (
-        error &&
-        error?.message.toLowerCase().includes("authapierror: email not confirmed")
-      ) {
-        notifications.show({
-          message:
-            "You need to verify your email first before proceeding to formsly. If you don't received the verification email, you can try to sign up again",
-          color: "orange",
-          autoClose: false,
-        });
-        setIsLoading(false);
-        return;
-      } else if (error) throw error;
+      if (error) {
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
+          notifications.show({
+            message: "Invalid login credentials.",
+            color: "red",
+          });
+          setIsLoading(false);
+          return;
+        } else if (error.message.toLowerCase().includes("authapierror: email not confirmed")) {
+          notifications.show({
+            message:
+              "You need to verify your email first before proceeding to formsly. If you don't received the verification email, you can try to sign up again",
+            color: "orange",
+            autoClose: false,
+          });
+          setIsLoading(false);
+          return;
+        } else throw error;
+      }
+
       notifications.show({
         message: "Sign in successful.",
         color: "green",
