@@ -3,12 +3,14 @@
 import { useUserActions } from "@/stores/useUserStore";
 import { supabaseClient } from "@/utils/supabase/single-client";
 import { User } from "@supabase/supabase-js";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function useAuthListener() {
   const { setUserData, setUserProfile, setIsLoading, reset } = useUserActions();
   const mounted = useRef(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     mounted.current = true;
@@ -20,11 +22,24 @@ export function useAuthListener() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (mounted.current) setUserProfile(profile);
+      if (mounted.current) {
+        setUserProfile(profile);
+
+        const currentPath = window.location.pathname;
+        if (currentPath.includes("log-in")) {
+          router.push("/user/onboarding");
+        }
+      }
     };
 
     const init = async () => {
-      setIsLoading(true);
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath.includes("log-in");
+
+      // Only show loading if NOT on login page
+      if (!isLoginPage) {
+        setIsLoading(true);
+      }
 
       const { data } = await supabaseClient.auth.getSession();
       const user = data.session?.user ?? null;
@@ -33,13 +48,15 @@ export function useAuthListener() {
 
       if (user) {
         setUserData(user);
-        setCurrentUserId(user.id);
+        currentUserIdRef.current = user.id;
         await fetchUserProfile(user);
       } else {
         reset();
       }
 
-      setIsLoading(false);
+      if (!isLoginPage) {
+        setIsLoading(false);
+      }
     };
 
     init();
@@ -47,30 +64,36 @@ export function useAuthListener() {
     const { data: subscription } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
       const user = session?.user ?? null;
 
-      if (event === "SIGNED_IN" && user?.id === currentUserId) {
+      if (event === "SIGNED_IN" && user?.id === currentUserIdRef.current) {
         return;
       }
       if (event === "TOKEN_REFRESHED") {
         return;
       }
 
-      if (mounted.current) setIsLoading(true);
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath.includes("log-in");
+
+      if (mounted.current && !isLoginPage) {
+        setIsLoading(true);
+      }
 
       if (user) {
         setUserData(user);
-        setCurrentUserId(user.id);
+        currentUserIdRef.current = user.id;
         await fetchUserProfile(user);
       } else {
         reset();
-        setCurrentUserId(null);
+        currentUserIdRef.current = null;
       }
-
-      if (mounted.current) setIsLoading(false);
+      if (mounted.current && !isLoginPage) {
+        setIsLoading(false);
+      }
     });
 
     return () => {
       mounted.current = false;
       subscription.subscription.unsubscribe();
     };
-  }, [setUserData, setUserProfile, reset, setIsLoading, currentUserId]);
+  }, [setUserData, setUserProfile, reset, setIsLoading, router]);
 }

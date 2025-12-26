@@ -163,7 +163,6 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
       const appointmentData = await getAppointmentDatabyAdmin(supabaseClient, {
         appointmentId,
       });
-      console.log(appointmentData);
       setSelectedAppointment({ ...appointmentData, appointment_user: user });
       open();
     } catch (e) {
