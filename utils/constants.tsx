@@ -1,10 +1,17 @@
 import {
+  IconBell,
+  IconCalendar,
   IconCalendarCheck,
+  IconClock,
+  IconCurrencyPeso,
   IconHome,
   IconIdBadge,
+  IconLayoutDashboard,
   IconListDetails,
+  IconMapPin,
   IconPhoto,
   IconQuestionMark,
+  IconSettings,
   IconSparkles,
 } from "@tabler/icons-react";
 
@@ -93,4 +100,50 @@ export const LATE_FEES_LABEL = [
   "21-39 minutes",
   "40 minutes to 1 hour",
   "more than 1 hour",
+];
+
+export const ADMIN_NAVIGATION_ITEMS = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: IconLayoutDashboard,
+    path: `/admin/dashboard`,
+  },
+  {
+    id: "schedule",
+    label: "Schedule",
+    icon: IconCalendar,
+    path: `/admin/schedule`,
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: IconSettings,
+    submenu: [
+      {
+        id: "financial-settings",
+        label: "Financial",
+        icon: IconCurrencyPeso,
+        path: `/admin/settings/financial`,
+      },
+      {
+        id: "scheduling",
+        label: "Scheduling",
+        icon: IconClock,
+        path: `/admin/settings/scheduling`,
+      },
+      {
+        id: "location-and-contact",
+        label: "Location & Contact",
+        icon: IconMapPin,
+        path: `/admin/settings/location-and-contact`,
+      },
+      {
+        id: "reminders",
+        label: "Reminders",
+        icon: IconBell,
+        path: `/admin/settings/reminder`,
+      },
+    ],
+  },
 ];

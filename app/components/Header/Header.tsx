@@ -4,13 +4,14 @@ import { insertError } from "@/app/actions";
 
 import { useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData } from "@/stores/useUserStore";
-import { TAB_LIST } from "@/utils/constants";
+import { ADMIN_NAVIGATION_ITEMS, TAB_LIST } from "@/utils/constants";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Box,
   Burger,
   Button,
   Center,
+  Collapse,
   Divider,
   Drawer,
   Flex,
@@ -18,16 +19,19 @@ import {
   NavLink,
   ScrollArea,
   Stack,
+  Text,
   UnstyledButton,
+  useComputedColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconCalendar, IconLogout, IconSettings } from "@tabler/icons-react";
+import { IconCalendar, IconChevronDown, IconLogout, IconSettings } from "@tabler/icons-react";
 import { isError, startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProfileDropdown from "../ProfileDropdown/ProfileDropdown";
 import ColorSchemeToggle from "./ColorSchemeToggle";
 import classes from "./Header.module.css";
@@ -38,12 +42,27 @@ const Header = () => {
   const pathname = usePathname();
   const userData = useUserData();
   const { setIsLoading } = useLoadingActions();
+  const theme = useMantineTheme();
+  const computedColorScheme = useComputedColorScheme();
+
+  const [activeMenu, setActiveMenu] = useState<string>("");
 
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [navbarOpened, { toggle: toggleNavbar, close: closeNavbar }] = useDisclosure(false);
 
+  const isDark = computedColorScheme === "dark";
   const isAdmin = userData?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const isOnboarding = pathname === "/user/onboarding";
   const isNotAdminRoute = !pathname.includes("/admin");
+
+  useEffect(() => {
+    if (drawerOpened) {
+      closeDrawer();
+    }
+    if (navbarOpened) {
+      closeNavbar();
+    }
+  }, [pathname]);
 
   const handleLogout = async () => {
     if (!userData) return;
@@ -73,21 +92,22 @@ const Header = () => {
     }
   };
 
-  useEffect(() => {
-    if (drawerOpened) {
-      closeDrawer();
-    }
-  }, [pathname]);
+  const toggleSubmenu = (menuId: string) => {
+    setActiveMenu(activeMenu === menuId ? "" : menuId);
+  };
 
   return (
     <Box>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           <Flex align="center" justify="center" gap="xs">
+            {!isNotAdminRoute ? (
+              <Burger opened={navbarOpened} onClick={toggleNavbar} hiddenFrom="md" size={16} />
+            ) : null}
+
             <UnstyledButton component={Link} href="/" className={classes.logo}>
               <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
             </UnstyledButton>
-
             <ColorSchemeToggle />
           </Flex>
 
@@ -134,6 +154,7 @@ const Header = () => {
         padding="md"
         hiddenFrom="sm"
         zIndex={9999}
+        position="right"
       >
         <ScrollArea h="calc(100vh - 80px)" mx="-md">
           <Center>
@@ -145,7 +166,7 @@ const Header = () => {
           </Center>
           <Divider my="sm" />
 
-          <Stack gap="xs">
+          <Stack gap="xs" px="xs">
             {TAB_LIST.map(({ label, icon }) => {
               const path = toLower(label) === "home" ? "/" : `/${label.split(" ").join("-")}`;
               return (
@@ -206,6 +227,123 @@ const Header = () => {
               </Button>
             </Stack>
           ) : null}
+        </ScrollArea>
+      </Drawer>
+
+      <Drawer
+        opened={navbarOpened}
+        onClose={closeNavbar}
+        size="100%"
+        padding="md"
+        hiddenFrom="md"
+        zIndex={9999}
+      >
+        <ScrollArea h="calc(100vh - 80px)" mx="-md">
+          <Center>
+            <Flex align="center" justify="center">
+              <UnstyledButton component={Link} href="/">
+                <Image alt="logo" width={55} height={50} src={"/images/logo.png"} priority />
+              </UnstyledButton>
+            </Flex>
+          </Center>
+          <Divider my="sm" />
+
+          <ScrollArea offsetScrollbars={false} scrollbarSize={10}>
+            <Box h="fit-content">
+              <Stack gap={0} align="start" w="100%" p="xs">
+                {ADMIN_NAVIGATION_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const hasSubmenu = item.submenu && item.submenu.length > 0;
+                  const isActive = activeMenu === item.id;
+                  const isLink = Boolean(item.path);
+
+                  return (
+                    <Box key={item.id} w="100%">
+                      <UnstyledButton
+                        component={isLink ? Link : undefined}
+                        href={item.path || "#"}
+                        onClick={() => (hasSubmenu ? toggleSubmenu(item.id) : null)}
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "16px",
+                          borderRadius: "4px",
+                          color: isDark ? theme.colors.dark[0] : theme.colors.gray[7],
+                          backgroundColor: "transparent",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = isDark
+                            ? theme.colors.dark[6]
+                            : theme.colors.gray[1];
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <Group justify="space-between">
+                          <Group>
+                            <Icon size={18} />
+                            <Text size="sm" fw={500}>
+                              {item.label}
+                            </Text>
+                          </Group>
+                          {hasSubmenu && (
+                            <IconChevronDown
+                              size={14}
+                              style={{
+                                transform: isActive ? "rotate(180deg)" : "rotate(0deg)",
+                                transition: "transform 200ms ease",
+                              }}
+                            />
+                          )}
+                        </Group>
+                      </UnstyledButton>
+
+                      {hasSubmenu && (
+                        <Collapse in={isActive}>
+                          <Stack gap={2} pl="lg" mt={4}>
+                            {item.submenu?.map((subItem) => {
+                              const SubIcon = subItem.icon;
+
+                              return (
+                                <UnstyledButton
+                                  component={Link}
+                                  href={subItem.path}
+                                  key={subItem.id}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    padding: "8px",
+                                    borderRadius: "4px",
+                                    color: isDark ? theme.colors.dark[2] : theme.colors.gray[6],
+                                    fontSize: "14px",
+                                    backgroundColor: "transparent",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = isDark
+                                      ? theme.colors.dark[6]
+                                      : theme.colors.gray[1];
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  <Group>
+                                    <SubIcon size={16} />
+                                    <Text size="sm">{subItem.label}</Text>
+                                  </Group>
+                                </UnstyledButton>
+                              );
+                            })}
+                          </Stack>
+                        </Collapse>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+          </ScrollArea>
         </ScrollArea>
       </Drawer>
     </Box>

@@ -202,8 +202,8 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
 
   return (
     <Stack w="100%" align="center" pos="relative">
-      <Flex w="100%" align="flex-start" justify={{ xl: "space-between" }} gap="md" wrap="wrap">
-        <Box w={{ base: "100%", sm: 360 }} h={470} pos="relative">
+      <Flex w="100%" align="flex-start" justify="center" gap="md" wrap="wrap">
+        <Box h={470} pos="relative" style={{ flex: 1 }} miw={300}>
           <LoadingOverlay
             visible={isFetchingTotalAppointments}
             loaderProps={{ type: "bars" }}
@@ -215,7 +215,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
             totalAppointmentCount={totalAppointmentCount}
           />
         </Box>
-        <Box w={{ base: "100%", sm: 300 }} h={470} pos="relative">
+        <Box h={470} pos="relative" style={{ flex: 1 }} miw={300}>
           <LoadingOverlay
             visible={isFetchingClient}
             loaderProps={{ type: "bars" }}
@@ -229,7 +229,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
             setClientOffset={setClientOffset}
           />
         </Box>
-        <Box w={{ base: "100%", sm: 300 }} h={470} pos="relative">
+        <Box h={470} pos="relative" style={{ flex: 1 }} miw={300}>
           <LoadingOverlay
             visible={isFetchingType}
             loaderProps={{ type: "bars" }}
@@ -244,20 +244,19 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
           />
         </Box>
       </Flex>
-      <Flex w="100%" align="flex-start" gap="xl" wrap="wrap">
-        <Box style={{ flex: 1 }} w="100%" pos="relative">
-          <LoadingOverlay
-            visible={isFetchingMonthlyStatistics}
-            loaderProps={{ type: "bars" }}
-            overlayProps={{ blur: 0, opacity: 0.5 }}
-          />
-          <MonthlyStatistics
-            monthlyChartData={monthlyChartData}
-            startDateFilter={startDateFilter}
-            endDateFilter={endDateFilter}
-          />
-        </Box>
-      </Flex>
+
+      <Box style={{ flex: 1 }} w="100%" pos="relative">
+        <LoadingOverlay
+          visible={isFetchingMonthlyStatistics}
+          loaderProps={{ type: "bars" }}
+          overlayProps={{ blur: 0, opacity: 0.5 }}
+        />
+        <MonthlyStatistics
+          monthlyChartData={monthlyChartData}
+          startDateFilter={startDateFilter}
+          endDateFilter={endDateFilter}
+        />
+      </Box>
     </Stack>
   );
 };

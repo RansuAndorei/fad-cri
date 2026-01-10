@@ -1,5 +1,6 @@
 "use client";
 
+import { ADMIN_NAVIGATION_ITEMS } from "@/utils/constants";
 import {
   Box,
   Collapse,
@@ -11,18 +12,7 @@ import {
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import {
-  Icon,
-  IconBell,
-  IconCalendar,
-  IconChevronDown,
-  IconClock,
-  IconCurrencyPeso,
-  IconLayoutDashboard,
-  IconMapPin,
-  IconProps,
-  IconSettings,
-} from "@tabler/icons-react";
+import { Icon, IconChevronDown, IconProps } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ForwardRefExoticComponent, RefAttributes, useState } from "react";
@@ -39,52 +29,6 @@ type NavigationItem = {
     path: string;
   }[];
 };
-
-const navigationItems: NavigationItem[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: IconLayoutDashboard,
-    path: `/admin/dashboard`,
-  },
-  {
-    id: "schedule",
-    label: "Schedule",
-    icon: IconCalendar,
-    path: `/admin/schedule`,
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: IconSettings,
-    submenu: [
-      {
-        id: "financial-settings",
-        label: "Financial",
-        icon: IconCurrencyPeso,
-        path: `/admin/settings/financial`,
-      },
-      {
-        id: "scheduling",
-        label: "Scheduling",
-        icon: IconClock,
-        path: `/admin/settings/scheduling`,
-      },
-      {
-        id: "location-and-contact",
-        label: "Location & Contact",
-        icon: IconMapPin,
-        path: `/admin/settings/location-and-contact`,
-      },
-      {
-        id: "reminders",
-        label: "Reminders",
-        icon: IconBell,
-        path: `/admin/settings/reminder`,
-      },
-    ],
-  },
-];
 
 const AdminNavbar = () => {
   const pathname = usePathname();
@@ -221,13 +165,14 @@ const AdminNavbar = () => {
     <Box
       px="md"
       py="lg"
-      w={{ sm: 200, lg: 300 }}
+      miw={300}
       style={{ borderRight: `solid 1px ${isDark ? colors.dark[4] : colors.gray[3]}` }}
+      visibleFrom="md"
     >
       <ScrollArea offsetScrollbars={false} scrollbarSize={10}>
         <Box h="fit-content">
           <Stack gap={0} align="start" w="100%">
-            {navigationItems.map((item) => (
+            {ADMIN_NAVIGATION_ITEMS.map((item) => (
               <NavItem key={item.id} item={item} />
             ))}
           </Stack>
