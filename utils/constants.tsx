@@ -87,3 +87,10 @@ export const DAYS_OF_THE_WEEK = [
   "FRIDAY",
   "SATURDAY",
 ];
+
+export const LATE_FEES_LABEL = [
+  "11-20 minutes",
+  "21-39 minutes",
+  "40 minutes to 1 hour",
+  "more than 1 hour",
+];

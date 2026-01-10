@@ -132,6 +132,13 @@ CREATE TABLE system_setting_table (
   system_setting_value TEXT NOT NULL
 );
 
+CREATE TABLE reminder_table (
+  reminder_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  reminder_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  reminder_order INT NOT NULL,
+  reminder_value TEXT NOT NULL
+);
+
 CREATE TABLE payment_table (
   payment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   payment_date_created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -708,8 +715,22 @@ GRANT ALL ON SCHEMA public TO public;
 
 INSERT INTO system_setting_table (system_setting_key, system_setting_value)
 VALUES 
-('BOOKING_FEE', '500.00'),
-('MAX_SCHEDULE_DATE', '3');
+('BOOKING_FEE', '500'),
+('MAX_SCHEDULE_DATE_MONTH', '3'),
+('LATE_FEE_1', '300'),
+('LATE_FEE_2', '500'),
+('LATE_FEE_3', '1000'),
+('LATE_FEE_4', '2000'),
+('GENERAL_LOCATION', 'Obando, Bulacan'),
+('SPECIFIC_ADDRESS', 'JCG Bldg., 2nd floor, Unit Door 1, P Sevilla St, Catanghalan, Obando, Bulacan'),
+('PIN_LOCATION', 'https://www.google.com/maps/place/Yummy+Teh/@14.7055595,120.9367399,17z/data=!3m1!4b1!4m6!3m5!1s0x3397b378a1ac62bb:0xa05ccd9d184857fa!8m2!3d14.7055544!4d120.9416108!16s%2Fg%2F11c6zymgqr?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D'),
+('CONTACT_NUMBER', '09123456789');
+
+INSERT INTO reminder_table (reminder_order, reminder_value)
+VALUES
+(1, 'Come with clean, polish-free nails.'),
+(2, 'Sanitize your hands upon arrival.'),
+(3, 'Please do not cut, trim, file, or shape your nails beforehand — I will handle everything.');
 
 INSERT INTO appointment_type_table (appointment_type_label) 
 VALUES

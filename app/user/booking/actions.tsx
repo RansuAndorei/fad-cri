@@ -37,7 +37,7 @@ export const getMaxScheduleDate = async (supabaseClient: SupabaseClient<Database
   const { data, error } = await supabaseClient
     .from("system_setting_table")
     .select("system_setting_value")
-    .eq("system_setting_key", "MAX_SCHEDULE_DATE")
+    .eq("system_setting_key", "MAX_SCHEDULE_DATE_MONTH")
     .single();
   if (error) throw error;
   return Number(data.system_setting_value);
