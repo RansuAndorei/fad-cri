@@ -18,9 +18,15 @@ type Props = {
   appointmentTypeOptions: string[];
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDate: string;
+  reminderList: string[];
 };
 
-const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: Props) => {
+const BookingPage = ({
+  appointmentTypeOptions,
+  scheduleSlot,
+  maxScheduleDate,
+  reminderList,
+}: Props) => {
   const isLoading = useIsLoading();
 
   const [active, setActive] = useState(0);
@@ -38,10 +44,10 @@ const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: 
       type: "",
       removal: "",
       removalType: "",
-      inspoLeft: [null, null, null, null, null],
-      inspoRight: [null, null, null, null, null],
+      inspo: null,
       scheduleDate: "",
       scheduleTime: "",
+      scheduleNote: null,
       availableSlot: [],
     },
   });
@@ -74,8 +80,8 @@ const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: 
             orientation={orientation}
           >
             <Stepper.Step
-              label="Appointment Type"
-              description="Type and Removal"
+              label="Appointment Details"
+              description="Type, Removal, Reconstruction"
               allowStepSelect={shouldAllowSelectStep(0)}
             >
               <AppointmentType appointmentTypeOptions={appointmentTypeOptions} />
@@ -83,7 +89,7 @@ const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: 
 
             <Stepper.Step
               label="Nail Design"
-              description="Left and Right Hand"
+              description="Upload your nail inspiration."
               allowStepSelect={shouldAllowSelectStep(1)}
             >
               <NailDesign />
@@ -110,7 +116,7 @@ const BookingPage = ({ appointmentTypeOptions, scheduleSlot, maxScheduleDate }: 
               description="Message from Fad Cri"
               allowStepSelect={shouldAllowSelectStep(4)}
             >
-              <Reminders />
+              <Reminders reminderList={reminderList} />
             </Stepper.Step>
 
             <Stepper.Step

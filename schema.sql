@@ -27,19 +27,6 @@ CREATE TYPE appointment_status AS ENUM(
   'CANCELLED'
 );
 
-CREATE TYPE finger AS ENUM(
-  'PINKY',
-  'RING',
-  'MIDDLE',
-  'INDEX',
-  'THUMB'
-);
-
-CREATE TYPE hand as ENUM(
-  'LEFT',
-  'RIGHT'
-);
-
 CREATE TYPE payment_status AS ENUM (
   'PENDING',
   'PAID',
@@ -55,6 +42,20 @@ CREATE TYPE day AS ENUM (
   'THURSDAY',
   'FRIDAY',
   'SATURDAY'
+);
+
+CREATE TABLE attachment_table (
+    attachment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+    attachment_date_created TIMESTAMPTZ DEFAULT now() NOT NULL,
+    attachment_is_disabled BOOLEAN DEFAULT false NOT NULL,
+
+    attachment_name TEXT NOT NULL,
+    attachment_path TEXT NOT NULL,
+    attachment_bucket TEXT NOT NULL,
+    attachment_mime_type TEXT,
+    attachment_size BIGINT,
+
+    UNIQUE (attachment_bucket, attachment_path)
 );
 
 CREATE TABLE user_table(
@@ -101,6 +102,7 @@ CREATE TABLE appointment_table(
   appointment_schedule TIMESTAMPTZ NOT NULL,
   appointment_status appointment_status DEFAULT 'PENDING' NOT NULL,
   appointment_is_rescheduled BOOLEAN DEFAULT FALSE NOT NULL,
+  appointment_schedule_note TEXT,
   
   appointment_user_id UUID REFERENCES user_table(user_id) NOT NULL
 );
@@ -110,18 +112,10 @@ CREATE TABLE appointment_detail_table(
   appointment_detail_type TEXT NOT NULL,
   appointment_detail_is_with_removal BOOLEAN NOT NULL,
   appointment_detail_is_removal_done_by_fad_cri BOOLEAN DEFAULT FALSE NOT NULL,
+  appointment_detail_is_with_reconstruction BOOLEAN NOT NULL,
 
-  appointment_detail_appointment_id UUID UNIQUE REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL
-);
-
-CREATE TABLE appointment_nail_design_table(
-  appointment_nail_design_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  appointment_nail_design_hand hand NOT NULL,
-  appointment_nail_design_finger finger NOT NULL,
-  appointment_nail_design TEXT NOT NULL,
-
-  appointment_nail_design_appointment_detail_id UUID REFERENCES appointment_detail_table(appointment_detail_id) NOT NULL,
-  UNIQUE (appointment_nail_design_appointment_detail_id, appointment_nail_design_hand, appointment_nail_design_finger)
+  appointment_detail_appointment_id UUID UNIQUE REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL,
+  appointment_detail_inspo_attachment_id UUID REFERENCES attachment_table(attachment_id)
 );
 
 CREATE TABLE system_setting_table (
@@ -176,13 +170,13 @@ CREATE TABLE schedule_slot_table (
   schedule_slot_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   schedule_slot_day day NOT NULL,
   schedule_slot_time TIME WITH TIME ZONE NOT NULL,
+  schedule_slot_note TEXT,
 
   UNIQUE(schedule_slot_day, schedule_slot_time)
 );
 
 CREATE OR REPLACE FUNCTION get_server_time()
 RETURNS TIMESTAMPTZ
-SET search_path TO ''
 AS $$
 BEGIN
   RETURN NOW();
@@ -229,64 +223,74 @@ DECLARE
   input_type TEXT := (input_data ->> 'type')::TEXT;
   input_is_with_removal BOOLEAN := (input_data ->> 'isWithRemoval')::BOOLEAN;
   input_is_removal_done_by_fad_cri BOOLEAN := (input_data ->> 'isRemovalDoneByFadCri')::BOOLEAN;
+  input_is_with_reconstruction BOOLEAN := (input_data ->> 'isWithReconstruction')::BOOLEAN;
   input_schedule TIMESTAMPTZ := (input_data ->> 'schedule')::TIMESTAMPTZ;
+  input_schedule_note TEXT := (input_data ->> 'scheduleNote')::TEXT;
   input_user_id UUID := (input_data ->> 'userId')::UUID;
-  input_inspo_data JSONB := (input_data -> 'inspoData'):: JSONB;
+  input_inspo_data JSONB := COALESCE(input_data -> 'inspoData', NULL);
 
   var_appointment_id UUID;
   var_appointment_detail_id UUID;
-  var_inspo JSONB;
+  var_inspo_attachment_id UUID;
 
   return_data UUID;
 BEGIN
   INSERT INTO appointment_table
   (
     appointment_schedule,
+    appointment_schedule_note,
     appointment_user_id
   )
   VALUES
   (
     input_schedule,
+    input_schedule_note,
     input_user_id
   )
   RETURNING appointment_id
   INTO var_appointment_id;
 
+  IF input_inspo_data IS NOT NULL AND input_inspo_data <> 'null'::JSONB THEN
+    INSERT INTO attachment_table
+    (
+      attachment_name,
+      attachment_path,
+      attachment_bucket,
+      attachment_mime_type,
+      attachment_size
+    )
+    VALUES
+    (
+      input_inspo_data ->> 'attachment_name',
+      input_inspo_data ->> 'attachment_path',
+      input_inspo_data ->> 'attachment_bucket',
+      input_inspo_data ->> 'attachment_mime_type',
+      (input_inspo_data ->> 'attachment_size')::BIGINT
+    )
+    RETURNING attachment_id
+    INTO var_inspo_attachment_id;
+  END IF;
+
   INSERT INTO appointment_detail_table
   (
     appointment_detail_is_with_removal,
     appointment_detail_is_removal_done_by_fad_cri,
+    appointment_detail_is_with_reconstruction,
     appointment_detail_type,
-    appointment_detail_appointment_id
+    appointment_detail_appointment_id,
+    appointment_detail_inspo_attachment_id
   )
   VALUES
   (
     input_is_with_removal,
     input_is_removal_done_by_fad_cri,
+    input_is_with_reconstruction,
     input_type,
-    var_appointment_id
+    var_appointment_id,
+    var_inspo_attachment_id
   )
   RETURNING appointment_detail_id
   INTO var_appointment_detail_id;
-
-  FOR var_inspo IN
-    SELECT * FROM JSONB_ARRAY_ELEMENTS(input_inspo_data)
-  LOOP
-    INSERT INTO appointment_nail_design_table
-    (
-      appointment_nail_design_hand,
-      appointment_nail_design_finger,
-      appointment_nail_design,
-      appointment_nail_design_appointment_detail_id
-    )
-    VALUES
-    (
-      (var_inspo ->> 'hand')::hand,
-      (var_inspo ->> 'finger')::finger,
-      (var_inspo ->> 'imageUrl')::TEXT,
-      var_appointment_detail_id
-    );
-  END LOOP;
 
   return_data = var_appointment_id;
   RETURN return_data;
@@ -295,7 +299,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_appointment(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_appointment_id UUID := (input_data->>'appointmentId')::UUID;
@@ -318,25 +321,25 @@ BEGIN
             COALESCE(
               (
                 SELECT JSONB_AGG(TO_JSONB(appointment_nail_design_table.*))
-                FROM public.appointment_nail_design_table
+                FROM appointment_nail_design_table
                 WHERE appointment_nail_design_appointment_detail_id = appointment_detail_id
               ),
               '[]'::JSONB
             )
           )
-        FROM public.appointment_detail_table
+        FROM appointment_detail_table
         WHERE
           appointment_is_disabled = false
           AND appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
       (
         SELECT TO_JSONB(payment_table.*)
-        FROM public.payment_table
+        FROM payment_table
         WHERE payment_appointment_id = appointment_id
         ORDER BY payment_date_created DESC
         LIMIT 1
       ) AS payment
-    FROM public.appointment_table
+    FROM appointment_table
     WHERE
       appointment_is_disabled = false
       AND appointment_id = input_appointment_id
@@ -354,7 +357,7 @@ BEGIN
     (input_is_cancelled AND var_latest_payment_status = 'PENDING')
     OR (var_latest_payment_status = 'PENDING' AND var_latest_payment_date <= NOW() - INTERVAL '5 minutes')
   ) THEN
-    UPDATE public.payment_table
+    UPDATE payment_table
     SET payment_status = 'CANCELLED'
     WHERE payment_id = var_latest_payment_id;
 
@@ -372,7 +375,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_appointment_by_admin(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_appointment_id UUID := (input_data->>'appointmentId')::UUID;
@@ -393,25 +395,25 @@ BEGIN
             COALESCE(
               (
                 SELECT JSONB_AGG(TO_JSONB(appointment_nail_design_table.*))
-                FROM public.appointment_nail_design_table
+                FROM appointment_nail_design_table
                 WHERE appointment_nail_design_appointment_detail_id = appointment_detail_id
               ),
               '[]'::JSONB
             )
           )
-        FROM public.appointment_detail_table
+        FROM appointment_detail_table
         WHERE
           appointment_is_disabled = false
           AND appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
       (
         SELECT TO_JSONB(payment_table.*)
-        FROM public.payment_table
+        FROM payment_table
         WHERE payment_appointment_id = appointment_id
         ORDER BY payment_date_created DESC
         LIMIT 1
       ) AS payment
-    FROM public.appointment_table
+    FROM appointment_table
     WHERE
       appointment_is_disabled = false
       AND appointment_id = input_appointment_id
@@ -430,16 +432,15 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_appointment_status_count(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
   input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
-  input_appointment_status_list public.appointment_status[] := ARRAY(
+  input_appointment_status_list appointment_status[] := ARRAY(
     SELECT jsonb_array_elements_text((input_data->'appointmentStatusList')::JSONB)
   );
 
-  var_status public.appointment_status;
+  var_status appointment_status;
   var_status_count INTEGER;
   var_data JSONB := '[]'::JSONB;
   var_total_count INTEGER := 0;
@@ -449,7 +450,7 @@ BEGIN
   FOREACH var_status IN ARRAY input_appointment_status_list LOOP
     SELECT COUNT(*)
     INTO var_status_count
-    FROM public.appointment_table
+    FROM appointment_table
     WHERE
       appointment_is_disabled = false
       AND appointment_status = var_status
@@ -477,7 +478,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_dashboard_client_list(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_offset INTEGER := (input_data->>'offset')::INTEGER;
@@ -518,8 +518,8 @@ BEGIN
       user_first_name,
       user_last_name,
       user_avatar
-    FROM public.appointment_table
-    INNER JOIN public.user_table
+    FROM appointment_table
+    INNER JOIN user_table
       ON user_id = appointment_user_id
     WHERE
       appointment_is_disabled = FALSE
@@ -536,7 +536,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_dashboard_Type_list(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_offset INTEGER := (input_data->>'offset')::INTEGER;
@@ -569,8 +568,8 @@ BEGIN
       COUNT(*) FILTER (WHERE appointment_status = 'COMPLETED') AS completed_count,
       COUNT(*) FILTER (WHERE appointment_status = 'CANCELLED') AS cancelled_count,
       appointment_detail_type
-    FROM public.appointment_table
-    INNER JOIN public.appointment_detail_table
+    FROM appointment_table
+    INNER JOIN appointment_detail_table
       ON appointment_id = appointment_detail_appointment_id
     WHERE
       appointment_is_disabled = FALSE
@@ -587,14 +586,13 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_appointment_status_monthly_count(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_month_ranges JSONB := input_data->'monthRanges';
 
   var_status_list TEXT[] := ARRAY['PENDING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'];
   var_month JSONB;
-  var_status public.appointment_status;
+  var_status appointment_status;
   var_request_status_count INTEGER;
   var_status_data JSONB;
   var_monthly_data JSONB := '[]'::JSONB;
@@ -610,7 +608,7 @@ BEGIN
       LOOP
         SELECT COUNT(*)
         INTO var_request_status_count
-        FROM public.appointment_table
+        FROM appointment_table
         WHERE
           appointment_is_disabled = FALSE
           AND appointment_status = var_status
@@ -636,7 +634,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_appointment_total_count(input_data JSONB)
 RETURNS INTEGER
-SET search_path TO ''
 AS $$
 DECLARE
   input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
@@ -646,7 +643,7 @@ DECLARE
 BEGIN
   SELECT COUNT(*)
   INTO var_total_count
-  FROM public.appointment_table
+  FROM appointment_table
   WHERE
     appointment_is_disabled = FALSE
     AND appointment_date_created >= input_start_date
@@ -658,7 +655,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_schedule(input_data JSONB)
 RETURNS JSONB
-SET search_path TO ''
 AS $$
 DECLARE
   input_start_date TIMESTAMPTZ := (input_data->>'startDate')::TIMESTAMPTZ;
@@ -668,8 +664,8 @@ DECLARE
 BEGIN
   WITH scheduleData AS (
     SELECT *
-    FROM public.appointment_table
-    INNER JOIN public.user_table
+    FROM appointment_table
+    INNER JOIN user_table
       ON user_id = appointment_user_id
       AND user_is_disabled = false
     WHERE
@@ -703,6 +699,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION upsert_reminders(input_data JSONB)
+RETURNS VOID
+AS $$
+DECLARE
+  input_reminder JSONB;
+BEGIN
+  DELETE FROM reminder_table WHERE true;
+
+  FOR input_reminder IN 
+    SELECT * FROM jsonb_array_elements(input_data->'reminders')
+  LOOP
+    INSERT INTO reminder_table (reminder_order, reminder_value)
+    VALUES (
+      (input_reminder->>'order')::INT,
+      (input_reminder->>'value')::TEXT
+    );
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
 ALTER TABLE user_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE error_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE email_resend_table DISABLE ROW LEVEL SECURITY;
@@ -728,17 +744,24 @@ VALUES
 
 INSERT INTO reminder_table (reminder_order, reminder_value)
 VALUES
-(1, 'Come with clean, polish-free nails.'),
-(2, 'Sanitize your hands upon arrival.'),
-(3, 'Please do not cut, trim, file, or shape your nails beforehand — I will handle everything.');
+(1, '<p>Come with <strong>clean, polish-free nails</strong>.</p>"'),
+(2, '<p><strong>Sanitize your hands</strong> upon arrival.</p>'),
+(3, '<p>Please <strong>do not cut, trim, file, or shape your nails</strong> beforehand — I will handle everything.</p>"'),
+(4, '<p><strong>Avoid using lotion</strong> on the day of your appointment.</p>'),
+(5, '<p><strong>No late arrivals</strong> — please respect our time as much as your own.</p>'),
+(6, '<p><strong>One client at a time</strong>.</p>'),
+(7, '<p><strong>Strictly no companions allowed.</strong></p>'),
+(8, '<p><strong>Strictly no children allowed.</strong></p>'),
+(9, '<p><strong>By appointment only.</strong></p>'),
+(10, '<p><strong>3-day warranty</strong> on nail services.</p>'),
+(11, '<p><strong>Remaining balance must be paid in cash only.</strong></p>');
 
 INSERT INTO appointment_type_table (appointment_type_label) 
 VALUES
-('Gel Polish'),
-('Structured Gel Polish'),
-('BIAB'),
-('Polygel Overlay'),
-('Gel-X Extension');
+('Soft Builder Gel (BIAB)'),
+('Hard Builder Gel'),
+('Gel-X (Soft-Gel Extensions)'),
+('Polygel Overlay');
 
 INSERT INTO user_table (user_id, user_first_name, user_last_name, user_email, user_phone_number, user_gender, user_birth_date) VALUES
 ('554fa57b-00a6-457e-9361-287aa7694807', 'Admin', 'Admin', 'admin@gmail.com', '09999999999', 'MALE', '01-01-2000'),

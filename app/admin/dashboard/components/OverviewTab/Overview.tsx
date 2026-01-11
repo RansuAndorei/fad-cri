@@ -54,7 +54,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
   const [monthlyChartData, setMonthlyChartData] = useState<StackedBarChartDataType[]>([]);
 
   useEffect(() => {
-    if (!startDateFilter || !endDateFilter) return;
+    if (!startDateFilter || !endDateFilter || !userData) return;
     const fetchOverviewData = async () => {
       endDateFilter?.setHours(23, 59, 59, 999);
 
@@ -116,7 +116,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
               error_message: e.message,
               error_url: pathname,
               error_function: "fetchOverviewData",
-              error_user_email: userData?.email,
+              error_user_email: userData.email,
               error_user_id: userData?.id,
             },
           });
@@ -133,6 +133,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
   }, [selectedDays, startDateFilter, endDateFilter]);
 
   const loadMoreClient = async () => {
+    if (!userData) return;
     try {
       setIsFetchingClient(true);
       const clientList = await getDashboardClientList(supabaseClient, {
@@ -156,7 +157,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
             error_message: e.message,
             error_url: pathname,
             error_function: "loadMoreClient",
-            error_user_email: userData?.email,
+            error_user_email: userData.email,
             error_user_id: userData?.id,
           },
         });
@@ -167,6 +168,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
   };
 
   const loadMoreType = async () => {
+    if (!userData) return;
     try {
       setIsFetchingType(true);
       const typeList = await getDashboardTypeList(supabaseClient, {
@@ -190,8 +192,8 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
             error_message: e.message,
             error_url: pathname,
             error_function: "loadMoreType",
-            error_user_email: userData?.email,
-            error_user_id: userData?.id,
+            error_user_email: userData.email,
+            error_user_id: userData.id,
           },
         });
       }

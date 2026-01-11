@@ -1,5 +1,8 @@
 "use client";
 
+import { insertError } from "@/app/actions";
+import { useUserData } from "@/stores/useUserStore";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   ActionIcon,
   Badge,
@@ -15,39 +18,44 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconBell, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
+import { isEqualWith, isError } from "lodash";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { v4 } from "uuid";
+import { insertReminders } from "../action";
 import ReminderEditor from "./ReminderEditor";
 
-const RemindersPage = () => {
+type Props = {
+  reminderList: { id: string; order: number; value: string }[];
+};
+
+const RemindersPage = ({ reminderList }: Props) => {
+  const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
+  const pathname = usePathname();
+  const userData = useUserData();
 
-  const [reminders, setReminders] = useState([
-    { id: 1, order: 1, value: "Come with clean, polish-free nails." },
-    { id: 2, order: 2, value: "Sanitize your hands upon arrival." },
-    {
-      id: 3,
-      order: 3,
-      value:
-        "Please do not cut, trim, file, or shape your nails beforehand — I will handle everything.",
-    },
-  ]);
-
-  const [saved, setSaved] = useState(false);
+  const [initialReminders, setInitialReminders] =
+    useState<{ id: string; order: number; value: string; error?: string }[]>(reminderList);
+  const [reminders, setReminders] =
+    useState<{ id: string; order: number; value: string; error?: string }[]>(reminderList);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addReminder = () => {
-    setReminders([...reminders, { id: Date.now(), order: reminders.length + 1, value: "" }]);
+    setReminders([...reminders, { id: v4(), order: reminders.length + 1, value: "" }]);
   };
 
-  const updateReminder = (id: number, value: string) => {
+  const updateReminder = (id: string, value: string) => {
     setReminders(reminders.map((r) => (r.id === id ? { ...r, value } : r)));
   };
 
-  const removeReminder = (id: number) => {
+  const removeReminder = (id: string) => {
     setReminders(reminders.filter((r) => r.id !== id).map((r, i) => ({ ...r, order: i + 1 })));
   };
 
-  const moveUp = (id: number) => {
+  const moveUp = (id: string) => {
     const index = reminders.findIndex((r) => r.id === id);
     if (index > 0) {
       const next = [...reminders];
@@ -56,7 +64,7 @@ const RemindersPage = () => {
     }
   };
 
-  const moveDown = (id: number) => {
+  const moveDown = (id: string) => {
     const index = reminders.findIndex((r) => r.id === id);
     if (index < reminders.length - 1) {
       const next = [...reminders];
@@ -65,9 +73,72 @@ const RemindersPage = () => {
     }
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSaveReminders = async () => {
+    if (!userData) return;
+    if (!reminders.length) {
+      notifications.show({
+        message: "At least 1 reminder is required.",
+        color: "orange",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    let hasError = false;
+    const seenValues = new Set<string>();
+
+    const validatedReminders = reminders.map((r) => {
+      let error = "";
+
+      if (!r.value) {
+        error = "Reminder cannot be empty";
+        hasError = true;
+      } else if (seenValues.has(r.value)) {
+        error = "Duplicate reminder";
+        hasError = true;
+      } else {
+        seenValues.add(r.value);
+      }
+
+      return { ...r, error };
+    });
+    setReminders(validatedReminders);
+
+    if (hasError) {
+      notifications.show({
+        message: "Please fix errors before saving.",
+        color: "orange",
+      });
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await insertReminders(supabaseClient, { reminders: validatedReminders });
+      setInitialReminders(validatedReminders);
+
+      notifications.show({
+        message: "Reminders updated successfully.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleSaveReminders",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -139,6 +210,7 @@ const RemindersPage = () => {
                       value={reminder.value}
                       onChange={(value) => updateReminder(reminder.id, value)}
                     />
+                    {reminder.error ? <Text c="red">{reminder.error}</Text> : null}
                   </Box>
                 </Group>
 
@@ -212,8 +284,16 @@ const RemindersPage = () => {
               </Button>
             ) : null}
             <Flex align="center" justify="flex-end">
-              <Button size="md" leftSection={<IconDeviceFloppy size={18} />} onClick={handleSave}>
-                {saved ? "Saved!" : "Save Changes"}
+              <Button
+                size="md"
+                leftSection={<IconDeviceFloppy size={18} />}
+                onClick={handleSaveReminders}
+                loading={isLoading}
+                disabled={isEqualWith(reminders, initialReminders, (_objVal, _othVal, key) => {
+                  if (key === "error") return true;
+                })}
+              >
+                Save
               </Button>
             </Flex>
           </Stack>

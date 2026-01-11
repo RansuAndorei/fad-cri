@@ -66,8 +66,9 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
 
   useEffect(() => {
     const fetchSchedule = async () => {
-      setIsFetching(true);
+      if (!userData) return;
       try {
+        setIsFetching(true);
         const days: DayWithScheduleType[] = [];
 
         const startOfMonth = currentMonth.clone().startOf("month").startOf("week");
@@ -115,8 +116,8 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
               error_message: e.message,
               error_url: pathname,
               error_function: "fetchSchedule",
-              error_user_email: userData?.email,
-              error_user_id: userData?.id,
+              error_user_email: userData.email,
+              error_user_id: userData.id,
             },
           });
         }
@@ -158,6 +159,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   };
 
   const handleAppointmentClick = async (appointmentId: string, user: UserTableRow) => {
+    if (!userData) return;
     try {
       setIsLoading(true);
       const appointmentData = await getAppointmentDatabyAdmin(supabaseClient, {
@@ -176,7 +178,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
             error_message: e.message,
             error_url: pathname,
             error_function: "handleAppointmentClick",
-            error_user_email: userData?.email,
+            error_user_email: userData.email,
             error_user_id: userData?.id,
           },
         });

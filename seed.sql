@@ -12,11 +12,10 @@ DECLARE
   ];
 
   var_detail_types TEXT[] := ARRAY[
-    'Gel Polish',
-    'Structured Gel Polish',
-    'BIAB',
+    'Soft Builder Gel (BIAB)',
+    'Hard Builder Gel',
+    'Gel-X (Soft-Gel Extensions)',
     'Polygel Overlay',
-    'Gel-X Extension'
   ];
 
   var_statuses appointment_status[] := ARRAY['PENDING', 'SCHEDULED', 'COMPLETED', 'CANCELLED'];

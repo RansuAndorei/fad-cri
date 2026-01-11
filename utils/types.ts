@@ -12,19 +12,20 @@ export type AppointmentTableRow = Database["public"]["Tables"]["appointment_tabl
 export type AppointmentTableInsert = Database["public"]["Tables"]["appointment_table"]["Insert"];
 export type AppointmentTableUpdate = Database["public"]["Tables"]["appointment_table"]["Update"];
 
+export type AttachmentTableRow = Database["public"]["Tables"]["attachment_table"]["Row"];
+export type AttachmentTableInsert = Database["public"]["Tables"]["attachment_table"]["Insert"];
+export type AttachmentTableUpdate = Database["public"]["Tables"]["attachment_table"]["Update"];
+
+export type ReminderTableRow = Database["public"]["Tables"]["reminder_table"]["Row"];
+export type ReminderTableInsert = Database["public"]["Tables"]["reminder_table"]["Insert"];
+export type ReminderTableUpdate = Database["public"]["Tables"]["reminder_table"]["Update"];
+
 export type AppointmentDetailTableRow =
   Database["public"]["Tables"]["appointment_detail_table"]["Row"];
 export type AppointmentDetailTableInsert =
   Database["public"]["Tables"]["appointment_detail_table"]["Insert"];
 export type AppointmentDetailTableUpdate =
   Database["public"]["Tables"]["appointment_detail_table"]["Update"];
-
-export type AppointmentNailDesignTableRow =
-  Database["public"]["Tables"]["appointment_nail_design_table"]["Row"];
-export type AppointmentNailDesignTableInsert =
-  Database["public"]["Tables"]["appointment_nail_design_table"]["Insert"];
-export type AppointmentNailDesignTableUpdate =
-  Database["public"]["Tables"]["appointment_nail_design_table"]["Update"];
 
 export type PaymentTableRow = Database["public"]["Tables"]["payment_table"]["Row"];
 export type PaymentTableInsert = Database["public"]["Tables"]["payment_table"]["Insert"];
@@ -62,17 +63,16 @@ export type BookingFormValues = {
   type: string;
   removal: string;
   removalType: string;
-  inspoLeft: (File | null)[];
-  inspoRight: (File | null)[];
+  reconstruction: string;
+  inspo: File | null;
   scheduleDate: string;
   scheduleTime: string;
-  availableSlot: string[];
+  scheduleNote: string | null;
+  availableSlot: { value: string; label: string; note: string | null }[];
 };
 
 export type AppointmentType = AppointmentTableRow & {
-  appointment_detail: AppointmentDetailTableRow & {
-    appointment_nail_design: AppointmentNailDesignTableRow[];
-  };
+  appointment_detail: AppointmentDetailTableRow;
   payment: PaymentTableRow;
 };
 

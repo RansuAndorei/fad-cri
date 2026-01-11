@@ -1,133 +1,114 @@
-import { FINGER_LABEL } from "@/utils/constants";
-import { useNailBoxStyle } from "@/utils/functions";
 import { BookingFormValues } from "@/utils/types";
-import { Box, Divider, Group, Image, Paper, Stack, Text, Title } from "@mantine/core";
+import { Alert, Badge, Card, Image, Paper, Stack, Text, Title } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { useFormContext } from "react-hook-form";
 
 const Summary = () => {
   const { getValues } = useFormContext<BookingFormValues>();
   const values = getValues();
-  const getNailBoxStyle = useNailBoxStyle();
 
-  const renderNailImages = (hand: "inspoLeft" | "inspoRight") => {
-    return values[hand]?.map((file, index) => {
-      const label = hand === "inspoLeft" ? FINGER_LABEL[index] : FINGER_LABEL[4 - index];
+  // Format time nicely
+  const formattedTime = values.scheduleTime
+    ? (() => {
+        const [hourStr, minute] = values.scheduleTime.split(":");
+        const hour = parseInt(hourStr, 10);
+        const period = hour >= 12 ? "PM" : "AM";
+        const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+        return `${displayHour}:${minute} ${period}`;
+      })()
+    : "-";
 
-      return (
-        <Stack key={`${hand}-${index}`} gap={4} align="center">
-          <Box style={getNailBoxStyle(label)}>
-            {file ? (
-              <Image
-                src={URL.createObjectURL(file)}
-                alt={label}
-                width="100%"
-                height="100%"
-                fit="cover"
-              />
-            ) : (
-              <Text size="xs" c="gray">
-                None
-              </Text>
-            )}
-          </Box>
-          <Text size="xs" c="dimmed">
-            {label}
-          </Text>
-        </Stack>
-      );
-    });
-  };
+  // Format date nicely
+  const formattedDate = values.scheduleDate
+    ? new Date(values.scheduleDate).toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "-";
 
   return (
-    <Paper p="xl" shadow="xl" withBorder>
-      <Stack gap="md">
+    <Paper p="xl" shadow="xl" withBorder radius="md">
+      <Stack gap="lg">
         <Title c="dimmed" order={3}>
           Booking Summary
         </Title>
 
-        <Divider
-          label="Appointment Details"
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Stack gap="xs">
-          <Text>
-            <strong>Type:</strong> {values.type || "-"}
-          </Text>
-          <Text>
-            <strong>Removal:</strong>{" "}
-            {values.removal === "with" ? "With Removal" : "Without Removal"}
-          </Text>
-          {values.removal === "with" && (
+        {/* Appointment Card */}
+        <Card shadow="sm" radius="md" p="md" withBorder>
+          <Title order={5} mb={8}>
+            Appointment Details
+          </Title>
+          <Stack gap={4}>
             <Text>
-              <strong>Removal Type:</strong>{" "}
-              {values.removalType === "fad" ? "Fad Cri's Work" : "Not Fad Cri’s Work"}
+              <strong>Type:</strong> {values.type || "-"}
             </Text>
-          )}
-        </Stack>
+            <Text>
+              <strong>Removal:</strong>{" "}
+              {values.removal === "with" ? "With Removal" : "Without Removal"}
+            </Text>
+            {values.removal === "with" && (
+              <Text>
+                <strong>Removal Type:</strong>{" "}
+                {values.removalType === "fad" ? "Fad Cri's Work" : "Not Fad Cri’s Work"}
+              </Text>
+            )}
+            <Text>
+              <strong>Reconstruction:</strong>{" "}
+              {values.reconstruction === "with" ? "With Reconstruction" : "Without Reconstruction"}
+            </Text>
+          </Stack>
+        </Card>
 
-        <Divider
-          label="Nail Design (Left Hand)"
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Group gap="xs" wrap="wrap">
-          {renderNailImages("inspoLeft")}
-        </Group>
+        {/* Nail Inspiration Card */}
+        {values.inspo && (
+          <Card shadow="sm" radius="md" p="md" withBorder>
+            <Title order={5} mb={8}>
+              Nail Design Inspiration
+            </Title>
+            <Stack align="center" gap={6}>
+              <Image
+                src={URL.createObjectURL(values.inspo)}
+                alt="Nail Inspiration"
+                radius="md"
+                height={200}
+                fit="contain"
+                onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+              />
+              <Badge color="cyan" variant="light">
+                Uploaded Nail Design Inspiration
+              </Badge>
+            </Stack>
+          </Card>
+        )}
 
-        <Divider
-          label="Nail Design (Right Hand)"
-          labelPosition="right"
-          mt="md"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Group gap="xs" wrap="wrap">
-          {renderNailImages("inspoRight")}
-        </Group>
-
-        <Divider
-          label="Schedule"
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Stack gap="xs">
-          <Text>
-            <strong>Date:</strong>{" "}
-            {values.scheduleDate ? new Date(values.scheduleDate).toLocaleDateString() : "-"}
-          </Text>
-          <Text>
-            <strong>Time:</strong>{" "}
-            {values.scheduleTime
-              ? (() => {
-                  const [hourStr, minute] = values.scheduleTime.split(":");
-                  const hour = parseInt(hourStr, 10);
-                  const period = hour >= 12 ? "PM" : "AM";
-                  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-                  return `${displayHour}:${minute} ${period}`;
-                })()
-              : "-"}
-          </Text>
-        </Stack>
+        {/* Schedule Card */}
+        <Card shadow="sm" radius="md" p="md" withBorder>
+          <Title order={5} mb={8}>
+            Schedule
+          </Title>
+          <Stack gap={4}>
+            <Text>
+              <strong>Date:</strong> {formattedDate}
+            </Text>
+            <Text>
+              <strong>Time:</strong> {formattedTime}
+            </Text>
+            {values.scheduleNote && (
+              <Alert
+                icon={<IconInfoCircle size={16} />}
+                title="Additional Information"
+                color="cyan"
+                radius="md"
+                variant="light"
+                mt="xs"
+              >
+                {values.scheduleNote}
+              </Alert>
+            )}
+          </Stack>
+        </Card>
       </Stack>
     </Paper>
   );

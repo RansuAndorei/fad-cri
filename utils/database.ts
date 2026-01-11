@@ -40,38 +40,6 @@ export type Database = {
           },
         ];
       };
-      appointment_nail_design_table: {
-        Row: {
-          appointment_nail_design: string;
-          appointment_nail_design_appointment_detail_id: string;
-          appointment_nail_design_finger: Database["public"]["Enums"]["finger"];
-          appointment_nail_design_hand: Database["public"]["Enums"]["hand"];
-          appointment_nail_design_id: string;
-        };
-        Insert: {
-          appointment_nail_design: string;
-          appointment_nail_design_appointment_detail_id: string;
-          appointment_nail_design_finger: Database["public"]["Enums"]["finger"];
-          appointment_nail_design_hand: Database["public"]["Enums"]["hand"];
-          appointment_nail_design_id?: string;
-        };
-        Update: {
-          appointment_nail_design?: string;
-          appointment_nail_design_appointment_detail_id?: string;
-          appointment_nail_design_finger?: Database["public"]["Enums"]["finger"];
-          appointment_nail_design_hand?: Database["public"]["Enums"]["hand"];
-          appointment_nail_design_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "appointment_nail_design_table_appointment_nail_design_appo_fkey";
-            columns: ["appointment_nail_design_appointment_detail_id"];
-            isOneToOne: false;
-            referencedRelation: "appointment_detail_table";
-            referencedColumns: ["appointment_detail_id"];
-          },
-        ];
-      };
       appointment_table: {
         Row: {
           appointment_date_created: string;
@@ -80,6 +48,7 @@ export type Database = {
           appointment_is_disabled: boolean;
           appointment_is_rescheduled: boolean;
           appointment_schedule: string;
+          appointment_schedule_note: string | null;
           appointment_status: Database["public"]["Enums"]["appointment_status"];
           appointment_user_id: string;
         };
@@ -90,6 +59,7 @@ export type Database = {
           appointment_is_disabled?: boolean;
           appointment_is_rescheduled?: boolean;
           appointment_schedule: string;
+          appointment_schedule_note?: string | null;
           appointment_status?: Database["public"]["Enums"]["appointment_status"];
           appointment_user_id: string;
         };
@@ -100,6 +70,7 @@ export type Database = {
           appointment_is_disabled?: boolean;
           appointment_is_rescheduled?: boolean;
           appointment_schedule?: string;
+          appointment_schedule_note?: string | null;
           appointment_status?: Database["public"]["Enums"]["appointment_status"];
           appointment_user_id?: string;
         };
@@ -128,6 +99,39 @@ export type Database = {
           appointment_type_created?: string;
           appointment_type_id?: string;
           appointment_type_label?: string;
+        };
+        Relationships: [];
+      };
+      attachment_table: {
+        Row: {
+          attachment_bucket: string;
+          attachment_date_created: string;
+          attachment_id: string;
+          attachment_is_disabled: boolean;
+          attachment_mime_type: string | null;
+          attachment_name: string;
+          attachment_path: string;
+          attachment_size: number | null;
+        };
+        Insert: {
+          attachment_bucket: string;
+          attachment_date_created?: string;
+          attachment_id?: string;
+          attachment_is_disabled?: boolean;
+          attachment_mime_type?: string | null;
+          attachment_name: string;
+          attachment_path: string;
+          attachment_size?: number | null;
+        };
+        Update: {
+          attachment_bucket?: string;
+          attachment_date_created?: string;
+          attachment_id?: string;
+          attachment_is_disabled?: boolean;
+          attachment_mime_type?: string | null;
+          attachment_name?: string;
+          attachment_path?: string;
+          attachment_size?: number | null;
         };
         Relationships: [];
       };
@@ -252,20 +256,44 @@ export type Database = {
           },
         ];
       };
+      reminder_table: {
+        Row: {
+          reminder_date_created: string;
+          reminder_id: string;
+          reminder_order: number;
+          reminder_value: string;
+        };
+        Insert: {
+          reminder_date_created?: string;
+          reminder_id?: string;
+          reminder_order: number;
+          reminder_value: string;
+        };
+        Update: {
+          reminder_date_created?: string;
+          reminder_id?: string;
+          reminder_order?: number;
+          reminder_value?: string;
+        };
+        Relationships: [];
+      };
       schedule_slot_table: {
         Row: {
           schedule_slot_day: Database["public"]["Enums"]["day"];
           schedule_slot_id: string;
+          schedule_slot_note: string | null;
           schedule_slot_time: string;
         };
         Insert: {
           schedule_slot_day: Database["public"]["Enums"]["day"];
           schedule_slot_id?: string;
+          schedule_slot_note?: string | null;
           schedule_slot_time: string;
         };
         Update: {
           schedule_slot_day?: Database["public"]["Enums"]["day"];
           schedule_slot_id?: string;
+          schedule_slot_note?: string | null;
           schedule_slot_time?: string;
         };
         Relationships: [];
@@ -358,14 +386,12 @@ export type Database = {
       get_schedule: { Args: { input_data: Json }; Returns: Json };
       get_server_time: { Args: never; Returns: string };
       insert_appointment: { Args: { input_data: Json }; Returns: string };
-      seed_appointment_data: { Args: never; Returns: undefined };
+      upsert_reminders: { Args: { input_data: Json }; Returns: undefined };
     };
     Enums: {
       appointment_status: "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
       day: "SUNDAY" | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY";
-      finger: "PINKY" | "RING" | "MIDDLE" | "INDEX" | "THUMB";
       gender: "MALE" | "FEMALE" | "OTHER";
-      hand: "LEFT" | "RIGHT";
       payment_status: "PENDING" | "PAID" | "FAILED" | "CANCELLED";
     };
     CompositeTypes: {
@@ -494,9 +520,7 @@ export const Constants = {
     Enums: {
       appointment_status: ["PENDING", "SCHEDULED", "COMPLETED", "CANCELLED"],
       day: ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
-      finger: ["PINKY", "RING", "MIDDLE", "INDEX", "THUMB"],
       gender: ["MALE", "FEMALE", "OTHER"],
-      hand: ["LEFT", "RIGHT"],
       payment_status: ["PENDING", "PAID", "FAILED", "CANCELLED"],
     },
   },

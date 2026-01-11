@@ -67,3 +67,12 @@ export const getDateAppointments = async (
   );
   return timeList;
 };
+
+export const getReminders = async (supabaseClient: SupabaseClient<Database>) => {
+  const { data, error } = await supabaseClient
+    .from("reminder_table")
+    .select("*")
+    .order("reminder_order");
+  if (error) throw error;
+  return data;
+};

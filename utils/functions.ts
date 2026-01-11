@@ -1,4 +1,3 @@
-import { rem, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { toNumber } from "lodash";
 import moment from "moment";
 import { DEFAULT_MANTINE_COLOR_LIST } from "./constants";
@@ -25,29 +24,6 @@ export const nailShapeMap: Record<string, { width: number; height: number; radiu
   Middle: { width: 64, height: 92, radius: 34 },
   Ring: { width: 60, height: 86, radius: 32 },
   Pinky: { width: 52, height: 76, radius: 28 },
-};
-
-export const useNailBoxStyle = () => {
-  const theme = useMantineTheme();
-  const { colorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === "dark";
-
-  return (label: string) => {
-    const shape = nailShapeMap[label];
-
-    return {
-      width: rem(shape.width),
-      height: rem(shape.height),
-      borderRadius: rem(shape.radius),
-      border: `2px dashed ${isDark ? theme.colors.gray[6] : theme.colors.gray[4]}`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      cursor: "pointer",
-      backgroundColor: isDark ? theme.colors.dark[6] : theme.colors.gray[0],
-    };
-  };
 };
 
 export const formatDecimal = (value: number | string, places = 2): string => {

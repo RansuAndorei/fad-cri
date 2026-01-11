@@ -1,18 +1,15 @@
 import { insertError } from "@/app/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/action";
 import { useUserData } from "@/stores/useUserStore";
-import { FINGER_LABEL } from "@/utils/constants";
-import { combineDateTime, formatWordDate, useNailBoxStyle } from "@/utils/functions";
+import { combineDateTime, formatWordDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { AppointmentNailDesignTableRow, AppointmentType } from "@/utils/types";
+import { AppointmentType } from "@/utils/types";
 import {
   ActionIcon,
-  Box,
   Button,
   Divider,
   Flex,
   Group,
-  Image,
   List,
   Modal,
   Paper,
@@ -25,7 +22,7 @@ import { DatePickerInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconExclamationCircle, IconHistory, IconInfoCircle } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { isError } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -45,7 +42,6 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
-  const getNailBoxStyle = useNailBoxStyle();
 
   const [rescheduleModalOpened, { open: openRescheduleModal, close: closeRescheduleModal }] =
     useDisclosure(false);
@@ -58,7 +54,6 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
   const [isRescheduled, setIsRescheduled] = useState(appointmentData.appointment_is_rescheduled);
 
   const appointmentDetails = appointmentData.appointment_detail;
-  const nailInspo = appointmentDetails.appointment_nail_design;
 
   const isRescheduleDisabled = useMemo(() => {
     const currentDate = moment(serverTime);
@@ -82,34 +77,6 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
       scheduleTime: "",
     },
   });
-
-  const renderNailImages = (hand: "LEFT" | "RIGHT", values: AppointmentNailDesignTableRow[]) => {
-    return (hand === "LEFT" ? FINGER_LABEL : [...FINGER_LABEL].reverse()).map((finger, index) => {
-      const file = values.find(
-        (value) =>
-          value.appointment_nail_design_hand === toUpper(hand) &&
-          value.appointment_nail_design_finger === toUpper(finger) &&
-          value.appointment_nail_design,
-      )?.appointment_nail_design;
-
-      return (
-        <Stack key={`${hand}-${index}`} gap={4} align="center">
-          <Box style={getNailBoxStyle(finger)}>
-            {file ? (
-              <Image src={file} alt={finger} width="100%" height="100%" fit="cover" />
-            ) : (
-              <Text size="xs" c="gray">
-                None
-              </Text>
-            )}
-          </Box>
-          <Text size="xs" c="dimmed">
-            {finger}
-          </Text>
-        </Stack>
-      );
-    });
-  };
 
   const timeOptions = Array.from({ length: 20 }, (_, i) => {
     const hour = 10 + Math.floor(i / 2);
@@ -297,35 +264,6 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
             </Text>
           )}
         </Stack>
-
-        <Divider
-          label="Nail Design (Left Hand)"
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Group gap="xs" wrap="wrap">
-          {renderNailImages("LEFT", nailInspo)}
-        </Group>
-
-        <Divider
-          label="Nail Design (Right Hand)"
-          labelPosition="right"
-          mt="md"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Group gap="xs" wrap="wrap">
-          {renderNailImages("RIGHT", nailInspo)}
-        </Group>
 
         <Divider
           label={`Schedule${isRescheduled ? " (Rescheduled)" : ""}`}

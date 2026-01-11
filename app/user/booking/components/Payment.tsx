@@ -2,10 +2,9 @@
 
 import { insertError, uploadImage } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { FINGER_LABEL } from "@/utils/constants";
 import { formatDecimal } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { BookingFormValues, PaymentMethod } from "@/utils/types";
+import { AttachmentTableInsert, BookingFormValues, PaymentMethod } from "@/utils/types";
 import {
   Alert,
   Button,
@@ -19,14 +18,12 @@ import {
   Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconAlertTriangle } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { IconAlertCircle } from "@tabler/icons-react";
+import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { getBookingFee } from "../actions";
-
-
 
 const Payment = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -75,12 +72,24 @@ const Payment = () => {
     setIsLoading(true);
     try {
       const bookingData = getValues();
+      const inspo = bookingData.inspo;
 
-      const inspoData = await handleUploadInspo(
-        userData.id,
-        bookingData.inspoLeft,
-        bookingData.inspoRight,
-      );
+      let inspoData: AttachmentTableInsert | null = null;
+      if (inspo) {
+        const { publicUrl } = await uploadImage(supabaseClient, {
+          image: inspo,
+          bucket: "NAIL_INSPO",
+          fileName: inspo.name,
+        });
+
+        inspoData = {
+          attachment_name: inspo.name,
+          attachment_path: publicUrl,
+          attachment_bucket: "NAIL_INSPO",
+          attachment_mime_type: inspo.type,
+          attachment_size: inspo.size,
+        };
+      }
 
       const res = await fetch("/api/payments/create-checkout", {
         method: "POST",
@@ -91,7 +100,6 @@ const Payment = () => {
           bookingData,
           inspoData,
           userId: userData.id,
-          userEmail: userData.email,
         }),
       });
 
@@ -124,46 +132,6 @@ const Payment = () => {
     }
   };
 
-  const handleUploadInspo = async (
-    userId: string,
-    inspoLeft: (File | null)[],
-    inspoRight: (File | null)[],
-  ) => {
-    const inspoList: { file: File | null; hand: string; finger: string }[] = [
-      ...(inspoLeft || []).map((file, i) => ({
-        file,
-        hand: "LEFT",
-        finger: toUpper(FINGER_LABEL[i]),
-      })),
-      ...(inspoRight || []).map((file, i) => ({
-        file,
-        hand: "RIGHT",
-        finger: toUpper(FINGER_LABEL[FINGER_LABEL.length - 1 - i]),
-      })),
-    ];
-    const uploadPromises = inspoList.map(async ({ file, hand, finger }) => {
-      if (!file) return null;
-
-      const { publicUrl } = await uploadImage(supabaseClient, {
-        image: file,
-        bucket: "NAIL_INSPO",
-        fileName: `${userId}/${hand}-${finger}-${Date.now()}`,
-      });
-
-      return {
-        imageUrl: publicUrl,
-        hand,
-        finger,
-      };
-    });
-
-    const uploadedUrls = (await Promise.all(uploadPromises)).filter(
-      (result): result is { imageUrl: string; hand: string; finger: string } => result !== null,
-    );
-
-    return uploadedUrls;
-  };
-
   return (
     <Paper p="xl" shadow="xl" withBorder>
       <Stack gap="md">
@@ -173,7 +141,7 @@ const Payment = () => {
         </Title>
 
         <Alert
-          icon={<IconAlertTriangle size={16} />}
+          icon={<IconAlertCircle size={16} />}
           title="Please Note"
           color="cyan"
           radius="md"

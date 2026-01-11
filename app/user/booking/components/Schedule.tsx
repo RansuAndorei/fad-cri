@@ -3,9 +3,10 @@ import { useUserData } from "@/stores/useUserStore";
 import { formatWordDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
-import { Loader, Paper, Select, Stack, Title } from "@mantine/core";
+import { Alert, Loader, Paper, Select, Stack, Title } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { isError, toUpper } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
@@ -34,8 +35,10 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
 
   const watchDate = watch("scheduleDate");
   const availableSlot = watch("availableSlot") || [];
+  const watchNote = watch("scheduleNote");
 
   const handleDateChange = async (value: string) => {
+    if (!userData) return;
     try {
       setIsLoading(true);
       const appointmentList = await getDateAppointments(supabaseClient, { date: value });
@@ -47,7 +50,11 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
 
       const availableSlot = scheduleSlotForTheDay
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
-        .map((value) => moment(value.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"));
+        .map((slot) => ({
+          value: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
+          label: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
+          note: slot.schedule_slot_note,
+        }));
 
       setValue("availableSlot", availableSlot);
       if (availableSlot.length) {
@@ -73,8 +80,8 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
             error_message: e.message,
             error_url: pathname,
             error_function: "fetchOverviewData",
-            error_user_email: userData?.email,
-            error_user_id: userData?.id,
+            error_user_email: userData.email,
+            error_user_id: userData.id,
           },
         });
       }
@@ -132,9 +139,26 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
               disabled={!Boolean(watchDate) || isLoading}
               value={field.value || null}
               rightSection={isLoading ? <Loader size={14} /> : null}
+              onChange={(value) => {
+                field.onChange(value);
+                const selectedSlot = availableSlot.find((slot) => slot.value === value);
+                setValue("scheduleNote", selectedSlot?.note ?? null, { shouldDirty: true });
+              }}
             />
           )}
         />
+
+        {watchNote && (
+          <Alert
+            icon={<IconInfoCircle size={16} />}
+            title="Additional Information"
+            color="cyan"
+            radius="md"
+            variant="light"
+          >
+            {watchNote}
+          </Alert>
+        )}
       </Stack>
     </Paper>
   );

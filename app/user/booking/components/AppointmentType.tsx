@@ -19,7 +19,7 @@ const AppointmentType = ({ appointmentTypeOptions }: Props) => {
     <Paper p="xl" shadow="xl" withBorder>
       <Stack gap="md">
         <Title c="dimmed" order={3} mb="xs">
-          Appointment Type
+          Appointment Details
         </Title>
 
         <Controller
@@ -86,6 +86,29 @@ const AppointmentType = ({ appointmentTypeOptions }: Props) => {
             )}
           />
         )}
+        <Controller
+          name="reconstruction"
+          control={control}
+          rules={{ required: "Reconstruction is required." }}
+          render={({ field }) => (
+            <Radio.Group
+              label="Reconstruction"
+              {...field}
+              required
+              error={errors.recon?.message}
+              styles={{
+                error: {
+                  marginTop: 8,
+                },
+              }}
+            >
+              <Stack mt="sm">
+                <Radio value="with" label="With Reconstruction" />
+                <Radio value="without" label="Without Reconstruction" />
+              </Stack>
+            </Radio.Group>
+          )}
+        />
       </Stack>
     </Paper>
   );
