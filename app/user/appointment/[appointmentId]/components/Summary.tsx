@@ -1,5 +1,5 @@
 import { insertError } from "@/app/actions";
-import { updateAppointment } from "@/app/api/paymongo/webhook/action";
+import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
 import { useUserData } from "@/stores/useUserStore";
 import { combineDateTime, formatWordDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";

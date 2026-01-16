@@ -1,180 +1,3 @@
-DROP SCHEMA IF EXISTS public CASCADE;
-CREATE SCHEMA public AUTHORIZATION postgres;
-
-DROP POLICY IF EXISTS objects_policy ON storage.objects;
-DROP POLICY IF EXISTS buckets_policy ON storage.buckets;
-
-DELETE FROM storage.objects;
-DELETE FROM storage.buckets;
-
-CREATE POLICY objects_policy ON storage.objects FOR ALL TO PUBLIC USING (true) WITH CHECK (true);
-CREATE POLICY buckets_policy ON storage.buckets FOR ALL TO PUBLIC USING (true) WITH CHECK (true);
-
-INSERT INTO storage.buckets(id, name) VALUES ('USER_AVATARS', 'USER_AVATARS');
-INSERT INTO storage.buckets(id, name) VALUES ('NAIL_INSPO', 'NAIL_INSPO');
-UPDATE storage.buckets SET public = true;
-
-CREATE TYPE gender AS ENUM(
-  'MALE',
-  'FEMALE',
-  'OTHER'
-);
-
-CREATE TYPE appointment_status AS ENUM(
-  'PENDING',
-  'SCHEDULED',
-  'COMPLETED',
-  'CANCELLED'
-);
-
-CREATE TYPE payment_status AS ENUM (
-  'PENDING',
-  'PAID',
-  'FAILED',
-  'CANCELLED'
-);
-
-CREATE TYPE day AS ENUM (
-  'SUNDAY',
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY'
-);
-
-CREATE TABLE attachment_table (
-    attachment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-    attachment_date_created TIMESTAMPTZ DEFAULT now() NOT NULL,
-    attachment_is_disabled BOOLEAN DEFAULT false NOT NULL,
-
-    attachment_name TEXT NOT NULL,
-    attachment_path TEXT NOT NULL,
-    attachment_bucket TEXT NOT NULL,
-    attachment_mime_type TEXT,
-    attachment_size BIGINT,
-
-    UNIQUE (attachment_bucket, attachment_path)
-);
-
-CREATE TABLE user_table(
-  user_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  user_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  user_first_name TEXT NOT NULL,
-  user_last_name TEXT NOT NULL,
-  user_email TEXT UNIQUE NOT NULL,
-  user_is_disabled boolean DEFAULT FALSE NOT NULL,
-  user_phone_number TEXT NOT NULL,
-  user_avatar TEXT,
-  user_gender gender NOT NULL,
-  user_birth_date DATE NOT NULL
-);
-
-CREATE TABLE error_table(
-  error_id UUID DEFAULT uuid_generate_v4() UNIQUE PRIMARY KEY NOT NULL,
-  error_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  error_message TEXT NOT NULL,
-  error_url TEXT NOT NULL,
-  error_function TEXT NOT NULL,
-  error_user_email TEXT,
-
-  error_user_id uuid REFERENCES user_table(user_id) ON DELETE CASCADE
-);
-
-CREATE TABLE email_resend_table(
-  email_resend_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  email_resend_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  email_resend_email TEXT NOT NULL
-);
-
-CREATE TABLE appointment_type_table(
-  appointment_type_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  appointment_type_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  appointment_type_label TEXT NOT NULL
-);
-
-CREATE TABLE appointment_table(
-  appointment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  appointment_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  appointment_date_updated TIMESTAMPTZ,
-  appointment_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
-  appointment_schedule TIMESTAMPTZ NOT NULL,
-  appointment_status appointment_status DEFAULT 'PENDING' NOT NULL,
-  appointment_is_rescheduled BOOLEAN DEFAULT FALSE NOT NULL,
-  appointment_schedule_note TEXT,
-  
-  appointment_user_id UUID REFERENCES user_table(user_id) NOT NULL
-);
-
-CREATE TABLE appointment_detail_table(
-  appointment_detail_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  appointment_detail_type TEXT NOT NULL,
-  appointment_detail_is_with_removal BOOLEAN NOT NULL,
-  appointment_detail_is_removal_done_by_fad_cri BOOLEAN DEFAULT FALSE NOT NULL,
-  appointment_detail_is_with_reconstruction BOOLEAN NOT NULL,
-
-  appointment_detail_appointment_id UUID UNIQUE REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL,
-  appointment_detail_inspo_attachment_id UUID REFERENCES attachment_table(attachment_id)
-);
-
-CREATE TABLE system_setting_table (
-  system_setting_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  system_setting_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  system_setting_date_updated TIMESTAMPTZ,
-  system_setting_key TEXT UNIQUE NOT NULL,
-  system_setting_value TEXT NOT NULL
-);
-
-CREATE TABLE reminder_table (
-  reminder_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  reminder_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  reminder_order INT NOT NULL,
-  reminder_value TEXT NOT NULL
-);
-
-CREATE TABLE payment_table (
-  payment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  payment_date_created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  payment_date_updated TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  -- PayMongo refs
-  payment_intent_id TEXT,
-  payment_external_id TEXT,
-  payment_checkout_id TEXT,
-
-  -- Status
-  payment_status payment_status NOT NULL,
-
-  -- Details
-  payment_amount INTEGER NOT NULL,
-  payment_currency TEXT NOT NULL DEFAULT 'PHP',
-  payment_method TEXT NOT NULL,
-  payment_description TEXT,
-
-  -- URLs
-  payment_checkout_url TEXT,
-
-  -- Timestamps
-  payment_date_paid TIMESTAMPTZ,
-  
-  -- Error
-  payment_failure_message TEXT,
-  payment_failure_code TEXT,
-
-  -- Linking
-  payment_appointment_id UUID REFERENCES appointment_table(appointment_id) NOT NULL
-);
-
-CREATE TABLE schedule_slot_table (
-  schedule_slot_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  schedule_slot_day day NOT NULL,
-  schedule_slot_time TIME WITH TIME ZONE NOT NULL,
-  schedule_slot_note TEXT,
-
-  UNIQUE(schedule_slot_day, schedule_slot_time)
-);
-
 CREATE OR REPLACE FUNCTION get_server_time()
 RETURNS TIMESTAMPTZ
 AS $$
@@ -719,82 +542,41 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER TABLE user_table DISABLE ROW LEVEL SECURITY;
-ALTER TABLE error_table DISABLE ROW LEVEL SECURITY;
-ALTER TABLE email_resend_table DISABLE ROW LEVEL SECURITY;
+CREATE OR REPLACE FUNCTION update_system_settings(input_data JSONB)
+RETURNS SETOF system_setting_table
+AS $$
+DECLARE
+  return_data system_setting_table;
+BEGIN
+  FOR return_data IN
+    WITH input_settings AS (
+      SELECT
+        (value->>'system_setting_key')::TEXT AS system_setting_key,
+        (value->>'system_setting_value')::TEXT AS system_setting_value
+      FROM JSONB_ARRAY_ELEMENTS(input_data->'settings')
+    ),
+    updated AS (
+      UPDATE system_setting_table
+      SET
+        system_setting_value = input_settings.system_setting_value,
+        system_setting_date_updated = NOW()
+      FROM input_settings
+      WHERE system_setting_table.system_setting_key = input_settings.system_setting_key
+        AND system_setting_table.system_setting_value IS DISTINCT FROM input_settings.system_setting_value
+      RETURNING system_setting_table.*
+    )
 
-GRANT ALL ON ALL TABLES IN SCHEMA public TO PUBLIC;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO POSTGRES;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO public;
+    SELECT * FROM updated
+    UNION ALL
+    SELECT system_setting_table.*
+    FROM system_setting_table
+    JOIN input_settings
+      ON system_setting_table.system_setting_key = input_settings.system_setting_key
+    WHERE system_setting_table.system_setting_value IS NOT DISTINCT FROM input_settings.system_setting_value
+  LOOP
+    RETURN NEXT return_data;
+  END LOOP;
 
-
-INSERT INTO system_setting_table (system_setting_key, system_setting_value)
-VALUES 
-('BOOKING_FEE', '500'),
-('MAX_SCHEDULE_DATE_MONTH', '3'),
-('LATE_FEE_1', '300'),
-('LATE_FEE_2', '500'),
-('LATE_FEE_3', '1000'),
-('LATE_FEE_4', '2000'),
-('GENERAL_LOCATION', 'Obando, Bulacan'),
-('SPECIFIC_ADDRESS', 'JCG Bldg., 2nd floor, Unit Door 1, P Sevilla St, Catanghalan, Obando, Bulacan'),
-('PIN_LOCATION', 'https://www.google.com/maps/place/Yummy+Teh/@14.7055595,120.9367399,17z/data=!3m1!4b1!4m6!3m5!1s0x3397b378a1ac62bb:0xa05ccd9d184857fa!8m2!3d14.7055544!4d120.9416108!16s%2Fg%2F11c6zymgqr?entry=ttu&g_ep=EgoyMDI2MDEwNy4wIKXMDSoASAFQAw%3D%3D'),
-('CONTACT_NUMBER', '09123456789');
-
-INSERT INTO reminder_table (reminder_order, reminder_value)
-VALUES
-(1, '<p>Come with <strong>clean, polish-free nails</strong>.</p>"'),
-(2, '<p><strong>Sanitize your hands</strong> upon arrival.</p>'),
-(3, '<p>Please <strong>do not cut, trim, file, or shape your nails</strong> beforehand — I will handle everything.</p>"'),
-(4, '<p><strong>Avoid using lotion</strong> on the day of your appointment.</p>'),
-(5, '<p><strong>No late arrivals</strong> — please respect our time as much as your own.</p>'),
-(6, '<p><strong>One client at a time</strong>.</p>'),
-(7, '<p><strong>Strictly no companions allowed.</strong></p>'),
-(8, '<p><strong>Strictly no children allowed.</strong></p>'),
-(9, '<p><strong>By appointment only.</strong></p>'),
-(10, '<p><strong>3-day warranty</strong> on nail services.</p>'),
-(11, '<p><strong>Remaining balance must be paid in cash only.</strong></p>');
-
-INSERT INTO appointment_type_table (appointment_type_label) 
-VALUES
-('Soft Builder Gel (BIAB)'),
-('Hard Builder Gel'),
-('Gel-X (Soft-Gel Extensions)'),
-('Polygel Overlay');
-
-INSERT INTO user_table (user_id, user_first_name, user_last_name, user_email, user_phone_number, user_gender, user_birth_date) VALUES
-('554fa57b-00a6-457e-9361-287aa7694807', 'Admin', 'Admin', 'admin@gmail.com', '09999999999', 'MALE', '01-01-2000'),
-('1d7645ed-3372-485e-9237-de3a8cd5fece', 'Dolor', 'Sit', 'dolorsit@gmail.com', '09123456789', 'FEMALE', '04-12-2000'),
-('47dac5cd-cf2e-4e28-89d1-2f8ede52d30e', 'Jane', 'Doe', 'janedoe@gmail.com', '0956325784', 'FEMALE', '12-11-2001'),
-('e2f572f7-1715-4ce8-9a1b-8c70fbaf3765', 'Lorem', 'Ipsum', 'loremipsum@gmail.com', '09659875121', 'FEMALE', '08-23-1999'),
-('fa9d8410-f565-483b-ae21-e6ba882ee59c', 'John', 'Doe', 'johndoe@gmail.com', '09563269796', 'MALE', '06-29-2002');
-
-INSERT INTO schedule_slot_table (schedule_slot_day, schedule_slot_time) VALUES
-('SUNDAY', '12:00:00+08'),
-('SUNDAY', '15:00:00+08'),
-('SUNDAY', '18:00:00+08'),
-
-('MONDAY', '12:00:00+08'),
-('MONDAY', '15:00:00+08'),
-('MONDAY', '18:00:00+08'),
-
-('TUESDAY', '12:00:00+08'),
-('TUESDAY', '15:00:00+08'),
-('TUESDAY', '18:00:00+08'),
-
-('WEDNESDAY', '12:00:00+08'),
-('WEDNESDAY', '15:00:00+08'),
-('WEDNESDAY', '18:00:00+08'),
-
-('THURSDAY', '12:00:00+08'),
-('THURSDAY', '15:00:00+08'),
-('THURSDAY', '18:00:00+08'),
-
-('FRIDAY', '12:00:00+08'),
-('FRIDAY', '15:00:00+08'),
-('FRIDAY', '18:00:00+08'),
-
-('SATURDAY', '12:00:00+08'),
-('SATURDAY', '15:00:00+08'),
-('SATURDAY', '18:00:00+08');
+  RETURN;
+END;
+$$ LANGUAGE plpgsql;

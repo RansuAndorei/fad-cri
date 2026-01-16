@@ -12,21 +12,27 @@ export type Database = {
         Row: {
           appointment_detail_appointment_id: string;
           appointment_detail_id: string;
+          appointment_detail_inspo_attachment_id: string | null;
           appointment_detail_is_removal_done_by_fad_cri: boolean;
+          appointment_detail_is_with_reconstruction: boolean;
           appointment_detail_is_with_removal: boolean;
           appointment_detail_type: string;
         };
         Insert: {
           appointment_detail_appointment_id: string;
           appointment_detail_id?: string;
+          appointment_detail_inspo_attachment_id?: string | null;
           appointment_detail_is_removal_done_by_fad_cri?: boolean;
+          appointment_detail_is_with_reconstruction: boolean;
           appointment_detail_is_with_removal: boolean;
           appointment_detail_type: string;
         };
         Update: {
           appointment_detail_appointment_id?: string;
           appointment_detail_id?: string;
+          appointment_detail_inspo_attachment_id?: string | null;
           appointment_detail_is_removal_done_by_fad_cri?: boolean;
+          appointment_detail_is_with_reconstruction?: boolean;
           appointment_detail_is_with_removal?: boolean;
           appointment_detail_type?: string;
         };
@@ -37,6 +43,13 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "appointment_table";
             referencedColumns: ["appointment_id"];
+          },
+          {
+            foreignKeyName: "appointment_detail_table_appointment_detail_inspo_attachme_fkey";
+            columns: ["appointment_detail_inspo_attachment_id"];
+            isOneToOne: false;
+            referencedRelation: "attachment_table";
+            referencedColumns: ["attachment_id"];
           },
         ];
       };
@@ -386,6 +399,22 @@ export type Database = {
       get_schedule: { Args: { input_data: Json }; Returns: Json };
       get_server_time: { Args: never; Returns: string };
       insert_appointment: { Args: { input_data: Json }; Returns: string };
+      update_system_settings: {
+        Args: { input_data: Json };
+        Returns: {
+          system_setting_date_created: string;
+          system_setting_date_updated: string | null;
+          system_setting_id: string;
+          system_setting_key: string;
+          system_setting_value: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "system_setting_table";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       upsert_reminders: { Args: { input_data: Json }; Returns: undefined };
     };
     Enums: {
@@ -393,6 +422,17 @@ export type Database = {
       day: "SUNDAY" | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY";
       gender: "MALE" | "FEMALE" | "OTHER";
       payment_status: "PENDING" | "PAID" | "FAILED" | "CANCELLED";
+      settings:
+        | "BOOKING_FEE"
+        | "MAX_SCHEDULE_DATE_MONTH"
+        | "LATE_FEE_1"
+        | "LATE_FEE_2"
+        | "LATE_FEE_3"
+        | "LATE_FEE_4"
+        | "GENERAL_LOCATION"
+        | "SPECIFIC_ADDRESS"
+        | "PIN_LOCATION"
+        | "CONTACT_NUMBER";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -522,6 +562,18 @@ export const Constants = {
       day: ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
       gender: ["MALE", "FEMALE", "OTHER"],
       payment_status: ["PENDING", "PAID", "FAILED", "CANCELLED"],
+      settings: [
+        "BOOKING_FEE",
+        "MAX_SCHEDULE_DATE_MONTH",
+        "LATE_FEE_1",
+        "LATE_FEE_2",
+        "LATE_FEE_3",
+        "LATE_FEE_4",
+        "GENERAL_LOCATION",
+        "SPECIFIC_ADDRESS",
+        "PIN_LOCATION",
+        "CONTACT_NUMBER",
+      ],
     },
   },
 } as const;

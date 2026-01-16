@@ -115,3 +115,5 @@ export type StackedBarChartDataType = {
 export type ScheduleType = AppointmentTableRow & {
   appointment_user: UserTableRow;
 };
+
+export type SettingsEnum = Database["public"]["Enums"]["settings"];

@@ -1,11 +1,17 @@
 "use client";
 
+import { insertError } from "@/app/actions";
+import { useUserData } from "@/stores/useUserStore";
+import { LATE_FEE_LABEL_LIST } from "@/utils/constants";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { SettingsEnum } from "@/utils/types";
 import {
   Badge,
   Box,
   Button,
   Container,
   Divider,
+  Flex,
   Group,
   NumberInput,
   Paper,
@@ -14,29 +20,72 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconCalendar, IconCurrencyPeso, IconDeviceFloppy } from "@tabler/icons-react";
+import { isEqual, isError } from "lodash";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { updateSettings } from "../../actions";
 
-const FinancialSettingsPage = () => {
+type Props = {
+  financialData: Record<SettingsEnum, string>;
+};
+
+const FinancialSettingsPage = ({ financialData }: Props) => {
+  const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
+  const pathname = usePathname();
+  const userData = useUserData();
 
-  const [bookingFee, setBookingFee] = useState(500);
-  const [maxScheduleMonth, setMaxScheduleMonth] = useState(3);
-  const [lateFees, setLateFees] = useState([
-    { id: "1", amount: 300, label: "11-20 minutes" },
-    { id: "2", amount: 500, label: "21-39 minutes" },
-    { id: "3", amount: 1000, label: "40 minutes to 1 hour" },
-    { id: "4", amount: 2000, label: "More than 1 hour" },
-  ]);
-  const [saved, setSaved] = useState(false);
+  const [initialFinancialSettings, setInitialFinancialSettings] =
+    useState<Record<SettingsEnum, string>>(financialData);
+  const [financialSettings, setFinancialSettings] =
+    useState<Record<SettingsEnum, string>>(financialData);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const updateLateFee = (id: string, amount: number) => {
-    setLateFees((fees) => fees.map((fee) => (fee.id === id ? { ...fee, amount } : fee)));
+  const updateLateFee = (label: string, amount: number) => {
+    setFinancialSettings((prev) => ({
+      ...prev,
+      [label]: amount,
+    }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    if (!userData) return;
+
+    try {
+      setIsLoading(true);
+      await updateSettings(supabaseClient, {
+        settings: Object.entries(financialSettings).map(([key, value]) => ({
+          system_setting_key: key,
+          system_setting_value: value,
+        })),
+      });
+      setInitialFinancialSettings(financialSettings);
+
+      notifications.show({
+        message: "Financial settingss updated successfully.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleSave",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,8 +124,10 @@ const FinancialSettingsPage = () => {
 
               <NumberInput
                 size="md"
-                value={bookingFee}
-                onChange={(val) => setBookingFee(Number(val))}
+                value={financialSettings.BOOKING_FEE}
+                onChange={(val) =>
+                  setFinancialSettings((prev) => ({ ...prev, BOOKING_FEE: String(val) }))
+                }
                 prefix="₱"
                 thousandSeparator=","
                 min={0}
@@ -112,8 +163,13 @@ const FinancialSettingsPage = () => {
 
               <NumberInput
                 size="md"
-                value={maxScheduleMonth}
-                onChange={(val) => setMaxScheduleMonth(Number(val))}
+                value={financialSettings.MAX_SCHEDULE_DATE_MONTH}
+                onChange={(val) =>
+                  setFinancialSettings((prev) => ({
+                    ...prev,
+                    MAX_SCHEDULE_DATE_MONTH: String(val),
+                  }))
+                }
                 suffix=" months"
                 min={1}
                 max={12}
@@ -147,16 +203,16 @@ const FinancialSettingsPage = () => {
               <Divider my="md" />
 
               <Stack gap="md">
-                {lateFees.map((fee) => (
-                  <Group key={fee.id} align="center" gap="md">
+                {LATE_FEE_LABEL_LIST.map((label, index) => (
+                  <Group key={label} align="center" gap="md">
                     <Badge size="lg" variant="light" color="cyan" w={200}>
-                      {fee.label}
+                      {label}
                     </Badge>
 
                     <NumberInput
                       flex={1}
-                      value={fee.amount}
-                      onChange={(val) => updateLateFee(fee.id, Number(val))}
+                      value={financialSettings[`LATE_FEE_${index + 1}` as SettingsEnum]}
+                      onChange={(val) => updateLateFee(`LATE_FEE_${index + 1}`, Number(val))}
                       prefix="₱"
                       thousandSeparator=","
                       min={0}
@@ -172,16 +228,17 @@ const FinancialSettingsPage = () => {
             </Paper>
 
             {/* Save Button */}
-            <Group justify="flex-end">
+            <Flex align="center" justify="flex-end">
               <Button
-                leftSection={<IconDeviceFloppy size={20} />}
-                onClick={handleSave}
                 size="md"
-                radius="md"
+                leftSection={<IconDeviceFloppy size={18} />}
+                onClick={handleSave}
+                loading={isLoading}
+                disabled={isEqual(initialFinancialSettings, financialSettings)}
               >
-                {saved ? "Saved!" : "Save Changes"}
+                Save
               </Button>
-            </Group>
+            </Flex>
           </Stack>
         </Paper>
       </Stack>

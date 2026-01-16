@@ -2,7 +2,7 @@ import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getReminders } from "./action";
+import { getReminders } from "./actions";
 import RemindersPage from "./components/RemindersPage";
 
 const Page = async () => {

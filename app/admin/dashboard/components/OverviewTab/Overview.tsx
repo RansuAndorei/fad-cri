@@ -14,7 +14,7 @@ import {
   getAppointmentStatusMonthlyCount,
   getDashboardClientList,
   getDashboardTypeList,
-} from "../../action";
+} from "../../actions";
 import { RadialChartData } from "../Chart/RadialChart";
 import AppointmentStatusTracker from "./AppointmentStatusTracker";
 import ClientTable from "./ClientTable/ClientTable";

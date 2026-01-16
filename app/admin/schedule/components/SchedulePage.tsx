@@ -30,7 +30,7 @@ import { isError, toUpper } from "lodash";
 import moment, { Moment } from "moment";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { getAppointmentDatabyAdmin, getSchedule } from "../action";
+import { getAppointmentDatabyAdmin, getSchedule } from "../actions";
 import SummaryModal from "./SummaryModal";
 
 type DayWithScheduleType = {

@@ -147,3 +147,10 @@ export const ADMIN_NAVIGATION_ITEMS = [
     ],
   },
 ];
+
+export const LATE_FEE_LABEL_LIST = [
+  "11-20 minutes",
+  "21-39 minutes",
+  "40 minutes to 1 hour",
+  "More than 1 hour",
+];

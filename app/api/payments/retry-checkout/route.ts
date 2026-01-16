@@ -2,7 +2,7 @@ import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { isError } from "lodash";
 import { NextResponse } from "next/server";
-import { insertPayment } from "../create-checkout/action";
+import { insertPayment } from "../create-checkout/actions";
 export async function POST(req: Request) {
   const supabaseClient = await createSupabaseServerClient();
   const pathname = new URL(req.url).pathname;

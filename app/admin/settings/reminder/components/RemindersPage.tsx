@@ -24,7 +24,7 @@ import { isEqualWith, isError } from "lodash";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { v4 } from "uuid";
-import { insertReminders } from "../action";
+import { insertReminders } from "../actions";
 import ReminderEditor from "./ReminderEditor";
 
 type Props = {
@@ -73,7 +73,7 @@ const RemindersPage = ({ reminderList }: Props) => {
     }
   };
 
-  const handleSaveReminders = async () => {
+  const handleSave = async () => {
     if (!userData) return;
     if (!reminders.length) {
       notifications.show({
@@ -287,7 +287,7 @@ const RemindersPage = ({ reminderList }: Props) => {
               <Button
                 size="md"
                 leftSection={<IconDeviceFloppy size={18} />}
-                onClick={handleSaveReminders}
+                onClick={handleSave}
                 loading={isLoading}
                 disabled={isEqualWith(reminders, initialReminders, (_objVal, _othVal, key) => {
                   if (key === "error") return true;
