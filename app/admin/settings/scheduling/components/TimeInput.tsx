@@ -4,12 +4,12 @@ import { IconClock } from "@tabler/icons-react";
 import { useRef } from "react";
 
 type Props = {
-  id: number;
+  schedule_slot_id: string;
   value: string;
-  updateSlot: (id: number, field: "day" | "time", value: string) => void;
+  updateSlot: (schedule_slot_id: string, value: string) => void;
 };
 
-const TimeInput = ({ id, value, updateSlot }: Props) => {
+const TimeInput = ({ schedule_slot_id, value, updateSlot }: Props) => {
   const theme = useMantineTheme();
 
   const ref = useRef<HTMLInputElement>(null);
@@ -21,7 +21,9 @@ const TimeInput = ({ id, value, updateSlot }: Props) => {
   return (
     <MantineTimeInput
       value={value}
-      onChange={(e) => updateSlot(id, "time", e.currentTarget.value)}
+      onChange={(e) => {
+        updateSlot(schedule_slot_id, e.currentTarget.value);
+      }}
       styles={{
         input: {
           fontWeight: 600,

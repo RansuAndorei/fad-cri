@@ -1,6 +1,10 @@
 "use client";
 
+import { insertError } from "@/app/actions";
+import { useUserData } from "@/stores/useUserStore";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import { DaysEnum, ScheduleSlotTableRow } from "@/utils/types";
 import {
   ActionIcon,
   Badge,
@@ -17,50 +21,128 @@ import {
   Title,
   useMantineTheme,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconClock, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
+import { isEqual, isError } from "lodash";
+import moment from "moment";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { v4 } from "uuid";
+import { updateScheduleSlots } from "../actions";
 import TimeInput from "./TimeInput";
 
-const SchedulingPage = () => {
+type Props = {
+  scheduleSlotData: ScheduleSlotTableRow[];
+};
+
+const SchedulingPage = ({ scheduleSlotData }: Props) => {
+  const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
+  const pathname = usePathname();
+  const userData = useUserData();
 
-  const [scheduleSlots, setScheduleSlots] = useState([
-    { id: 1, day: "SUNDAY", time: "12:00", additionalNote: "" },
-    { id: 2, day: "SUNDAY", time: "15:00", additionalNote: "" },
-    { id: 3, day: "SUNDAY", time: "18:00", additionalNote: "" },
-    { id: 4, day: "MONDAY", time: "12:00", additionalNote: "" },
-    { id: 5, day: "MONDAY", time: "15:00", additionalNote: "" },
-    { id: 6, day: "MONDAY", time: "18:00", additionalNote: "" },
-    { id: 7, day: "TUESDAY", time: "12:00", additionalNote: "" },
-    { id: 8, day: "TUESDAY", time: "15:00", additionalNote: "" },
-    { id: 9, day: "TUESDAY", time: "18:00", additionalNote: "" },
-  ]);
+  const [initialScheduleSlot, setInitialScheduleSlot] = useState(scheduleSlotData);
+  const [scheduleSlots, setScheduleSlots] = useState(scheduleSlotData);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [saved, setSaved] = useState(false);
-
-  const addSlot = (day: string) => {
-    const newId = Math.max(...scheduleSlots.map((s) => s.id)) + 1;
-    setScheduleSlots([...scheduleSlots, { id: newId, day, time: "", additionalNote: "" }]);
+  const addSlot = (schedule_slot_day: DaysEnum) => {
+    const newId = v4();
+    setScheduleSlots([
+      ...scheduleSlots,
+      {
+        schedule_slot_id: newId,
+        schedule_slot_day,
+        schedule_slot_time: "",
+        schedule_slot_note: null,
+      },
+    ]);
   };
 
-  const removeSlot = (id: number) => {
-    setScheduleSlots(scheduleSlots.filter((slot) => slot.id !== id));
+  const removeSlot = (schedule_slot_id: string) => {
+    setScheduleSlots(scheduleSlots.filter((slot) => slot.schedule_slot_id !== schedule_slot_id));
   };
 
-  const updateSlot = (id: number, field: "day" | "time", value: string) => {
+  const updateSlot = (schedule_slot_id: string, value: string) => {
     setScheduleSlots(
-      scheduleSlots.map((slot) => (slot.id === id ? { ...slot, [field]: value } : slot)),
+      scheduleSlots.map((slot) =>
+        slot.schedule_slot_id === schedule_slot_id ? { ...slot, schedule_slot_time: value } : slot,
+      ),
     );
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const updateNote = (schedule_slot_id: string, value: string) => {
+    setScheduleSlots(
+      scheduleSlots.map((slot) =>
+        slot.schedule_slot_id === schedule_slot_id ? { ...slot, schedule_slot_note: value } : slot,
+      ),
+    );
+  };
+
+  const hasDuplicateSchedules = (slots: typeof scheduleSlots) => {
+    const seen = new Set<string>();
+
+    for (const slot of slots) {
+      const key = `${slot.schedule_slot_day}-${slot.schedule_slot_time}`;
+      if (seen.has(key)) {
+        return true;
+      }
+      seen.add(key);
+    }
+
+    return false;
+  };
+
+  const handleSave = async () => {
+    if (!userData) return;
+
+    if (hasDuplicateSchedules(scheduleSlots)) {
+      notifications.show({
+        message: "Duplicate schedules are not allowed. Please check the day and time.",
+        color: "red",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const userOffset = new Date().getTimezoneOffset();
+      const scheduleSlotsWithTZ = scheduleSlots.map((slot) => ({
+        ...slot,
+        schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm")
+          .utcOffset(-userOffset)
+          .format("HH:mm:ssZ"),
+      }));
+      await updateScheduleSlots(supabaseClient, { scheduleSlots: scheduleSlotsWithTZ });
+      setInitialScheduleSlot(scheduleSlots);
+
+      notifications.show({
+        message: "Schedule slots updated successfully.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleSave",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const groupedSlots = DAYS_OF_THE_WEEK.map((day) => ({
     day,
-    slots: scheduleSlots.filter((slot) => slot.day === day),
+    slots: scheduleSlots.filter((slot) => slot.schedule_slot_day === day),
   }));
 
   return (
@@ -104,11 +186,21 @@ const SchedulingPage = () => {
                 ) : (
                   <Stack gap="md">
                     {slots.map((slot, index) => (
-                      <Flex key={slot.id} align="center" justify="center" gap="md" wrap="wrap">
+                      <Flex
+                        key={slot.schedule_slot_id}
+                        align="center"
+                        justify="center"
+                        gap="md"
+                        wrap="wrap"
+                      >
                         <Badge variant="light" radius="xl" h={30} color="yellow">
                           {index + 1}
                         </Badge>
-                        <TimeInput id={slot.id} value={slot.time} updateSlot={updateSlot} />
+                        <TimeInput
+                          schedule_slot_id={slot.schedule_slot_id}
+                          value={slot.schedule_slot_time}
+                          updateSlot={updateSlot}
+                        />
                         <TextInput
                           styles={{
                             input: {
@@ -119,12 +211,16 @@ const SchedulingPage = () => {
                           size="md"
                           placeholder="Additional note"
                           miw={200}
+                          value={slot.schedule_slot_note || ""}
+                          onChange={(e) => {
+                            updateNote(slot.schedule_slot_id, e.currentTarget.value);
+                          }}
                         />
 
                         <ActionIcon
                           color="red"
                           variant="light"
-                          onClick={() => removeSlot(slot.id)}
+                          onClick={() => removeSlot(slot.schedule_slot_id)}
                           size="lg"
                         >
                           <IconTrash size={16} />
@@ -146,16 +242,18 @@ const SchedulingPage = () => {
             ))}
 
             {/* Save Button */}
-            <Group justify="flex-end">
+
+            <Flex align="center" justify="flex-end">
               <Button
-                leftSection={<IconDeviceFloppy size={20} />}
-                onClick={handleSave}
                 size="md"
-                radius="md"
+                leftSection={<IconDeviceFloppy size={18} />}
+                onClick={handleSave}
+                loading={isLoading}
+                disabled={isEqual(initialScheduleSlot, scheduleSlots)}
               >
-                {saved ? "Saved!" : "Save Changes"}
+                Save
               </Button>
-            </Group>
+            </Flex>
           </Stack>
         </Paper>
       </Stack>

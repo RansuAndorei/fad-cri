@@ -53,6 +53,22 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
   const handleSave = async () => {
     if (!userData) return;
 
+    const { BOOKING_FEE, MAX_SCHEDULE_DATE_MONTH, LATE_FEE_1, LATE_FEE_2, LATE_FEE_3, LATE_FEE_4 } =
+      financialSettings;
+    const errors: string[] = [];
+
+    if (!BOOKING_FEE.trim()) errors.push("Booking Fee");
+    if (!MAX_SCHEDULE_DATE_MONTH.trim()) errors.push("Max Schedule Date");
+    if (!(LATE_FEE_1 && LATE_FEE_2 && LATE_FEE_3 && LATE_FEE_4)) errors.push("Late Fees");
+
+    if (errors.length > 0) {
+      notifications.show({
+        message: `${errors.join(", ")} ${errors.length === 1 ? "is" : "are"} required`,
+        color: "orange",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       await updateSettings(supabaseClient, {

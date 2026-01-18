@@ -100,17 +100,26 @@ export type Database = {
       appointment_type_table: {
         Row: {
           appointment_type_created: string;
+          appointment_type_date_updated: string | null;
           appointment_type_id: string;
+          appointment_type_is_active: boolean;
+          appointment_type_is_disabled: boolean;
           appointment_type_label: string;
         };
         Insert: {
           appointment_type_created?: string;
+          appointment_type_date_updated?: string | null;
           appointment_type_id?: string;
+          appointment_type_is_active?: boolean;
+          appointment_type_is_disabled?: boolean;
           appointment_type_label: string;
         };
         Update: {
           appointment_type_created?: string;
+          appointment_type_date_updated?: string | null;
           appointment_type_id?: string;
+          appointment_type_is_active?: boolean;
+          appointment_type_is_disabled?: boolean;
           appointment_type_label?: string;
         };
         Relationships: [];
@@ -416,6 +425,7 @@ export type Database = {
         };
       };
       upsert_reminders: { Args: { input_data: Json }; Returns: undefined };
+      upsert_schedule_slot: { Args: { input_data: Json }; Returns: undefined };
     };
     Enums: {
       appointment_status: "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";

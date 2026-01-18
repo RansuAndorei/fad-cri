@@ -104,6 +104,9 @@ CREATE TABLE email_resend_table(
 CREATE TABLE appointment_type_table(
   appointment_type_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   appointment_type_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  appointment_type_date_updated TIMESTAMPTZ,
+  appointment_type_is_active BOOLEAN DEFAULT TRUE NOT NULL,
+  appointment_type_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
   appointment_type_label TEXT NOT NULL
 );
 

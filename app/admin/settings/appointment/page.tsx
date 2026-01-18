@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { SettingsEnum } from "@/utils/types";
+import { AppointmentTypeTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getLocationAndContactSettings } from "./actions";
-import LocationContactPage from "./components/LocationContactPage";
+import { getAppointmentTypeSettings } from "./actions";
+import AppointmentSettingsPage from "./components/AppointmentSettingsPage";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -16,16 +16,16 @@ const Page = async () => {
     redirect("/");
   }
 
-  let locationAndContactData: Record<SettingsEnum, string>;
+  let appointmentTypeData: AppointmentTypeTableRow[];
   try {
-    locationAndContactData = await getLocationAndContactSettings(supabaseClient);
+    appointmentTypeData = await getAppointmentTypeSettings(supabaseClient);
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
-          error_url: "/admin/settings/location-and-contact",
-          error_function: "fetchLocationAndContactInitialData",
+          error_url: "/admin/settings/appointment",
+          error_function: "fetchAppointmentInitialData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -34,7 +34,7 @@ const Page = async () => {
     redirect("/500");
   }
 
-  return <LocationContactPage locationAndContactData={locationAndContactData} />;
+  return <AppointmentSettingsPage appointmentTypeData={appointmentTypeData} />;
 };
 
 export default Page;

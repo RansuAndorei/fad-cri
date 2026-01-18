@@ -39,34 +39,55 @@ INSERT INTO user_table (user_id, user_first_name, user_last_name, user_email, us
 ('e2f572f7-1715-4ce8-9a1b-8c70fbaf3765', 'Lorem', 'Ipsum', 'loremipsum@gmail.com', '09659875121', 'FEMALE', '08-23-1999'),
 ('fa9d8410-f565-483b-ae21-e6ba882ee59c', 'John', 'Doe', 'johndoe@gmail.com', '09563269796', 'MALE', '06-29-2002');
 
-INSERT INTO schedule_slot_table (schedule_slot_day, schedule_slot_time) VALUES
-('SUNDAY', '12:00:00+08'),
-('SUNDAY', '15:00:00+08'),
-('SUNDAY', '18:00:00+08'),
+INSERT INTO schedule_slot_table (schedule_slot_day, schedule_slot_time, schedule_slot_note) VALUES
+('SUNDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('SUNDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('SUNDAY', '13:00:00+08', null),
+('SUNDAY', '16:00:00+08', null),
+('SUNDAY', '19:00:00+08', null),
+('SUNDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('MONDAY', '12:00:00+08'),
-('MONDAY', '15:00:00+08'),
-('MONDAY', '18:00:00+08'),
+('MONDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('MONDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('MONDAY', '13:00:00+08', null),
+('MONDAY', '16:00:00+08', null),
+('MONDAY', '19:00:00+08', null),
+('MONDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('TUESDAY', '12:00:00+08'),
-('TUESDAY', '15:00:00+08'),
-('TUESDAY', '18:00:00+08'),
+('TUESDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('TUESDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('TUESDAY', '13:00:00+08', null),
+('TUESDAY', '16:00:00+08', null),
+('TUESDAY', '19:00:00+08', null),
+('TUESDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('WEDNESDAY', '12:00:00+08'),
-('WEDNESDAY', '15:00:00+08'),
-('WEDNESDAY', '18:00:00+08'),
+('WEDNESDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('WEDNESDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('WEDNESDAY', '13:00:00+08', null),
+('WEDNESDAY', '16:00:00+08', null),
+('WEDNESDAY', '19:00:00+08', null),
+('WEDNESDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('THURSDAY', '12:00:00+08'),
-('THURSDAY', '15:00:00+08'),
-('THURSDAY', '18:00:00+08'),
+('THURSDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('THURSDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('THURSDAY', '13:00:00+08', null),
+('THURSDAY', '16:00:00+08', null),
+('THURSDAY', '19:00:00+08', null),
+('THURSDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('FRIDAY', '12:00:00+08'),
-('FRIDAY', '15:00:00+08'),
-('FRIDAY', '18:00:00+08'),
+('FRIDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('FRIDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('FRIDAY', '13:00:00+08', null),
+('FRIDAY', '16:00:00+08', null),
+('FRIDAY', '19:00:00+08', null),
+('FRIDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
 
-('SATURDAY', '12:00:00+08'),
-('SATURDAY', '15:00:00+08'),
-('SATURDAY', '18:00:00+08');
+('SATURDAY', '08:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('SATURDAY', '10:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.'),
+('SATURDAY', '13:00:00+08', null),
+('SATURDAY', '16:00:00+08', null),
+('SATURDAY', '19:00:00+08', null),
+('SATURDAY', '22:00:00+08', 'Please be advised that this schedule requires an additional payment of ₱1,000.');
 
 CREATE OR REPLACE FUNCTION seed_appointment_data()
 RETURNS VOID

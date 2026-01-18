@@ -580,3 +580,30 @@ BEGIN
   RETURN;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION upsert_schedule_slot(input_data JSONB)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  var_slot JSONB;
+  var_id UUID;
+  var_day day;
+  var_time TIME WITH TIME ZONE;
+  var_note TEXT;
+BEGIN
+  DELETE FROM schedule_slot_table WHERE true;
+
+  FOR var_slot IN
+    SELECT * FROM JSONB_ARRAY_ELEMENTS(input_data->'scheduleSlots')
+  LOOP
+    var_id := (var_slot->>'schedule_slot_id')::UUID;
+    var_day := (var_slot->>'schedule_slot_day')::day;
+    var_time := (var_slot->>'schedule_slot_time')::TIME WITH TIME ZONE;
+    var_note := var_slot->>'schedule_slot_note';
+
+    INSERT INTO schedule_slot_table(schedule_slot_id, schedule_slot_day, schedule_slot_time, schedule_slot_note)
+    VALUES (var_id, var_day, var_time, var_note);
+  END LOOP;
+END;
+$$;

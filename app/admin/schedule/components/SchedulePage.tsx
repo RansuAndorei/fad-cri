@@ -14,7 +14,6 @@ import {
   Card,
   Flex,
   Grid,
-  Group,
   Modal,
   Skeleton,
   Stack,
@@ -46,7 +45,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
-  const { colors } = useMantineTheme();
+  const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
   const { setIsLoading } = useLoadingActions();
 
@@ -56,27 +55,28 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   const [selectedAppointment, setSelectedAppointment] = useState<
     (AppointmentType & { appointment_user: UserTableRow }) | null
   >(null);
-
   const [opened, { open, close }] = useDisclosure(false);
 
-  const cardColor = colorScheme === "light" ? 0 : 9;
-  const textColor = colorScheme === "light" ? 3 : 9;
   const shadowColor =
     colorScheme === "light" ? "0 4px 12px rgba(0,0,0,0.15)" : "0 4px 12px rgba(255,255,255,0.1)";
+  const cardBgIndex = colorScheme === "light" ? 0 : 9;
 
   useEffect(() => {
     const fetchSchedule = async () => {
       if (!userData) return;
+
       try {
         setIsFetching(true);
-        const days: DayWithScheduleType[] = [];
 
+        const days: DayWithScheduleType[] = [];
         const startOfMonth = currentMonth.clone().startOf("month").startOf("week");
+
         const startDate = currentMonth
           .clone()
           .startOf("month")
           .startOf("day")
           .format("YYYY-MM-DD HH:mm:ssZ");
+
         const endDate = currentMonth
           .clone()
           .endOf("month")
@@ -85,9 +85,12 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
           .second(59)
           .format("YYYY-MM-DD HH:mm:ssZ");
 
-        const day = startOfMonth.clone();
-        const schedule = await getSchedule(supabaseClient, { startDate, endDate });
+        const schedule = await getSchedule(supabaseClient, {
+          startDate,
+          endDate,
+        });
 
+        const day = startOfMonth.clone();
         while (days.length < 42) {
           const matchedSchedule = schedule.filter((s) =>
             moment(s.appointment_schedule).isSame(day, "day"),
@@ -96,20 +99,18 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
           day.add(1, "day");
         }
 
-        if (
-          days
-            .slice(days.length - 7, days.length)
-            .every(({ day }) => !day.isSame(currentMonth, "month"))
-        ) {
-          setDays(days.slice(0, days.length - 7));
-        } else {
-          setDays(days);
-        }
+        let removeCount = 0;
+        if (days.slice(-7).every(({ day }) => !day.isSame(currentMonth, "month"))) removeCount = 7;
+        if (days.slice(-14, -7).every(({ day }) => !day.isSame(currentMonth, "month")))
+          removeCount = 14;
+
+        setDays(removeCount ? days.slice(0, -removeCount) : days);
       } catch (e) {
         notifications.show({
           message: "Something went wrong. Please try again later.",
           color: "red",
         });
+
         if (isError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
@@ -125,6 +126,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
         setIsFetching(false);
       }
     };
+
     fetchSchedule();
   }, [currentMonth]);
 
@@ -140,38 +142,42 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
 
   const appointmentMapsByDay = useMemo(() => {
     const maps = new Map<string, Map<string, ScheduleType>>();
-    for (const { day, schedule: scheduleForDay } of days) {
-      const dayKey = day.format("YYYY-MM-DD");
+
+    for (const { day, schedule } of days) {
       const map = new Map<string, ScheduleType>();
-      for (const appt of scheduleForDay) {
-        const apptTime = moment(appt.appointment_schedule).utcOffset(8).format("HH:mm:ss+08");
-        map.set(apptTime, appt);
+      for (const appt of schedule) {
+        const timeKey = moment(appt.appointment_schedule).utcOffset(8).format("HH:mm:ss+08");
+        map.set(timeKey, appt);
       }
-      maps.set(dayKey, map);
+      maps.set(day.format("YYYY-MM-DD"), map);
     }
+
     return maps;
   }, [days]);
 
-  const handleMonthChange = (direction: "prev" | "next") => {
+  const handleMonthChange = (dir: "prev" | "next") => {
     setCurrentMonth((prev) =>
-      direction === "prev" ? prev.clone().subtract(1, "month") : prev.clone().add(1, "month"),
+      dir === "prev" ? prev.clone().subtract(1, "month") : prev.clone().add(1, "month"),
     );
   };
 
   const handleAppointmentClick = async (appointmentId: string, user: UserTableRow) => {
     if (!userData) return;
+
     try {
       setIsLoading(true);
-      const appointmentData = await getAppointmentDatabyAdmin(supabaseClient, {
-        appointmentId,
+      const appointmentData = await getAppointmentDatabyAdmin(supabaseClient, { appointmentId });
+      setSelectedAppointment({
+        ...appointmentData,
+        appointment_user: user,
       });
-      setSelectedAppointment({ ...appointmentData, appointment_user: user });
       open();
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
+
       if (isError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
@@ -179,7 +185,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
             error_url: pathname,
             error_function: "handleAppointmentClick",
             error_user_email: userData.email,
-            error_user_id: userData?.id,
+            error_user_id: userData.id,
           },
         });
       }
@@ -189,123 +195,124 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   };
 
   return (
-    <Box h="100%">
-      {selectedAppointment ? (
-        <Modal
-          opened={opened}
-          onClose={close}
-          title={
-            <Flex align="center" justify="center" gap="sm">
-              <Title
-                order={4}
-              >{`Appointment of ${[selectedAppointment.appointment_user.user_first_name, selectedAppointment.appointment_user.user_last_name].join(" ")}`}</Title>
-              <Badge
-                color={selectedAppointment.appointment_status === "SCHEDULED" ? "blue" : "green"}
-              >
-                {selectedAppointment.appointment_status}
-              </Badge>
-            </Flex>
-          }
-          size="xl"
-        >
+    <Box>
+      {selectedAppointment && (
+        <Modal opened={opened} onClose={close} size="xl">
+          <Flex align="center" justify="space-between" mb="sm">
+            <Title order={4}>
+              Appointment of {selectedAppointment.appointment_user.user_first_name}{" "}
+              {selectedAppointment.appointment_user.user_last_name}
+            </Title>
+            <Badge>{selectedAppointment.appointment_status}</Badge>
+          </Flex>
+
           <SummaryModal appointmentData={selectedAppointment} />
         </Modal>
-      ) : null}
-      <Flex align="center" gap="sm" wrap="wrap">
-        <Button
-          variant="subtle"
-          onClick={() => handleMonthChange("prev")}
-          leftSection={<IconArrowLeft size={14} />}
-          disabled={isFetching}
-        >
-          Previous
-        </Button>
-        <Flex align="center" justify="center" w="190">
-          <Title order={2}>{currentMonth.format("MMMM YYYY")}</Title>
-        </Flex>
-        <Button
-          variant="subtle"
-          onClick={() => handleMonthChange("next")}
-          rightSection={<IconArrowRight size={14} />}
-          disabled={isFetching}
-        >
-          Next
-        </Button>
-      </Flex>
+      )}
 
-      <Grid columns={7} gutter="xs" mt="md" align="stretch">
+      {/* Month Header */}
+      <Card withBorder radius="md" p="sm">
+        <Flex
+          direction={{ base: "column", sm: "row" }} // column on mobile, row on desktop
+          align="center"
+          justify={{ base: "center", sm: "space-between" }} // centered on mobile, spread on desktop
+          gap="sm"
+        >
+          <Button
+            variant="light"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => handleMonthChange("prev")}
+            disabled={isFetching}
+            miw={150}
+          >
+            Previous
+          </Button>
+
+          <Flex align="center" justify="center" miw={250}>
+            <Title order={3}>{currentMonth.format("MMMM YYYY")}</Title>
+          </Flex>
+
+          <Button
+            variant="light"
+            rightSection={<IconArrowRight size={16} />}
+            onClick={() => handleMonthChange("next")}
+            disabled={isFetching}
+            miw={150}
+          >
+            Next
+          </Button>
+        </Flex>
+      </Card>
+
+      {/* Day Headers */}
+      <Grid columns={7} gutter="xs" mt="xl" visibleFrom="sm" mb="xs">
         {DAYS_OF_THE_WEEK.map((day) => (
           <Grid.Col key={day} span={1}>
-            <Card
-              withBorder
-              padding="sm"
-              radius="md"
-              style={{ border: `solid 1px ${colors.cyan[6]}` }}
-            >
-              <Flex align="center" justify="center">
-                <Text fw="bold">{day}</Text>
-              </Flex>
-            </Card>
+            <Text ta="center" fw={600} c="dimmed">
+              {day}
+            </Text>
           </Grid.Col>
         ))}
+      </Grid>
 
-        {isFetching
-          ? DAYS_OF_THE_WEEK.map(() =>
-              [...Array(3).keys()].map((index) => (
-                <Grid.Col key={index} span={1}>
-                  <Skeleton height={150} />
-                </Grid.Col>
-              )),
-            )
-          : null}
+      {/* Calendar */}
+      <Grid columns={7} gutter="xs">
+        {isFetching &&
+          Array.from({ length: 14 }).map((_, i) => (
+            <Grid.Col key={i} span={{ base: 7, sm: 1 }}>
+              <Skeleton height={160} />
+            </Grid.Col>
+          ))}
 
         {!isFetching &&
           days.map(({ day }, index) => {
             const isCurrentMonth = day.isSame(currentMonth, "month");
-
             const dayKey = toUpper(day.format("dddd"));
-            const scheduleSlotForTheDay = scheduleSlotByDay[dayKey] ?? [];
+            const slots = scheduleSlotByDay[dayKey] ?? [];
             const apptMap = appointmentMapsByDay.get(day.format("YYYY-MM-DD")) ?? new Map();
 
-            const allTimesSet = new Set([...scheduleSlotForTheDay, ...Array.from(apptMap.keys())]);
+            const mergedTimes = Array.from(new Set([...slots, ...apptMap.keys()])).sort((a, b) =>
+              moment(a, "HH:mm:ssZ").diff(moment(b, "HH:mm:ssZ")),
+            );
 
-            const mergedSchedule = Array.from(allTimesSet)
-              .sort((a, b) => moment(a, "HH:mm:ssZ").diff(moment(b, "HH:mm:ssZ")))
-              .map((time) => ({
-                schedule_slot_time: time,
-                appointment: (apptMap.get(time) as ScheduleType) || null,
-              }));
             return (
-              <Grid.Col key={index} span={1}>
+              <Grid.Col key={index} span={{ base: 7, sm: 1 }}>
                 <Card
                   withBorder
-                  padding="sm"
                   radius="md"
+                  p="xs"
                   style={{
                     opacity: isCurrentMonth ? 1 : 0,
+                    display: !isCurrentMonth && window.innerWidth < 768 ? "none" : "flex",
+                    flexDirection: "column",
                     height: "100%",
                   }}
                 >
-                  <Text fw={500}>{day.format("D")}</Text>
+                  <Text fw={600} c={"dimmed"}>
+                    {day.format("D")}
+                  </Text>
 
-                  <Stack gap="xs" mt="xs">
-                    {mergedSchedule.map(({ schedule_slot_time, appointment }) => {
+                  <Stack gap={6} mt={6}>
+                    {mergedTimes.map((time) => {
+                      const appointment = apptMap.get(time);
+
                       if (appointment) {
                         const client = appointment.appointment_user;
-                        const statusColor =
-                          appointment.appointment_status === "SCHEDULED" ? "blue" : "green";
 
                         return (
                           <Card
                             key={appointment.appointment_id}
-                            radius="md"
                             withBorder
+                            p="xs"
+                            radius="sm"
+                            className="hover-card"
                             style={{
-                              borderColor: colors[statusColor][6],
-                              backgroundColor: colors[statusColor][cardColor],
+                              borderLeft: `4px solid ${theme.colors.blue[6]}`,
                               cursor: "pointer",
-                              transition: "transform 0.1s ease, box-shadow 0.1s ease",
                             }}
+                            onClick={() =>
+                              handleAppointmentClick(appointment.appointment_id, client)
+                            }
                             onMouseEnter={(e) => {
                               e.currentTarget.style.transform = "scale(1.02)";
                               e.currentTarget.style.boxShadow = shadowColor;
@@ -314,19 +321,11 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
                               e.currentTarget.style.transform = "scale(1)";
                               e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
                             }}
-                            onClick={() => {
-                              handleAppointmentClick(
-                                appointment.appointment_id,
-                                appointment.appointment_user,
-                              );
-                            }}
                           >
-                            <Group justify="space-between">
-                              <Text fw={500}>
-                                {[client.user_first_name, client.user_last_name].join(" ")}
-                              </Text>
-                            </Group>
-                            <Text size="sm" c={colors["dark"][textColor]}>
+                            <Text size="sm" fw={500} lineClamp={1}>
+                              {client.user_first_name} {client.user_last_name}
+                            </Text>
+                            <Text size="xs" c="dimmed">
                               {formatTime(new Date(appointment.appointment_schedule))}
                             </Text>
                           </Card>
@@ -335,13 +334,12 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
 
                       return (
                         <Card
-                          key={schedule_slot_time}
-                          radius="md"
-                          style={{
-                            backgroundColor: colors.gray[cardColor],
-                            cursor: "pointer",
-                            transition: "transform 0.1s ease, box-shadow 0.1s ease",
-                          }}
+                          key={time}
+                          withBorder
+                          p="xs"
+                          radius="sm"
+                          bg={theme.colors.gray[cardBgIndex]}
+                          style={{ borderStyle: "dashed", cursor: "pointer" }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = "scale(1.02)";
                             e.currentTarget.style.boxShadow = shadowColor;
@@ -351,8 +349,8 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
                             e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
                           }}
                         >
-                          <Text size="sm" c="dimmed">
-                            {moment(schedule_slot_time, "HH:mm:ssZ").format("hh:mm A")}
+                          <Text size="xs" c="dimmed">
+                            {moment(time, "HH:mm:ssZ").format("hh:mm A")}
                           </Text>
                         </Card>
                       );

@@ -35,10 +35,19 @@ export type ScheduleSlotTableRow = Database["public"]["Tables"]["schedule_slot_t
 export type ScheduleSlotTableInsert = Database["public"]["Tables"]["schedule_slot_table"]["Insert"];
 export type ScheduleSlotTableUpdate = Database["public"]["Tables"]["schedule_slot_table"]["Update"];
 
+export type AppointmentTypeTableRow = Database["public"]["Tables"]["appointment_type_table"]["Row"];
+export type AppointmentTypeTableInsert =
+  Database["public"]["Tables"]["appointment_type_table"]["Insert"];
+export type AppointmentTypeTableUpdate =
+  Database["public"]["Tables"]["appointment_type_table"]["Update"];
+
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];
 
 export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO";
+
+export type SettingsEnum = Database["public"]["Enums"]["settings"];
+export type DaysEnum = Database["public"]["Enums"]["day"];
 
 export type LogInFormValues = {
   email: string;
@@ -115,5 +124,3 @@ export type StackedBarChartDataType = {
 export type ScheduleType = AppointmentTableRow & {
   appointment_user: UserTableRow;
 };
-
-export type SettingsEnum = Database["public"]["Enums"]["settings"];

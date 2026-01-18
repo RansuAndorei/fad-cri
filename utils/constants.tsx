@@ -12,8 +12,10 @@ import {
   IconPhoto,
   IconQuestionMark,
   IconSettings,
+  IconShape,
   IconSparkles,
 } from "@tabler/icons-react";
+import { DaysEnum } from "./types";
 
 export const SMALL_SCREEN = "(max-width: 992px)";
 export const SKIPPED_ERROR_MESSAGES = ["Email already registered."];
@@ -93,7 +95,7 @@ export const DAYS_OF_THE_WEEK = [
   "THURSDAY",
   "FRIDAY",
   "SATURDAY",
-];
+] as DaysEnum[];
 
 export const LATE_FEES_LABEL = [
   "11-20 minutes",
@@ -120,6 +122,12 @@ export const ADMIN_NAVIGATION_ITEMS = [
     label: "Settings",
     icon: IconSettings,
     submenu: [
+      {
+        id: "appointment-settings",
+        label: "Appointment",
+        icon: IconShape,
+        path: `/admin/settings/appointment`,
+      },
       {
         id: "financial-settings",
         label: "Financial",
