@@ -124,3 +124,9 @@ export type StackedBarChartDataType = {
 export type ScheduleType = AppointmentTableRow & {
   appointment_user: UserTableRow;
 };
+
+export type UserProfilePasswordType = {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
+};

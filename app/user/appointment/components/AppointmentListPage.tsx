@@ -170,7 +170,6 @@ const AppointmentListPage = ({
               onSortStatusChange={setSortStatus}
               styles={{
                 header: {
-                  fontStyle: "italic",
                   backgroundColor: colors.cyan[7],
                   color: "white",
                   transition: "background-color 0.2s ease",

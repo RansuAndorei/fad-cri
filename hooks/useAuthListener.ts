@@ -1,93 +1,136 @@
 "use client";
 
+import { insertError } from "@/app/actions";
 import { useUserActions } from "@/stores/useUserStore";
 import { supabaseClient } from "@/utils/supabase/single-client";
 import { User } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
+import { isError } from "lodash";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export function useAuthListener() {
   const { setUserData, setUserProfile, setIsLoading, reset } = useUserActions();
   const mounted = useRef(true);
+  const pathname = usePathname();
   const currentUserIdRef = useRef<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     mounted.current = true;
 
     const fetchUserProfile = async (user: User) => {
-      const { data: profile } = await supabaseClient
-        .from("user_table")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      try {
+        const { data: profile, error } = await supabaseClient
+          .from("user_table")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (error) throw error;
 
-      if (mounted.current) {
-        setUserProfile(profile);
-
-        const currentPath = window.location.pathname;
-        if (currentPath.includes("log-in")) {
-          router.push("/user/onboarding");
+        if (mounted.current) {
+          setUserProfile(profile);
         }
+
+        return profile;
+      } catch (e) {
+        if (isError(e)) {
+          await insertError(supabaseClient, {
+            errorTableInsert: {
+              error_message: e.message,
+              error_url: pathname,
+              error_function: "fetchUserProfile",
+              error_user_email: user.email,
+              error_user_id: user.id,
+            },
+          });
+        }
+        return null;
       }
     };
 
     const init = async () => {
       const currentPath = window.location.pathname;
-      const isLoginPage = currentPath.includes("log-in");
+      const isAuthPage = currentPath.includes("log-in") || currentPath.includes("sign-up");
 
-      // Only show loading if NOT on login page
-      if (!isLoginPage) {
-        setIsLoading(true);
-      }
+      if (!isAuthPage) setIsLoading(true);
 
-      const { data } = await supabaseClient.auth.getSession();
-      const user = data.session?.user ?? null;
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
 
-      if (!mounted.current) return;
+        const user = data.session?.user ?? null;
 
-      if (user) {
-        setUserData(user);
-        currentUserIdRef.current = user.id;
-        await fetchUserProfile(user);
-      } else {
-        reset();
-      }
+        if (!mounted.current) return;
 
-      if (!isLoginPage) {
-        setIsLoading(false);
+        if (user) {
+          setUserData(user);
+          currentUserIdRef.current = user.id;
+          await fetchUserProfile(user);
+        } else {
+          reset();
+          currentUserIdRef.current = null;
+        }
+      } catch (e) {
+        if (isError(e)) {
+          await insertError(supabaseClient, {
+            errorTableInsert: {
+              error_message: e.message,
+              error_url: pathname,
+              error_function: "init",
+            },
+          });
+        }
+        if (mounted.current) reset();
+      } finally {
+        if (mounted.current && !isAuthPage) setIsLoading(false);
       }
     };
 
     init();
 
+    const shouldShowLoading = (event: string) => event === "SIGNED_IN" || event === "SIGNED_OUT";
+
     const { data: subscription } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
       const user = session?.user ?? null;
-
-      if (event === "SIGNED_IN" && user?.id === currentUserIdRef.current) {
-        return;
-      }
-      if (event === "TOKEN_REFRESHED") {
-        return;
-      }
-
       const currentPath = window.location.pathname;
-      const isLoginPage = currentPath.includes("log-in");
+      const isAuthPage = currentPath.includes("log-in") || currentPath.includes("sign-up");
 
-      if (mounted.current && !isLoginPage) {
+      const shouldIgnore =
+        (event === "SIGNED_IN" && user?.id === currentUserIdRef.current) ||
+        event === "TOKEN_REFRESHED";
+
+      if (mounted.current && !isAuthPage && shouldShowLoading(event)) {
         setIsLoading(true);
       }
 
-      if (user) {
-        setUserData(user);
-        currentUserIdRef.current = user.id;
-        await fetchUserProfile(user);
-      } else {
-        reset();
-        currentUserIdRef.current = null;
-      }
-      if (mounted.current && !isLoginPage) {
-        setIsLoading(false);
+      try {
+        if (!shouldIgnore) {
+          if (user) {
+            setUserData(user);
+            currentUserIdRef.current = user.id;
+
+            fetchUserProfile(user);
+          } else {
+            reset();
+            currentUserIdRef.current = null;
+          }
+        }
+      } catch (e) {
+        if (isError(e)) {
+          await insertError(supabaseClient, {
+            errorTableInsert: {
+              error_message: e.message,
+              error_url: pathname,
+              error_function: "onAuthStateChange",
+              error_user_email: user?.email,
+              error_user_id: user?.id,
+            },
+          });
+        }
+        if (mounted.current) reset();
+      } finally {
+        if (mounted.current && !isAuthPage && shouldShowLoading(event)) {
+          setIsLoading(false);
+        }
       }
     });
 
@@ -95,5 +138,5 @@ export function useAuthListener() {
       mounted.current = false;
       subscription.subscription.unsubscribe();
     };
-  }, [setUserData, setUserProfile, reset, setIsLoading, router]);
+  }, [setUserData, setUserProfile, reset, setIsLoading, pathname]);
 }
