@@ -81,7 +81,9 @@ export type BookingFormValues = {
 };
 
 export type AppointmentType = AppointmentTableRow & {
-  appointment_detail: AppointmentDetailTableRow;
+  appointment_detail: AppointmentDetailTableRow & {
+    appointment_nail_design: AttachmentTableRow | null;
+  };
   payment: PaymentTableRow;
 };
 

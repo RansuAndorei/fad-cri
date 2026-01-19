@@ -143,11 +143,11 @@ BEGIN
             'appointment_nail_design',
             COALESCE(
               (
-                SELECT JSONB_AGG(TO_JSONB(appointment_nail_design_table.*))
-                FROM appointment_nail_design_table
-                WHERE appointment_nail_design_appointment_detail_id = appointment_detail_id
+                SELECT TO_JSONB(attachment_table.*)
+                FROM attachment_table
+                WHERE appointment_detail_inspo_attachment_id = attachment_id
               ),
-              '[]'::JSONB
+              'null'::JSONB
             )
           )
         FROM appointment_detail_table
@@ -217,11 +217,11 @@ BEGIN
             'appointment_nail_design',
             COALESCE(
               (
-                SELECT JSONB_AGG(TO_JSONB(appointment_nail_design_table.*))
-                FROM appointment_nail_design_table
-                WHERE appointment_nail_design_appointment_detail_id = appointment_detail_id
+                SELECT TO_JSONB(attachment_table.*)
+                FROM attachment_table
+                WHERE appointment_detail_inspo_attachment_id = attachment_id
               ),
-              '[]'::JSONB
+              'null'::JSONB
             )
           )
         FROM appointment_detail_table

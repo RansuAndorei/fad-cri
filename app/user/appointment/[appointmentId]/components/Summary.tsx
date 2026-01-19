@@ -6,10 +6,14 @@ import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AppointmentType } from "@/utils/types";
 import {
   ActionIcon,
+  Alert,
+  Anchor,
+  Badge,
   Button,
-  Divider,
+  Card,
   Flex,
   Group,
+  Image,
   List,
   Modal,
   Paper,
@@ -24,6 +28,7 @@ import { notifications } from "@mantine/notifications";
 import { IconExclamationCircle, IconHistory, IconInfoCircle } from "@tabler/icons-react";
 import { isError } from "lodash";
 import moment from "moment";
+
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -235,66 +240,103 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
           Summary
         </Title>
 
-        <Divider
-          label="Appointment Details"
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Stack gap="xs">
-          <Text>
-            <strong>Type:</strong> {appointmentDetails.appointment_detail_type}
-          </Text>
-          <Text>
-            <strong>Removal:</strong>{" "}
-            {appointmentDetails.appointment_detail_is_with_removal
-              ? "With Removal"
-              : "Without Removal"}
-          </Text>
-          {appointmentDetails.appointment_detail_is_with_removal && (
+        {/* Appointment Card */}
+        <Card shadow="sm" radius="md" p="md" withBorder>
+          <Title order={5} mb={8} c="cyan">
+            Appointment Details
+          </Title>
+          <Stack gap={4}>
+            <Text>
+              <strong>Type:</strong> {appointmentDetails.appointment_detail_type}
+            </Text>
+            <Text>
+              <strong>Removal:</strong>{" "}
+              {appointmentDetails.appointment_detail_is_with_removal
+                ? "With Removal"
+                : "Without Removal"}
+            </Text>
             <Text>
               <strong>Removal Type:</strong>{" "}
               {appointmentDetails.appointment_detail_is_removal_done_by_fad_cri
                 ? "Fad Cri's Work"
                 : "Not Fad Cri’s Work"}
             </Text>
-          )}
-        </Stack>
+            <Text>
+              <strong>Reconstruction:</strong>{" "}
+              {appointmentDetails.appointment_detail_is_with_reconstruction
+                ? "With Reconstruction"
+                : "Without Reconstruction"}
+            </Text>
+          </Stack>
+        </Card>
 
-        <Divider
-          label={`Schedule${isRescheduled ? " (Rescheduled)" : ""}`}
-          labelPosition="right"
-          styles={{
-            label: {
-              fontSize: "14px",
-              fontWeight: 600,
-            },
-          }}
-        />
-        <Stack gap="xs">
-          <Text>
-            <strong>Date:</strong> {formatWordDate(new Date(schedule))}
-          </Text>
-          <Text>
-            <strong>Time:</strong> {moment(schedule).format("h:mm A")}
-          </Text>
-          {rescheduleModal()}
-          {rescheduleInfoModal()}
-          {appointmentData.appointment_status === "SCHEDULED" ? (
-            <Flex align="center" gap="xs">
-              <Button fullWidth onClick={openRescheduleModal} disabled={isRescheduleDisabled}>
-                Reschedule
-              </Button>
-              <ActionIcon onClick={openRescheduleInfoModal} variant="light">
-                <IconInfoCircle size={16} />
-              </ActionIcon>
-            </Flex>
-          ) : null}
-        </Stack>
+        {/* Nail Inspiration Card */}
+        {appointmentDetails.appointment_nail_design?.attachment_path ? (
+          <Card shadow="sm" radius="md" p="md" withBorder>
+            <Title order={5} mb={8} c="cyan">
+              Nail Design Inspiration
+            </Title>
+            <Stack align="center" gap={6}>
+              <Anchor
+                href={appointmentDetails.appointment_nail_design.attachment_path}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Image
+                  src={appointmentDetails.appointment_nail_design.attachment_path}
+                  alt="Nail Inspiration"
+                  radius="md"
+                  height={200}
+                  fit="contain"
+                  onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                />
+              </Anchor>
+
+              <Badge color="yellow.9" variant="light">
+                Uploaded Nail Design Inspiration
+              </Badge>
+            </Stack>
+          </Card>
+        ) : null}
+
+        {/* Schedule Card */}
+        <Card shadow="sm" radius="md" p="md" withBorder>
+          <Title order={5} mb={8} c="cyan">
+            {`Schedule${isRescheduled ? " (Rescheduled)" : ""}`}
+          </Title>
+          <Stack gap={4}>
+            <Text>
+              <strong>Date:</strong> {formatWordDate(new Date(schedule))}
+            </Text>
+            <Text>
+              <strong>Time:</strong> {moment(schedule).format("h:mm A")}
+            </Text>
+            {appointmentData.appointment_schedule_note ? (
+              <Alert
+                icon={<IconInfoCircle size={16} />}
+                title="Additional Information"
+                color="cyan"
+                radius="md"
+                variant="light"
+                mt="xs"
+              >
+                {appointmentData.appointment_schedule_note}
+              </Alert>
+            ) : null}
+            {rescheduleModal()}
+            {rescheduleInfoModal()}
+            {appointmentData.appointment_status === "SCHEDULED" ? (
+              <Flex align="center" gap="xs" mt="xs">
+                <Button fullWidth onClick={openRescheduleModal} disabled={isRescheduleDisabled}>
+                  Reschedule
+                </Button>
+                <ActionIcon onClick={openRescheduleInfoModal} variant="light">
+                  <IconInfoCircle size={16} />
+                </ActionIcon>
+              </Flex>
+            ) : null}
+          </Stack>
+        </Card>
       </Stack>
     </Paper>
   );

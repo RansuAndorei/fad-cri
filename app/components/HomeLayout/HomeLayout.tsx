@@ -14,7 +14,7 @@ type Props = {
 
 const HomeLayout = async ({ children }: Props) => {
   const supabaseClient = await createSupabaseServerClient();
-  console.log("ASD");
+
   let scheduleList: ScheduleRangeType[] = [];
   let generalLocation: string | null = null;
   try {

@@ -197,7 +197,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   return (
     <Box>
       {selectedAppointment && (
-        <Modal opened={opened} onClose={close} size="xl">
+        <Modal opened={opened} onClose={close} size="xl" centered>
           <Flex align="center" justify="space-between" mb="sm">
             <Title order={4}>
               Appointment of {selectedAppointment.appointment_user.user_first_name}{" "}
