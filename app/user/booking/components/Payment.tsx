@@ -95,7 +95,7 @@ const Payment = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: bookingFee * 100, // PayMongo expects centavos (500.00 = 50000)
+          amount: bookingFee * 100,
           method,
           bookingData,
           inspoData,

@@ -388,6 +388,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      fetch_schedule_slot_time_range_per_day: { Args: never; Returns: Json };
       get_appointment: { Args: { input_data: Json }; Returns: Json };
       get_appointment_by_admin: { Args: { input_data: Json }; Returns: Json };
       get_appointment_status_count: {

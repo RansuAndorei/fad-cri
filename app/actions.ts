@@ -1,6 +1,11 @@
 import { SKIPPED_ERROR_MESSAGES } from "@/utils/constants";
 import { Database } from "@/utils/database";
-import { AttachmentBucketType, ErrorTableInsert, UserTableInsert } from "@/utils/types";
+import {
+  AttachmentBucketType,
+  ErrorTableInsert,
+  ScheduleRangeType,
+  UserTableInsert,
+} from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 import Compressor from "compressorjs";
 import { v4 } from "uuid";
@@ -91,4 +96,20 @@ export const insertUser = async (
     .single();
   if (error) throw error;
   return data;
+};
+
+export const fetchHours = async (supabaseClient: SupabaseClient<Database>) => {
+  const { data, error } = await supabaseClient.rpc("fetch_schedule_slot_time_range_per_day");
+  if (error) throw error;
+  return data as ScheduleRangeType[];
+};
+
+export const fetchGeneralLocation = async (supabaseClient: SupabaseClient<Database>) => {
+  const { data, error } = await supabaseClient
+    .from("system_setting_table")
+    .select("system_setting_value")
+    .eq("system_setting_key", "GENERAL_LOCATION")
+    .single();
+  if (error) throw error;
+  return data.system_setting_value;
 };

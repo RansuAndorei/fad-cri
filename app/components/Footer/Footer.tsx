@@ -1,6 +1,7 @@
 "use client";
 
 import { HELP_TAB_LIST, TAB_LIST } from "@/utils/constants";
+import { ScheduleRangeType } from "@/utils/types";
 import {
   ActionIcon,
   Box,
@@ -10,24 +11,25 @@ import {
   Group,
   NavLink,
   Stack,
-  Text,
   Title,
   UnstyledButton,
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import {
-  IconBrandFacebook,
-  IconBrandGmail,
-  IconBrandInstagram,
-  IconMapPin,
-} from "@tabler/icons-react";
+import { IconBrandFacebook, IconBrandGmail, IconBrandInstagram } from "@tabler/icons-react";
 import { startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import classes from "./Footer.module.css";
+import Hours from "./Hours";
+import Location from "./Location";
 
-const Footer = () => {
+type Props = {
+  scheduleList: ScheduleRangeType[];
+  generalLocation: string;
+};
+
+const Footer = ({ scheduleList, generalLocation }: Props) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
   const theme = useMantineTheme();
@@ -71,30 +73,8 @@ const Footer = () => {
               })}
             </Stack>
           </Stack>
-          <Stack style={{ flex: 1 }} gap="xs">
-            <Title order={4}>Hours</Title>
-            <Stack gap={0} ml="xs">
-              <Text>Monday — Friday</Text>
-              <Text>8:00am — 5:00pm</Text>
-            </Stack>
-            <Stack gap={0} ml="xs">
-              <Text>Saturday — Sunday</Text>
-              <Text>10:00am — 10:00pm</Text>
-            </Stack>
-          </Stack>
-          <Stack style={{ flex: 1 }} gap="xs">
-            <Title order={4}>Location</Title>
-            <Flex align="center" gap="xs">
-              <ActionIcon
-                variant="light"
-                color="orange"
-                onClick={() => window.open("https://maps.app.goo.gl/swsmSMptb3KcWGk76")}
-              >
-                <IconMapPin size={16} />
-              </ActionIcon>
-              <Text>Obando, Bulacan</Text>
-            </Flex>
-          </Stack>
+          <Hours data={scheduleList} />
+          <Location data={generalLocation} />
         </Flex>
       </Box>
 

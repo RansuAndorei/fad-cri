@@ -7,18 +7,6 @@ const Summary = () => {
   const { getValues } = useFormContext<BookingFormValues>();
   const values = getValues();
 
-  // Format time nicely
-  const formattedTime = values.scheduleTime
-    ? (() => {
-        const [hourStr, minute] = values.scheduleTime.split(":");
-        const hour = parseInt(hourStr, 10);
-        const period = hour >= 12 ? "PM" : "AM";
-        const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-        return `${displayHour}:${minute} ${period}`;
-      })()
-    : "-";
-
-  // Format date nicely
   const formattedDate = values.scheduleDate
     ? new Date(values.scheduleDate).toLocaleDateString(undefined, {
         weekday: "long",
@@ -93,7 +81,7 @@ const Summary = () => {
               <strong>Date:</strong> {formattedDate}
             </Text>
             <Text>
-              <strong>Time:</strong> {formattedTime}
+              <strong>Time:</strong> {values.scheduleTime}
             </Text>
             {values.scheduleNote && (
               <Alert

@@ -1,4 +1,5 @@
 "use client";
+import { formatPeso } from "@/utils/functions";
 import {
   Button,
   Checkbox,
@@ -22,7 +23,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const BookingInfoPage = () => {
+type Props = {
+  bookingFee: number;
+  lateFee: number[];
+};
+
+const BookingInfoPage = ({ bookingFee, lateFee }: Props) => {
   const [agreed, setAgreed] = useState(false);
   const router = useRouter();
 
@@ -51,8 +57,8 @@ const BookingInfoPage = () => {
 
           <List spacing="xs" size="sm" withPadding pr="xl">
             <List.Item>
-              A <b>reservation fee of ₱500.00 is required to secure your slot</b>. This{" "}
-              <b>fee is non-refundable</b>, but{" "}
+              A <b>reservation fee of {formatPeso(bookingFee)} is required to secure your slot</b>.
+              This <b>fee is non-refundable</b>, but{" "}
               <b>deductible from your total bill after the service</b>, provided there are no late
               arrivals, cancellations, or rescheduling.
             </List.Item>
@@ -68,18 +74,18 @@ const BookingInfoPage = () => {
               following <b>late fees</b> apply:
               <List spacing="xs" size="sm" listStyleType="disc" pl="md">
                 <List.Item>
-                  <b>₱300.00 (11–20 minutes late)</b>
+                  <b>{formatPeso(lateFee[0])} (11–20 minutes late)</b>
                 </List.Item>
                 <List.Item>
-                  <b>₱500.00 (21–39 minutes late)</b>
+                  <b>{formatPeso(lateFee[1])} (21–39 minutes late)</b>
                 </List.Item>
                 <List.Item>
-                  <b>₱1,000.00 (40 minutes to 1 hour late)</b>
+                  <b>{formatPeso(lateFee[2])} (40 minutes to 1 hour late)</b>
                 </List.Item>
                 <List.Item>
                   <b>
-                    ₱2,000.00 (more than 1 hour late) — if you still wish to proceed, this will be
-                    subject to approval
+                    {formatPeso(lateFee[3])} (more than 1 hour late) — if you still wish to proceed,
+                    this will be subject to approval
                   </b>
                 </List.Item>
               </List>
@@ -149,7 +155,7 @@ const BookingInfoPage = () => {
               <b>Squeeze-in slots are limited and subject to approval</b>.
             </List.Item>
             <List.Item>
-              <b>Additional fee: ₱1,000.00</b>
+              <b>Additional fee: ₱1,000.00 - ₱1,500.00</b>
             </List.Item>
           </List>
 

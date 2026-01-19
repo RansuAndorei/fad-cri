@@ -583,7 +583,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION upsert_schedule_slot(input_data JSONB)
 RETURNS VOID
-LANGUAGE plpgsql
 AS $$
 DECLARE
   var_slot JSONB;
@@ -606,4 +605,51 @@ BEGIN
     VALUES (var_id, var_day, var_time, var_note);
   END LOOP;
 END;
-$$;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fetch_schedule_slot_time_range_per_day()
+RETURNS JSONB
+AS $$
+DECLARE
+  return_data JSONB;
+BEGIN
+  WITH day_ranges AS (
+    SELECT
+      schedule_slot_day,
+      MIN(schedule_slot_time) AS earliest_time,
+      MAX(schedule_slot_time) AS latest_time,
+      CASE schedule_slot_day
+        WHEN 'SUNDAY' THEN 1
+        WHEN 'MONDAY' THEN 2
+        WHEN 'TUESDAY' THEN 3
+        WHEN 'WEDNESDAY' THEN 4
+        WHEN 'THURSDAY' THEN 5
+        WHEN 'FRIDAY' THEN 6
+        WHEN 'SATURDAY' THEN 7
+      END AS day_order
+    FROM schedule_slot_table
+    GROUP BY schedule_slot_day
+  )
+  SELECT
+    JSONB_AGG(
+      JSONB_BUILD_OBJECT(
+        'days', days,
+        'earliest_time', earliest_time,
+        'latest_time', latest_time
+      )
+      ORDER BY min_day_order
+    )
+  INTO return_data
+  FROM (
+    SELECT
+      ARRAY_AGG(schedule_slot_day ORDER BY day_order) AS days,
+      earliest_time,
+      latest_time,
+      MIN(day_order) AS min_day_order
+    FROM day_ranges
+    GROUP BY earliest_time, latest_time
+  ) grouped_ranges;
+
+  RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;

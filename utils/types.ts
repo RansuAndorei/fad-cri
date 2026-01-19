@@ -130,3 +130,9 @@ export type UserProfilePasswordType = {
   password: string;
   confirmPassword: string;
 };
+
+export type ScheduleRangeType = {
+  days: DaysEnum[];
+  earliest_time: string;
+  latest_time: string;
+};

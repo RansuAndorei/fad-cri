@@ -76,3 +76,12 @@ export const getAvatarColor = (number: number) => {
   const randomColor = DEFAULT_MANTINE_COLOR_LIST[number % DEFAULT_MANTINE_COLOR_LIST.length];
   return randomColor;
 };
+
+export const formatPeso = (value: number) => {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};

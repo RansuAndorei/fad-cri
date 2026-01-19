@@ -33,6 +33,7 @@ const Page = async ({ params, searchParams }: Props) => {
       isCancelled: status === "cancelled",
     });
   } catch (e) {
+    console.log(e);
     if (isError(e)) {
       const pathname = `/user/appointment/${appointmentId}`;
       await insertError(supabaseClient, {
