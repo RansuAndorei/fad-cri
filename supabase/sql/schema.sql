@@ -101,13 +101,27 @@ CREATE TABLE email_resend_table(
   email_resend_email TEXT NOT NULL
 );
 
-CREATE TABLE appointment_type_table(
-  appointment_type_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
-  appointment_type_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-  appointment_type_date_updated TIMESTAMPTZ,
-  appointment_type_is_active BOOLEAN DEFAULT TRUE NOT NULL,
-  appointment_type_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
-  appointment_type_label TEXT NOT NULL
+CREATE TABLE service_type_table(
+  service_type_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  service_type_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  service_type_date_updated TIMESTAMPTZ,
+
+  service_type_is_active BOOLEAN DEFAULT TRUE NOT NULL,
+  service_type_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
+
+  service_type_label TEXT NOT NULL,
+  service_type_subtext TEXT NOT NULL,
+  service_type_description TEXT NOT NULL,
+
+  service_type_features TEXT[] NOT NULL,
+  service_type_benefits TEXT[] NOT NULL,
+
+  service_type_minimum_time_minutes INT NOT NULL,
+  service_type_maximum_time_minutes INT NOT NULL,
+  service_type_minimum_price INT NOT NULL,
+  service_type_maximum_price INT NOT NULL,
+  
+  service_type_ideal_for_description TEXT NOT NULL
 );
 
 CREATE TABLE appointment_table(

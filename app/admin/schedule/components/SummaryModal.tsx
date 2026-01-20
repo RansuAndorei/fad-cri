@@ -1,6 +1,16 @@
 import { formatWordDate } from "@/utils/functions";
 import { AppointmentType } from "@/utils/types";
-import { Alert, Anchor, Badge, Card, Image, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Card,
+  Image,
+  Paper,
+  Stack,
+  Text,
+  Title,
+  UnstyledButton,
+} from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons-react";
 import moment from "moment";
 
@@ -51,10 +61,11 @@ const SummaryModal = ({ appointmentData }: Props) => {
               Nail Design Inspiration
             </Title>
             <Stack align="center" gap={6}>
-              <Anchor
-                href={appointmentDetails.appointment_nail_design.attachment_path}
-                target="_blank"
-                rel="noopener noreferrer"
+              <UnstyledButton
+                onClick={() =>
+                  window.open(appointmentDetails.appointment_nail_design?.attachment_path, "_blank")
+                }
+                style={{ display: "inline-block" }}
               >
                 <Image
                   src={appointmentDetails.appointment_nail_design.attachment_path}
@@ -64,7 +75,7 @@ const SummaryModal = ({ appointmentData }: Props) => {
                   fit="contain"
                   onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
                 />
-              </Anchor>
+              </UnstyledButton>
 
               <Badge color="yellow.9" variant="light">
                 Uploaded Nail Design Inspiration

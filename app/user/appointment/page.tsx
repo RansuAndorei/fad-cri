@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentTableType } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getAppointmentType } from "../booking/actions";
+import { getServiceType } from "../booking/actions";
 import { getAppointmentList } from "./actions";
 import AppointmentListPage from "./components/AppointmentListPage";
 
@@ -21,10 +21,10 @@ const Page = async () => {
 
   let initialAppointmentList: AppointmentTableType[] = [];
   let initialAppointmentListCount = 0;
-  let appointmentTypeOptions: string[] = [];
+  let serviceTypeOptions: string[] = [];
 
   try {
-    const [{ data: appointmentListData, count: appointmentListCount }, appointmentTypeData] =
+    const [{ data: appointmentListData, count: appointmentListCount }, serviceTypeData] =
       await Promise.all([
         getAppointmentList(supabaseClient, {
           page: 1,
@@ -37,12 +37,12 @@ const Page = async () => {
           type: null,
           status: null,
         }),
-        getAppointmentType(supabaseClient),
+        getServiceType(supabaseClient),
       ]);
 
     initialAppointmentList = appointmentListData ?? [];
     initialAppointmentListCount = appointmentListCount ?? 0;
-    appointmentTypeOptions = appointmentTypeData;
+    serviceTypeOptions = serviceTypeData;
   } catch (e) {
     if (isError(e)) {
       const pathname = `/user/appointment`;
@@ -63,7 +63,7 @@ const Page = async () => {
     <AppointmentListPage
       initialAppointmentList={initialAppointmentList}
       initialAppointmentListCount={initialAppointmentListCount}
-      appointmentTypeOptions={appointmentTypeOptions}
+      serviceTypeOptions={serviceTypeOptions}
     />
   );
 };

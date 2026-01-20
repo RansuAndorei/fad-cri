@@ -8,7 +8,7 @@ const Reminders = ({ reminderList }: Props) => {
   return (
     <Paper p="xl" shadow="xl" withBorder>
       <Stack gap="md">
-        <Title c="dimmed" order={3} mb="xs">
+        <Title c="dimmed" order={3}>
           Reminders and Message
         </Title>
         <List spacing={-16} size="md" withPadding pr="xl">

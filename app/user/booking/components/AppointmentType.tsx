@@ -1,12 +1,13 @@
 import { BookingFormValues } from "@/utils/types";
-import { Paper, Radio, Select, Stack, Title } from "@mantine/core";
+import { Anchor, Paper, Radio, Select, Stack, Text, Title } from "@mantine/core";
+import Link from "next/link";
 import { Controller, useFormContext } from "react-hook-form";
 
 type Props = {
-  appointmentTypeOptions: string[];
+  serviceTypeOptions: string[];
 };
 
-const AppointmentType = ({ appointmentTypeOptions }: Props) => {
+const AppointmentType = ({ serviceTypeOptions }: Props) => {
   const {
     formState: { errors },
     control,
@@ -22,22 +23,31 @@ const AppointmentType = ({ appointmentTypeOptions }: Props) => {
           Appointment Details
         </Title>
 
-        <Controller
-          name="type"
-          control={control}
-          rules={{ required: "Type of Appointment is required" }}
-          render={({ field }) => (
-            <Select
-              label="Type of Appointment"
-              data={appointmentTypeOptions}
-              placeholder="Choose type"
-              {...field}
-              error={errors.type?.message}
-              required
-              searchable
-            />
-          )}
-        />
+        <Stack gap={2}>
+          <Controller
+            name="type"
+            control={control}
+            rules={{ required: "Type of Service is required" }}
+            render={({ field }) => (
+              <Select
+                label="Type of Service"
+                data={serviceTypeOptions}
+                placeholder="Choose type"
+                {...field}
+                error={errors.type?.message}
+                required
+                searchable
+              />
+            )}
+          />
+          <Text size="sm" c="dimmed" fs="italic">
+            If you want to learn more about the types{" "}
+            <Anchor component={Link} href="/services" target="_blank" rel="noopener noreferrer">
+              click here
+            </Anchor>
+            .
+          </Text>
+        </Stack>
         <Controller
           name="removal"
           control={control}
@@ -95,7 +105,7 @@ const AppointmentType = ({ appointmentTypeOptions }: Props) => {
               label="Reconstruction"
               {...field}
               required
-              error={errors.recon?.message}
+              error={errors.reconstruction?.message}
               styles={{
                 error: {
                   marginTop: 8,

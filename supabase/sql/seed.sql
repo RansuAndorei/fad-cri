@@ -13,9 +13,9 @@ VALUES
 
 INSERT INTO reminder_table (reminder_order, reminder_value)
 VALUES
-(1, '<p>Come with <strong>clean, polish-free nails</strong>.</p>"'),
+(1, '<p>Come with <strong>clean, polish-free nails</strong>.</p>'),
 (2, '<p><strong>Sanitize your hands</strong> upon arrival.</p>'),
-(3, '<p>Please <strong>do not cut, trim, file, or shape your nails</strong> beforehand — I will handle everything.</p>"'),
+(3, '<p>Please <strong>do not cut, trim, file, or shape your nails</strong> beforehand — I will handle everything.</p>'),
 (4, '<p><strong>Avoid using lotion</strong> on the day of your appointment.</p>'),
 (5, '<p><strong>No late arrivals</strong> — please respect our time as much as your own.</p>'),
 (6, '<p><strong>One client at a time</strong>.</p>'),
@@ -25,12 +25,115 @@ VALUES
 (10, '<p><strong>3-day warranty</strong> on nail services.</p>'),
 (11, '<p><strong>Remaining balance must be paid in cash only.</strong></p>');
 
-INSERT INTO appointment_type_table (appointment_type_label) 
+INSERT INTO service_type_table (
+  service_type_label,
+  service_type_subtext,
+  service_type_description,
+  service_type_features,
+  service_type_benefits,
+  service_type_minimum_time_minutes,
+  service_type_maximum_time_minutes,
+  service_type_minimum_price,
+  service_type_maximum_price,
+  service_type_ideal_for_description
+)
 VALUES
-('Soft Builder Gel (BIAB)'),
-('Hard Builder Gel'),
-('Gel-X (Soft-Gel Extensions)'),
-('Polygel Overlay');
+(
+  'Soft Builder Gel (BIAB)',
+  'Build, strengthen, and beautify',
+  'Builder in a Bottle is a soak-off builder gel designed to strengthen natural nails while maintaining a natural and elegant finish. Ideal for nail growth and repair.',
+  ARRAY[
+    'Strengthens natural nails',
+    'Promotes healthy nail growth',
+    'Soak-off formula',
+    'Long-lasting wear (3-4 weeks)',
+    'Repairs damaged nails'
+  ],
+  ARRAY[
+    'Builds nail strength over time',
+    'Protects nails while growing',
+    'Natural-looking finish',
+    'Flexible yet durable',
+    'Helps repair weak spots'
+  ],
+  75,
+  90,
+  1500,
+  2000,
+  'Ideal for nail biters, those growing out damaged nails, or anyone wanting stronger, healthier natural nails.'
+),
+(
+  'Hard Builder Gel',
+  'Enhanced strength and durability',
+  'A thicker builder gel application that adds structure and durability to natural nails. Perfect for clients who need extra strength without extensions.',
+  ARRAY[
+    'Added nail strength',
+    'Thicker and more durable finish',
+    'Natural nail enhancement',
+    'Extended wear (3-4 weeks)',
+    'Protects from breakage'
+  ],
+  ARRAY[
+    'Reinforces weak nails',
+    'Longer-lasting than regular gel',
+    'Smoother nail surface',
+    'Added thickness without tips',
+    'Professional salon finish'
+  ],
+  60,
+  75,
+  1200,
+  1500,
+  'Great for clients with soft or brittle nails or anyone wanting extra durability without nail extensions.'
+),
+(
+  'Gel-X (Soft-Gel Extensions)',
+  'Instant length with a natural finish',
+  'Soft gel extensions applied using full-cover gel tips for a lightweight, flexible, and natural-looking nail extension system.',
+  ARRAY[
+    'Soft gel tip system',
+    'Natural-looking extensions',
+    'Customizable length and shape',
+    'Lightweight and flexible',
+    'Damage-free application'
+  ],
+  ARRAY[
+    'Instant nail length',
+    'Natural feel and movement',
+    'No drilling required',
+    'Easy to maintain',
+    'Long-lasting wear (3-4 weeks)'
+  ],
+  120,
+  150,
+  2500,
+  3500,
+  'Ideal for special occasions, clients wanting dramatic length, or those who prefer extensions over natural nails.'
+),
+(
+  'Polygel Overlay',
+  'Lightweight strength and protection',
+  'A hybrid system combining the strength of acrylic with the flexibility of gel. Applied as an overlay for superior durability without added weight.',
+  ARRAY[
+    'Lighter than acrylic',
+    'Stronger than gel',
+    'No odor or fumes',
+    'Flexible natural feel',
+    'Long-wearing (4-5 weeks)'
+  ],
+  ARRAY[
+    'Exceptional durability',
+    'Comfortable lightweight wear',
+    'Protects natural nails',
+    'Minimal damage on removal',
+    'Professional salon-quality finish'
+  ],
+  90,
+  120,
+  1800,
+  2500,
+  'Perfect for clients who want maximum durability with a natural feel or those transitioning from acrylic nails.'
+);
 
 INSERT INTO user_table (user_id, user_first_name, user_last_name, user_email, user_phone_number, user_gender, user_birth_date) VALUES
 ('554fa57b-00a6-457e-9361-287aa7694807', 'Admin', 'Admin', 'admin@gmail.com', '09999999999', 'MALE', '01-01-2000'),

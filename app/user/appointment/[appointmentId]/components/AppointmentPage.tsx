@@ -1,19 +1,20 @@
 "use client";
 
+import Reminders from "@/app/user/booking/components/Reminders";
 import { statusToColor } from "@/utils/functions";
 import { AppointmentType } from "@/utils/types";
 import { Badge, Container, Flex, Group, Tabs, Title } from "@mantine/core";
 import { IconBell, IconCalendarCheck, IconCreditCard, IconListDetails } from "@tabler/icons-react";
 import Payment from "./Payment";
-import Reminders from "./Reminders";
 import Summary from "./Summary";
 
 type Props = {
   appointmentData: AppointmentType;
   serverTime: string;
+  reminderList: string[];
 };
 
-const AppointmentPage = ({ appointmentData, serverTime }: Props) => {
+const AppointmentPage = ({ appointmentData, serverTime, reminderList }: Props) => {
   return (
     <Container size="md" py="xl">
       <Group mb="md" wrap="nowrap">
@@ -44,7 +45,7 @@ const AppointmentPage = ({ appointmentData, serverTime }: Props) => {
         </Tabs.Panel>
 
         <Tabs.Panel value="reminders">
-          <Reminders />
+          <Reminders reminderList={reminderList} />
         </Tabs.Panel>
 
         <Tabs.Panel value="payment">

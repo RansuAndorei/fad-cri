@@ -2,6 +2,7 @@ import {
   IconBell,
   IconCalendar,
   IconCalendarCheck,
+  IconCategory2,
   IconClock,
   IconCurrencyPeso,
   IconHome,
@@ -12,7 +13,6 @@ import {
   IconPhoto,
   IconQuestionMark,
   IconSettings,
-  IconShape,
   IconSparkles,
 } from "@tabler/icons-react";
 import { DaysEnum } from "./types";
@@ -123,10 +123,10 @@ export const ADMIN_NAVIGATION_ITEMS = [
     icon: IconSettings,
     submenu: [
       {
-        id: "appointment-settings",
-        label: "Appointment",
-        icon: IconShape,
-        path: `/admin/settings/appointment`,
+        id: "service-settings",
+        label: "Service Type",
+        icon: IconCategory2,
+        path: `/admin/settings/service-type`,
       },
       {
         id: "financial-settings",

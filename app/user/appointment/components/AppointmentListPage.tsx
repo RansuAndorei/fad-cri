@@ -35,13 +35,13 @@ export type AppointmentTableFilterType = {
 type Props = {
   initialAppointmentList: AppointmentTableType[];
   initialAppointmentListCount: number;
-  appointmentTypeOptions: string[];
+  serviceTypeOptions: string[];
 };
 
 const AppointmentListPage = ({
   initialAppointmentList,
   initialAppointmentListCount,
-  appointmentTypeOptions,
+  serviceTypeOptions,
 }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const userData = useUserData();
@@ -149,7 +149,7 @@ const AppointmentListPage = ({
                 <AppointmentFilter
                   handleRefresh={handleRefresh}
                   isLoading={isLoading}
-                  appointmentTypeOptions={appointmentTypeOptions}
+                  serviceTypeOptions={serviceTypeOptions}
                 />
               </form>
             </FormProvider>
@@ -178,7 +178,7 @@ const AppointmentListPage = ({
               columns={[
                 {
                   accessor: "appointment_detail.appointment_detail_type",
-                  title: "Appointment Type",
+                  title: "Service Type",
                   render: ({ appointment_detail }) => (
                     <Text>{appointment_detail.appointment_detail_type}</Text>
                   ),

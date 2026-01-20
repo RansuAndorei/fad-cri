@@ -18,15 +18,15 @@ export const getServerTime = async (supabaseClient: SupabaseClient<Database>) =>
   return data;
 };
 
-export const getAppointmentType = async (supabaseClient: SupabaseClient<Database>) => {
+export const getServiceType = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
-    .from("appointment_type_table")
-    .select("appointment_type_label")
-    .eq("appointment_type_is_disabled", false)
-    .order("appointment_type_label");
+    .from("service_type_table")
+    .select("service_type_label")
+    .eq("service_type_is_disabled", false)
+    .order("service_type_label");
   if (error) throw error;
-  if (!data) throw new Error("No appointment types found");
-  return data.map((item) => item.appointment_type_label);
+  if (!data) throw new Error("No service types found");
+  return data.map((item) => item.service_type_label);
 };
 
 export const getScheduleSlot = async (supabaseClient: SupabaseClient<Database>) => {

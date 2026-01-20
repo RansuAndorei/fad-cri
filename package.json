@@ -11,6 +11,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@mantine/carousel": "^8.2.1",
     "@mantine/core": "^8.2.1",
     "@mantine/dates": "^8.2.1",

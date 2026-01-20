@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { AppointmentTypeTableRow } from "@/utils/types";
+import { ServiceTypeTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getAppointmentTypeSettings } from "./actions";
-import AppointmentSettingsPage from "./components/AppointmentSettingsPage";
+import { getServiceTypeSettings } from "./actions";
+import ServiceTypeSettingsPage from "./components/ServiceTypeSettingsPage";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -16,16 +16,16 @@ const Page = async () => {
     redirect("/");
   }
 
-  let appointmentTypeData: AppointmentTypeTableRow[];
+  let serviceTypeData: ServiceTypeTableRow[];
   try {
-    appointmentTypeData = await getAppointmentTypeSettings(supabaseClient);
+    serviceTypeData = await getServiceTypeSettings(supabaseClient);
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
-          error_url: "/admin/settings/appointment",
-          error_function: "fetchAppointmentInitialData",
+          error_url: "/admin/settings/service-type",
+          error_function: "fetchServiceTypeInitialData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -34,7 +34,7 @@ const Page = async () => {
     redirect("/500");
   }
 
-  return <AppointmentSettingsPage appointmentTypeData={appointmentTypeData} />;
+  return <ServiceTypeSettingsPage serviceTypeData={serviceTypeData} />;
 };
 
 export default Page;

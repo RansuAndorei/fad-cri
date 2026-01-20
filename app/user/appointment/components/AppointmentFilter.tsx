@@ -7,10 +7,10 @@ import { AppointmentTableFilterType } from "./AppointmentListPage";
 type Props = {
   handleRefresh: () => Promise<void>;
   isLoading: boolean;
-  appointmentTypeOptions: string[];
+  serviceTypeOptions: string[];
 };
 
-const AppointmentFilter = ({ handleRefresh, isLoading, appointmentTypeOptions }: Props) => {
+const AppointmentFilter = ({ handleRefresh, isLoading, serviceTypeOptions }: Props) => {
   const { control } = useFormContext<AppointmentTableFilterType>();
 
   return (
@@ -21,8 +21,8 @@ const AppointmentFilter = ({ handleRefresh, isLoading, appointmentTypeOptions }:
           name="type"
           render={({ field: { value, onChange } }) => (
             <Select
-              placeholder="Appointment Type"
-              data={appointmentTypeOptions}
+              placeholder="Service Type"
+              data={serviceTypeOptions}
               className="flexGrow"
               clearable
               value={value}

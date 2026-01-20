@@ -1,7 +1,6 @@
 "use client";
 
 import { insertError, insertUser, uploadImage } from "@/app/actions";
-import { useIsLoading, useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserActions, useUserData } from "@/stores/useUserStore";
 import { formatDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -21,13 +20,13 @@ import Summary from "./Summary";
 const OnboardingPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
   const userData = useUserData();
-  const isLoading = useIsLoading();
-  const { setIsLoading } = useLoadingActions();
+
   const router = useRouter();
   const pathname = usePathname();
   const { setUserProfile } = useUserActions();
   const [active, setActive] = useState(0);
   const [highestStepVisited, setHighestStepVisited] = useState(active);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const orientation = isMobile ? "vertical" : "horizontal";
@@ -91,7 +90,6 @@ const OnboardingPage = () => {
         message: "Profile completed.",
         color: "green",
       });
-      setIsLoading(false);
     } catch (e) {
       setIsLoading(false);
       notifications.show({

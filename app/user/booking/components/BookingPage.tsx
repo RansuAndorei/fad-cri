@@ -15,14 +15,14 @@ import Schedule from "./Schedule";
 import Summary from "./Summary";
 
 type Props = {
-  appointmentTypeOptions: string[];
+  serviceTypeOptions: string[];
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDate: string;
   reminderList: string[];
 };
 
 const BookingPage = ({
-  appointmentTypeOptions,
+  serviceTypeOptions,
   scheduleSlot,
   maxScheduleDate,
   reminderList,
@@ -84,7 +84,7 @@ const BookingPage = ({
               description="Type, Removal, Reconstruction"
               allowStepSelect={shouldAllowSelectStep(0)}
             >
-              <AppointmentType appointmentTypeOptions={appointmentTypeOptions} />
+              <AppointmentType serviceTypeOptions={serviceTypeOptions} />
             </Stepper.Step>
 
             <Stepper.Step

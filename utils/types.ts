@@ -35,11 +35,9 @@ export type ScheduleSlotTableRow = Database["public"]["Tables"]["schedule_slot_t
 export type ScheduleSlotTableInsert = Database["public"]["Tables"]["schedule_slot_table"]["Insert"];
 export type ScheduleSlotTableUpdate = Database["public"]["Tables"]["schedule_slot_table"]["Update"];
 
-export type AppointmentTypeTableRow = Database["public"]["Tables"]["appointment_type_table"]["Row"];
-export type AppointmentTypeTableInsert =
-  Database["public"]["Tables"]["appointment_type_table"]["Insert"];
-export type AppointmentTypeTableUpdate =
-  Database["public"]["Tables"]["appointment_type_table"]["Update"];
+export type ServiceTypeTableRow = Database["public"]["Tables"]["service_type_table"]["Row"];
+export type ServiceTypeTableInsert = Database["public"]["Tables"]["service_type_table"]["Insert"];
+export type ServiceTypeTableUpdate = Database["public"]["Tables"]["service_type_table"]["Update"];
 
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];

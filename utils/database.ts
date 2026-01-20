@@ -97,33 +97,6 @@ export type Database = {
           },
         ];
       };
-      appointment_type_table: {
-        Row: {
-          appointment_type_created: string;
-          appointment_type_date_updated: string | null;
-          appointment_type_id: string;
-          appointment_type_is_active: boolean;
-          appointment_type_is_disabled: boolean;
-          appointment_type_label: string;
-        };
-        Insert: {
-          appointment_type_created?: string;
-          appointment_type_date_updated?: string | null;
-          appointment_type_id?: string;
-          appointment_type_is_active?: boolean;
-          appointment_type_is_disabled?: boolean;
-          appointment_type_label: string;
-        };
-        Update: {
-          appointment_type_created?: string;
-          appointment_type_date_updated?: string | null;
-          appointment_type_id?: string;
-          appointment_type_is_active?: boolean;
-          appointment_type_is_disabled?: boolean;
-          appointment_type_label?: string;
-        };
-        Relationships: [];
-      };
       attachment_table: {
         Row: {
           attachment_bucket: string;
@@ -320,26 +293,80 @@ export type Database = {
         };
         Relationships: [];
       };
+      service_type_table: {
+        Row: {
+          service_type_benefits: string[];
+          service_type_date_created: string;
+          service_type_date_updated: string | null;
+          service_type_description: string;
+          service_type_features: string[];
+          service_type_id: string;
+          service_type_ideal_for_description: string;
+          service_type_is_active: boolean;
+          service_type_is_disabled: boolean;
+          service_type_label: string;
+          service_type_maximum_price: number;
+          service_type_maximum_time_minutes: number;
+          service_type_minimum_price: number;
+          service_type_minimum_time_minutes: number;
+          service_type_subtext: string;
+        };
+        Insert: {
+          service_type_benefits: string[];
+          service_type_date_created?: string;
+          service_type_date_updated?: string | null;
+          service_type_description: string;
+          service_type_features: string[];
+          service_type_id?: string;
+          service_type_ideal_for_description: string;
+          service_type_is_active?: boolean;
+          service_type_is_disabled?: boolean;
+          service_type_label: string;
+          service_type_maximum_price: number;
+          service_type_maximum_time_minutes: number;
+          service_type_minimum_price: number;
+          service_type_minimum_time_minutes: number;
+          service_type_subtext: string;
+        };
+        Update: {
+          service_type_benefits?: string[];
+          service_type_date_created?: string;
+          service_type_date_updated?: string | null;
+          service_type_description?: string;
+          service_type_features?: string[];
+          service_type_id?: string;
+          service_type_ideal_for_description?: string;
+          service_type_is_active?: boolean;
+          service_type_is_disabled?: boolean;
+          service_type_label?: string;
+          service_type_maximum_price?: number;
+          service_type_maximum_time_minutes?: number;
+          service_type_minimum_price?: number;
+          service_type_minimum_time_minutes?: number;
+          service_type_subtext?: string;
+        };
+        Relationships: [];
+      };
       system_setting_table: {
         Row: {
           system_setting_date_created: string;
           system_setting_date_updated: string | null;
           system_setting_id: string;
-          system_setting_key: string;
+          system_setting_key: Database["public"]["Enums"]["settings"];
           system_setting_value: string;
         };
         Insert: {
           system_setting_date_created?: string;
           system_setting_date_updated?: string | null;
           system_setting_id?: string;
-          system_setting_key: string;
+          system_setting_key: Database["public"]["Enums"]["settings"];
           system_setting_value: string;
         };
         Update: {
           system_setting_date_created?: string;
           system_setting_date_updated?: string | null;
           system_setting_id?: string;
-          system_setting_key?: string;
+          system_setting_key?: Database["public"]["Enums"]["settings"];
           system_setting_value?: string;
         };
         Relationships: [];
@@ -415,7 +442,7 @@ export type Database = {
           system_setting_date_created: string;
           system_setting_date_updated: string | null;
           system_setting_id: string;
-          system_setting_key: string;
+          system_setting_key: Database["public"]["Enums"]["settings"];
           system_setting_value: string;
         }[];
         SetofOptions: {

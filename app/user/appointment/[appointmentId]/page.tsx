@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentType } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getServerTime } from "../../booking/actions";
+import { getReminders, getServerTime } from "../../booking/actions";
 import { getAppointmentData } from "./actions";
 import AppointmentPage from "./components/AppointmentPage";
 
@@ -26,12 +26,18 @@ const Page = async ({ params, searchParams }: Props) => {
   }
 
   let appointmentData: AppointmentType;
+  let reminderList: string[] = [];
   try {
-    appointmentData = await getAppointmentData(supabaseClient, {
-      appointmentId,
-      userId: user.id,
-      isCancelled: status === "cancelled",
-    });
+    const [appointment, remindersData] = await Promise.all([
+      getAppointmentData(supabaseClient, {
+        appointmentId,
+        userId: user.id,
+        isCancelled: status === "cancelled",
+      }),
+      getReminders(supabaseClient),
+    ]);
+    appointmentData = appointment;
+    reminderList = remindersData.map((value) => value.reminder_value);
   } catch (e) {
     if (isError(e)) {
       const pathname = `/user/appointment/${appointmentId}`;
@@ -49,7 +55,13 @@ const Page = async ({ params, searchParams }: Props) => {
   }
   const serverTime = await getServerTime(supabaseClient);
 
-  return <AppointmentPage appointmentData={appointmentData} serverTime={serverTime} />;
+  return (
+    <AppointmentPage
+      appointmentData={appointmentData}
+      serverTime={serverTime}
+      reminderList={reminderList}
+    />
+  );
 };
 
 export default Page;
