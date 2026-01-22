@@ -4,7 +4,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 import moment from "moment";
 
-export const getScheduleList = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchScheduleList = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("schedule_slot_table")
     .select("*")

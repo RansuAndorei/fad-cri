@@ -124,7 +124,7 @@ const BookingPage = ({
               description="Secure your schedule"
               allowStepSelect={shouldAllowSelectStep(5)}
             >
-              <Payment />
+              <Payment handleStepChange={handleStepChange} />
             </Stepper.Step>
           </Stepper>
 

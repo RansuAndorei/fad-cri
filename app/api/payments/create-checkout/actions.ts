@@ -20,7 +20,7 @@ export const insertAppointment = async (
     input_data: {
       ...bookingData,
       inspoData,
-      schedule: String(combineDateTime(new Date(scheduleDate), scheduleTime).toISOString()),
+      schedule: combineDateTime(new Date(scheduleDate), scheduleTime),
       isWithRemoval: removal === "with",
       isRemovalDoneByFadCri: removalType === "fad",
       isWithReconstruction: reconstruction === "with",

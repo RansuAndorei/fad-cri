@@ -49,9 +49,9 @@ const HeroSection = () => {
 
       <Box style={{ zIndex: 2 }}>
         <Text size="xl" mb={8}>
-          LOREM IPSUM
+          WELCOME TO FADCRI
         </Text>
-        <Title mb={20}>Ut sagittis sollicitudin velit eget fermentum.</Title>
+        <Title mb={20}>We craft nails that are worth every cent.</Title>
         <Button component={Link} href="/user/booking-info">
           Book an Appointment
         </Button>

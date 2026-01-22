@@ -4,7 +4,7 @@ import { ReminderTableRow, ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import moment from "moment";
 import { redirect } from "next/navigation";
-import { getMaxScheduleDate, getReminders, getScheduleSlot, getServiceType } from "./actions";
+import { fetchReminders, fetchServiceType, getMaxScheduleDate, getScheduleSlot } from "./actions";
 import BookingPage from "./components/BookingPage";
 
 const Page = async () => {
@@ -24,10 +24,10 @@ const Page = async () => {
   let reminderList: ReminderTableRow[] = [];
   try {
     [serviceTypeOptions, scheduleSlot, maxDateNumberOfMonths, reminderList] = await Promise.all([
-      getServiceType(supabaseClient),
+      fetchServiceType(supabaseClient),
       getScheduleSlot(supabaseClient),
       getMaxScheduleDate(supabaseClient),
-      getReminders(supabaseClient),
+      fetchReminders(supabaseClient),
     ]);
 
     maxScheduleDate = moment().add(maxDateNumberOfMonths, "months").format();

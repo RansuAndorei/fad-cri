@@ -1,19 +1,26 @@
 import {
+  IconAward,
   IconBell,
+  IconBrush,
   IconCalendar,
   IconCalendarCheck,
   IconCategory2,
   IconClock,
+  IconColorSwatch,
+  IconCrown,
   IconCurrencyPeso,
+  IconDiamond,
+  IconHeart,
   IconHome,
   IconIdBadge,
   IconLayoutDashboard,
   IconListDetails,
   IconMapPin,
-  IconPhoto,
+  IconPalette,
   IconQuestionMark,
   IconSettings,
   IconSparkles,
+  IconStar,
 } from "@tabler/icons-react";
 import { DaysEnum } from "./types";
 
@@ -22,8 +29,8 @@ export const SKIPPED_ERROR_MESSAGES = ["Email already registered."];
 export const TAB_LIST = [
   { label: "home", icon: <IconHome size={16} /> },
   { label: "services", icon: <IconSparkles size={16} /> },
-  { label: "gallery", icon: <IconPhoto size={16} /> },
-  { label: "about me", icon: <IconIdBadge size={16} /> },
+  // { label: "gallery", icon: <IconPhoto size={16} /> },
+  { label: "about", icon: <IconIdBadge size={16} /> },
 ];
 export const HELP_TAB_LIST = [
   { label: "faqs", icon: <IconQuestionMark size={16} /> },
@@ -161,4 +168,33 @@ export const LATE_FEE_LABEL_LIST = [
   "21-39 minutes",
   "40 minutes to 1 hour",
   "More than 1 hour",
+];
+
+export const FEATURE_BACKGROUND_COLORS = [
+  "cyan",
+  "orange",
+  "violet",
+  "lime",
+  "blue",
+  "pink",
+  "teal",
+  "yellow",
+  "indigo",
+  "red",
+  "green",
+  "grape",
+  "gray",
+  "dark",
+];
+
+export const FEATURE_ICONS = [
+  IconSparkles,
+  IconDiamond,
+  IconCrown,
+  IconStar,
+  IconAward,
+  IconPalette,
+  IconBrush,
+  IconColorSwatch,
+  IconHeart,
 ];

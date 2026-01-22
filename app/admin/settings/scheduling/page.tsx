@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getScheduleList } from "./actions";
+import { fetchScheduleList } from "./actions";
 import SchedulingPage from "./components/SchedulingPage";
 
 const Page = async () => {
@@ -18,7 +18,7 @@ const Page = async () => {
 
   let scheduleSlotData: ScheduleSlotTableRow[] = [];
   try {
-    scheduleSlotData = await getScheduleList(supabaseClient);
+    scheduleSlotData = await fetchScheduleList(supabaseClient);
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {

@@ -41,7 +41,7 @@ const data = [
   },
 ];
 
-type CardProps = {
+type Props = {
   image: string;
   title: string;
   category: string;
@@ -49,7 +49,7 @@ type CardProps = {
   buttonColor: string[];
 };
 
-const Card = ({ image, title, category, textColor, buttonColor }: CardProps) => {
+const Card = ({ image, title, category, textColor, buttonColor }: Props) => {
   return (
     <Paper
       shadow="md"
@@ -99,7 +99,7 @@ const CarouselSection = () => {
 
   return (
     <Container py={80} fluid maw={1200}>
-      <Title mb={24}>Ut non vulputate massa</Title>
+      <Title mb={24}>Featured Services</Title>
       <Carousel
         slideSize={{ base: "100%", sm: "50%", md: "50%", lg: "33.33%" }}
         slideGap={2}

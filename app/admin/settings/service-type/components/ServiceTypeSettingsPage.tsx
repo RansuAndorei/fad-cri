@@ -18,6 +18,7 @@ import {
   Text,
   Title,
   Tooltip,
+  useComputedColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -47,9 +48,10 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
   const theme = useMantineTheme();
   const pathname = usePathname();
   const userData = useUserData();
+  const computedColorScheme = useComputedColorScheme();
+  const isDark = computedColorScheme === "dark";
 
   const [serviceTypes, setServiceTypes] = useState<ServiceTypeTableRow[]>(serviceTypeData);
-
   const [isFetching, setIsFetching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,14 +136,14 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
           </Box>
         </Group>
 
-        <Paper p="xl" shadow="xl" radius="sm">
+        <Paper p={{ base: "xs", sm: "xl" }} shadow="xl" radius="sm">
           {/* Stats */}
-          <Group mb="lg" grow>
+          <Flex mb="lg" wrap="wrap" gap="xs">
             <Paper
               p="md"
               radius="lg"
               shadow="sm"
-              style={{ border: `2px solid ${theme.colors.yellow[1]}` }}
+              style={{ border: `2px solid ${theme.colors.yellow[1]}`, flex: 1 }}
             >
               <Group gap="xs">
                 <IconSparkles size={24} style={{ color: theme.colors.yellow[6] }} />
@@ -160,7 +162,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
               p="md"
               radius="lg"
               shadow="sm"
-              style={{ border: `2px solid ${theme.colors.green[1]}` }}
+              style={{ border: `2px solid ${theme.colors.green[1]}`, flex: 1 }}
             >
               <Group gap="xs">
                 <IconCheck size={24} style={{ color: theme.colors.green[6] }} />
@@ -179,7 +181,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
               p="md"
               radius="lg"
               shadow="sm"
-              style={{ border: `2px solid ${theme.colors.red[1]}` }}
+              style={{ border: `2px solid ${theme.colors.red[1]}`, flex: 1 }}
             >
               <Group gap="xs">
                 <IconX size={24} style={{ color: theme.colors.red[7] }} />
@@ -193,7 +195,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
                 </Box>
               </Group>
             </Paper>
-          </Group>
+          </Flex>
 
           {/* Table */}
           <Paper
@@ -317,9 +319,9 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
               highlightOnHover
               styles={{
                 header: {
-                  background: theme.colors.cyan[0],
+                  background: theme.colors.cyan[isDark ? 9 : 0],
                   fontWeight: 600,
-                  color: theme.colors.cyan[7],
+                  color: theme.colors.cyan[isDark ? 0 : 7],
                 },
               }}
               fetching={isFetching}

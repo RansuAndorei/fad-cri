@@ -1,9 +1,10 @@
 import { insertError } from "@/app/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
+import { getDateAppointments, recheckSchedule } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
 import { combineDateTime, formatWordDate } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { AppointmentType } from "@/utils/types";
+import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import {
   ActionIcon,
   Alert,
@@ -15,6 +16,7 @@ import {
   Group,
   Image,
   List,
+  Loader,
   Modal,
   Paper,
   Select,
@@ -26,7 +28,7 @@ import { DatePickerInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconExclamationCircle, IconHistory, IconInfoCircle } from "@tabler/icons-react";
-import { isError } from "lodash";
+import { isError, toUpper } from "lodash";
 import moment from "moment";
 
 import { usePathname } from "next/navigation";
@@ -41,9 +43,11 @@ type ScheduleType = {
 type Props = {
   appointmentData: AppointmentType;
   serverTime: string;
+  scheduleSlot: ScheduleSlotTableRow[];
+  maxScheduleDateMonth: number;
 };
 
-const Summary = ({ appointmentData, serverTime }: Props) => {
+const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMonth }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -57,6 +61,14 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [schedule, setSchedule] = useState(appointmentData.appointment_schedule);
   const [isRescheduled, setIsRescheduled] = useState(appointmentData.appointment_is_rescheduled);
+  const [availableSlot, setAvailableSlot] = useState<
+    {
+      value: string;
+      label: string;
+      note: string | null;
+    }[]
+  >([]);
+  const [scheduleNote, setScheduleNote] = useState<string | null>(null);
 
   const appointmentDetails = appointmentData.appointment_detail;
 
@@ -76,6 +88,8 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
     formState: { errors },
     reset,
     handleSubmit,
+    setValue,
+    watch,
   } = useForm<ScheduleType>({
     defaultValues: {
       scheduleDate: "",
@@ -83,16 +97,7 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
     },
   });
 
-  const timeOptions = Array.from({ length: 20 }, (_, i) => {
-    const hour = 10 + Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    const ampmHour = hour > 12 ? hour - 12 : hour;
-    const period = hour >= 12 ? "PM" : "AM";
-    return {
-      value: `${hour.toString().padStart(2, "0")}:${minute}`,
-      label: `${ampmHour}:${minute} ${period}`,
-    };
-  });
+  const watchDate = watch("scheduleDate");
 
   const rescheduleModal = () => (
     <Modal
@@ -111,13 +116,21 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
             rules={{ required: "Date is required" }}
             render={({ field }) => (
               <DatePickerInput
+                {...field}
                 label="Date"
                 placeholder="Pick a date"
-                {...field}
                 error={errors.scheduleDate?.message}
-                value={field.value || null}
                 required
-                minDate={new Date()}
+                value={field.value || null}
+                minDate={moment().format()}
+                onChange={(value) => {
+                  if (value) {
+                    handleDateChange(value);
+                  }
+                }}
+                disabled={isLoading}
+                rightSection={isLoading ? <Loader size={14} /> : null}
+                maxDate={moment().add(maxScheduleDateMonth, "months").format()}
               />
             )}
           />
@@ -127,22 +140,44 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
             rules={{ required: "Time is required" }}
             render={({ field }) => (
               <Select
+                {...field}
                 label="Time"
                 placeholder="Pick a time"
-                data={timeOptions}
-                {...field}
+                data={availableSlot}
                 error={errors.scheduleTime?.message}
                 searchable
                 required
+                disabled={!Boolean(watchDate) || isLoading}
+                value={field.value || null}
+                rightSection={isLoading ? <Loader size={14} /> : null}
+                onChange={(value) => {
+                  field.onChange(value);
+                  const selectedSlot = availableSlot.find((slot) => slot.value === value);
+                  setScheduleNote(selectedSlot?.note || null);
+                }}
               />
             )}
           />
+          {scheduleNote ? (
+            <Alert
+              icon={<IconInfoCircle size={16} />}
+              title="Additional Information"
+              color="cyan"
+              radius="md"
+              variant="light"
+              mt="xs"
+            >
+              {scheduleNote}
+            </Alert>
+          ) : null}
+
           <Flex gap="xs" align="center" justify="flex-end">
             <Button
               variant="light"
               onClick={() => {
                 reset();
                 closeRescheduleModal();
+                setScheduleNote(null);
               }}
               disabled={isLoading}
             >
@@ -190,22 +225,90 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
     </Modal>
   );
 
+  const handleDateChange = async (value: string) => {
+    if (!userData) return;
+    try {
+      setIsLoading(true);
+      const appointmentList = await getDateAppointments(supabaseClient, { date: value });
+
+      const dayName = moment(value).format("dddd");
+      const scheduleSlotForTheDay = scheduleSlot.filter(
+        (slot) => slot.schedule_slot_day === toUpper(dayName),
+      );
+
+      const availableSlot = scheduleSlotForTheDay
+        .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
+        .map((slot) => ({
+          value: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
+          label: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
+          note: slot.schedule_slot_note,
+        }));
+
+      setAvailableSlot(availableSlot);
+      if (availableSlot.length) {
+        setValue("scheduleDate", value);
+      } else {
+        setValue("scheduleDate", "");
+        setAvailableSlot([]);
+        notifications.show({
+          message: `${formatWordDate(new Date(value))} is fully booked. Please select another date.`,
+          color: "orange",
+        });
+      }
+    } catch (e) {
+      setValue("scheduleDate", "");
+      setAvailableSlot([]);
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleDateChange",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      setValue("scheduleTime", "");
+    }
+  };
+
   const onSubmit = async (data: ScheduleType) => {
     if (!userData) throw new Error("Missing userData.");
     try {
       setIsLoading(true);
       const { scheduleDate, scheduleTime } = data;
 
+      const combinedDateAndTime = combineDateTime(new Date(scheduleDate), scheduleTime);
+
+      const isStillAvailable = await recheckSchedule(supabaseClient, {
+        schedule: combineDateTime(new Date(data.scheduleDate), data.scheduleTime),
+      });
+      if (!isStillAvailable) {
+        notifications.show({
+          message: "Sorry, this schedule is no longer available. Please select a different time.",
+          color: "orange",
+        });
+        reset();
+        setScheduleNote(null);
+        setIsLoading(false);
+        return;
+      }
+
       updateAppointment(supabaseClient, {
         appointmentData: {
-          appointment_schedule: String(
-            combineDateTime(new Date(scheduleDate), scheduleTime).toISOString(),
-          ),
+          appointment_schedule: combinedDateAndTime,
           appointment_is_rescheduled: true,
         },
         appointmentId: appointmentData.appointment_id,
       });
-      setSchedule(String(combineDateTime(new Date(scheduleDate), scheduleTime).toISOString()));
+      setSchedule(combinedDateAndTime);
       setIsRescheduled(true);
       closeRescheduleModal();
       notifications.show({
@@ -259,7 +362,7 @@ const Summary = ({ appointmentData, serverTime }: Props) => {
               <strong>Removal Type:</strong>{" "}
               {appointmentDetails.appointment_detail_is_removal_done_by_fad_cri
                 ? "Fad Cri's Work"
-                : "Not Fad Cri’s Work"}
+                : "Not Fad Cri's Work"}
             </Text>
             <Text>
               <strong>Reconstruction:</strong>{" "}

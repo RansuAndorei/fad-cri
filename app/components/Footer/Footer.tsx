@@ -73,8 +73,8 @@ const Footer = ({ scheduleList, generalLocation }: Props) => {
               })}
             </Stack>
           </Stack>
-          <Hours data={scheduleList} />
-          <Location data={generalLocation} />
+          <Hours scheduleList={scheduleList} />
+          <Location generalLocation={generalLocation} />
         </Flex>
       </Box>
 

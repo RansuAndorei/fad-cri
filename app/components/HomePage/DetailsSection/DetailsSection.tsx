@@ -2,6 +2,7 @@
 
 import { AspectRatio, Box, Card, Container, SimpleGrid, Text, Title } from "@mantine/core";
 import Image from "next/image";
+import Link from "next/link";
 import classes from "./DetailsSection.module.css";
 
 const data = [
@@ -9,25 +10,35 @@ const data = [
     title: "FAQs",
     image: "/images/faqs.png",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur molestie tellus et justo gravida vulputate. In hac habitasse platea dictumst. Vestibulum sed suscipit tellus. Etiam id turpis neque.",
+      "Find answers to frequently asked questions about our services, appointments, and policies. Get the information you need to make your experience smooth and enjoyable.",
+    link: "/faqs",
   },
   {
     title: "Guidelines",
     image: "/images/guidelines.jpg",
     description:
-      "Nulla maximus aliquam libero, a facilisis ipsum commodo et. Phasellus feugiat nec leo ut ullamcorper. Vestibulum placerat ipsum tellus, quis dictum enim egestas vitae.",
+      "Learn our studio guidelines to ensure a safe, comfortable, and seamless experience for everyone. Follow our tips to make the most out of your visit.",
+    link: "/guidelines",
   },
   {
     title: "Reservation",
     image: "/images/reservation.jpg",
     description:
-      "Morbi volutpat blandit ullamcorper. Integer odio orci, finibus sit amet enim ac, vulputate consectetur nisi. Donec vitae leo at magna tempor ornare.",
+      "Reserve your preferred time slots quickly and securely online. Manage your appointments with ease and avoid any scheduling conflicts with our streamlined system.",
+    link: "/reservation",
   },
 ];
 
 const DetailsSection = () => {
   const cards = data.map((article) => (
-    <Card key={article.title} p="md" radius="md" component="a" href="#" className={classes.card}>
+    <Card
+      key={article.title}
+      p="md"
+      radius="md"
+      component={Link}
+      href={article.link}
+      className={classes.card}
+    >
       <AspectRatio ratio={1920 / 1080}>
         <Box
           style={{
@@ -54,7 +65,7 @@ const DetailsSection = () => {
 
   return (
     <Container py={80} fluid maw={1600}>
-      <Title mb={24}>Aliquam malesuada</Title>
+      <Title mb={24}>Helpful Information</Title>
       <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 0, sm: "md" }}>
         {cards}
       </SimpleGrid>

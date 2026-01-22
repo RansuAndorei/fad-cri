@@ -1,4 +1,4 @@
-import { toNumber } from "lodash";
+import { capitalize, toNumber } from "lodash";
 import moment from "moment";
 import { DEFAULT_MANTINE_COLOR_LIST } from "./constants";
 
@@ -31,13 +31,23 @@ export const formatDecimal = (value: number | string, places = 2): string => {
 };
 
 export const combineDateTime = (date: Date, time: string) => {
+  const [timePart, meridiem] = time.split(" ");
+  const [hourStr, minuteStr] = timePart.split(":");
+  let hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  if (meridiem === "PM" && hour !== 12) {
+    hour += 12;
+  }
+  if (meridiem === "AM" && hour === 12) {
+    hour = 0;
+  }
   return moment(date)
     .set({
-      hour: parseInt(time.split(":")[0], 10),
-      minute: parseInt(time.split(":")[1], 10),
+      hour,
+      minute,
       second: 0,
     })
-    .toDate();
+    .toISOString();
 };
 
 export const statusToColor = (status: string) => {
@@ -84,4 +94,19 @@ export const formatPeso = (value: number) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+};
+
+export const formatDaysInOperatingHours = (days: string[]) => {
+  if (days.length === 1) return capitalize(days[0]);
+
+  return `${capitalize(days[0])} — ${capitalize(days[days.length - 1])}`;
+};
+
+export const formatTimeInOperatingHours = (time: string) => {
+  if (!time) return "";
+  const [rawTime] = time.split("+");
+  const [hour, minute] = rawTime.split(":").map(Number);
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minute.toString().padStart(2, "0")} ${period}`;
 };

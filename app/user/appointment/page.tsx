@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentTableType } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getServiceType } from "../booking/actions";
+import { fetchServiceType } from "../booking/actions";
 import { getAppointmentList } from "./actions";
 import AppointmentListPage from "./components/AppointmentListPage";
 
@@ -37,7 +37,7 @@ const Page = async () => {
           type: null,
           status: null,
         }),
-        getServiceType(supabaseClient),
+        fetchServiceType(supabaseClient),
       ]);
 
     initialAppointmentList = appointmentListData ?? [];

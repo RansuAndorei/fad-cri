@@ -21,7 +21,7 @@ const DividerSection = () => {
       }}
     >
       <Title order={2} mb={20}>
-        Phasellus maximus ultrices dolor.
+        Book Your Appointment Today
       </Title>
       <Button variant="outline" component={Link} href="/user/booking-info">
         Book an Appointment

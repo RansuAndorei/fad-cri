@@ -1,7 +1,7 @@
 import { Database } from "@/utils/database";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getServiceType = async (
+export const fetchServiceType = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     serviceTypeId: string;

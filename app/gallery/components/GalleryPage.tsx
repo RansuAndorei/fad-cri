@@ -543,7 +543,7 @@ const GalleryPage = () => {
             </ThemeIcon>
 
             <Box ta="center">
-              <Title order={2} c="white" mb="sm" style={{ fontSize: 40, fontWeight: 900 }}>
+              <Title order={2} c="white" mb="sm" style={{ fontSize: 36, fontWeight: 800 }}>
                 Ready for Your Own Stunning Nails?
               </Title>
               <Text size="xl" c="white" style={{ opacity: 0.95 }}>

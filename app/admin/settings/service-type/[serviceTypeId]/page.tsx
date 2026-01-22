@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ServiceTypeTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getServiceType } from "./actions";
+import { fetchServiceType } from "./actions";
 import ServiceTypePage from "./components/ServiceTypePage";
 
 type Props = {
@@ -23,7 +23,7 @@ const Page = async ({ params }: Props) => {
 
   let serviceTypeData: ServiceTypeTableRow;
   try {
-    serviceTypeData = await getServiceType(supabaseClient, { serviceTypeId: serviceTypeId });
+    serviceTypeData = await fetchServiceType(supabaseClient, { serviceTypeId: serviceTypeId });
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {

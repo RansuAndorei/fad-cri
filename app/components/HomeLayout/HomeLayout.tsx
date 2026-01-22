@@ -1,4 +1,5 @@
-import { fetchGeneralLocation, fetchHours, insertError } from "@/app/actions";
+import { fetchHours, insertError } from "@/app/actions";
+import { fetchSystemSettings } from "@/app/admin/settings/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleRangeType } from "@/utils/types";
 import { Box, Flex } from "@mantine/core";
@@ -16,21 +17,21 @@ const HomeLayout = async ({ children }: Props) => {
   const supabaseClient = await createSupabaseServerClient();
 
   let scheduleList: ScheduleRangeType[] = [];
-  let generalLocation: string | null = null;
+  let generalLocation: string = "";
   try {
     const [hours, location] = await Promise.all([
       fetchHours(supabaseClient),
-      fetchGeneralLocation(supabaseClient),
+      fetchSystemSettings(supabaseClient, { keyList: ["GENERAL_LOCATION"] }),
     ]);
     scheduleList = hours;
-    generalLocation = location;
+    generalLocation = location.GENERAL_LOCATION.system_setting_value;
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
-          error_url: "home-layout",
-          error_function: "fetcFooterInitialData",
+          error_url: "/home-layout",
+          error_function: "fetchHomeLayoutInitialData",
         },
       });
     }

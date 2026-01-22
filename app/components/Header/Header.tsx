@@ -4,7 +4,7 @@ import { insertError } from "@/app/actions";
 
 import { useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData } from "@/stores/useUserStore";
-import { ADMIN_NAVIGATION_ITEMS, TAB_LIST } from "@/utils/constants";
+import { ADMIN_NAVIGATION_ITEMS, HELP_TAB_LIST, TAB_LIST } from "@/utils/constants";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Box,
@@ -16,6 +16,7 @@ import {
   Drawer,
   Flex,
   Group,
+  Menu,
   NavLink,
   ScrollArea,
   Stack,
@@ -26,7 +27,13 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconCalendar, IconChevronDown, IconLogout, IconSettings } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconChevronDown,
+  IconHelp,
+  IconLogout,
+  IconSettings,
+} from "@tabler/icons-react";
 import { isError, startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,6 +56,7 @@ const Header = () => {
 
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
   const [navbarOpened, { toggle: toggleNavbar, close: closeNavbar }] = useDisclosure(false);
+  const [opened, setOpened] = useState(false);
 
   const isDark = computedColorScheme === "dark";
   const isAdmin = userData?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
@@ -96,6 +104,8 @@ const Header = () => {
     setActiveMenu(activeMenu === menuId ? "" : menuId);
   };
 
+  const helpTabLabelList = HELP_TAB_LIST.map((tab) => `/${tab.label}`);
+
   return (
     <Box>
       <header className={classes.header}>
@@ -126,6 +136,32 @@ const Header = () => {
                 />
               );
             })}
+            <Menu trigger="hover" withinPortal>
+              <Menu.Target>
+                <NavLink
+                  label={
+                    <Group gap="xs">
+                      Help
+                      <IconChevronDown size={14} />
+                    </Group>
+                  }
+                  w="auto"
+                  className={classes.link}
+                  active={helpTabLabelList.includes(pathname)}
+                />
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                {HELP_TAB_LIST.map(({ label, icon }) => {
+                  const path = `/${label}`;
+                  return (
+                    <Menu.Item key={label} component={Link} href={path} leftSection={icon}>
+                      {startCase(label)}
+                    </Menu.Item>
+                  );
+                })}
+              </Menu.Dropdown>
+            </Menu>
           </Group>
 
           <Group visibleFrom="sm" gap="xs">
@@ -180,6 +216,50 @@ const Header = () => {
                 />
               );
             })}
+
+            <Box>
+              <UnstyledButton
+                onClick={() => setOpened((o) => !o)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                }}
+              >
+                <Box style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <IconHelp size={16} />
+                  <Text>Help</Text>
+                </Box>
+
+                <IconChevronDown
+                  size={14}
+                  style={{
+                    transform: opened ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 150ms ease",
+                  }}
+                />
+              </UnstyledButton>
+
+              <Collapse in={opened}>
+                <Box mt="xs" ml="md">
+                  {HELP_TAB_LIST.map(({ label, icon }) => {
+                    const path = `/${label}`;
+                    return (
+                      <NavLink
+                        key={label}
+                        component={Link}
+                        href={path}
+                        label={startCase(label)}
+                        leftSection={icon}
+                        active={pathname === path}
+                      />
+                    );
+                  })}
+                </Box>
+              </Collapse>
+            </Box>
           </Stack>
           <Divider my="sm" />
 

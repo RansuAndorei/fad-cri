@@ -1,7 +1,7 @@
 INSERT INTO system_setting_table (system_setting_key, system_setting_value)
 VALUES 
 ('BOOKING_FEE', '500'),
-('MAX_SCHEDULE_DATE_MONTH', '3'),
+('MAX_SCHEDULE_DATE_MONTH', '2'),
 ('LATE_FEE_1', '300'),
 ('LATE_FEE_2', '500'),
 ('LATE_FEE_3', '1000'),

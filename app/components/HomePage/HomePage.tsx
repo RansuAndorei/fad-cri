@@ -6,11 +6,15 @@ import HeroSection from "./HeroSection/HeroSection";
 import ServicesSection from "./ServicesSection/ServicesSection";
 import TestimonialsSection from "./TestimonialsSection/TestimonialsSection";
 
-const HomePage = () => {
+type Props = {
+  serviceList: string[];
+};
+
+const HomePage = ({ serviceList }: Props) => {
   return (
     <Container fluid px={0}>
       <HeroSection />
-      <ServicesSection />
+      <ServicesSection serviceList={serviceList} />
       <DividerSection />
       <CarouselSection />
       <TestimonialsSection />

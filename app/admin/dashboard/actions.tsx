@@ -4,7 +4,7 @@ import { StackedBarChartDataType } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 import moment from "moment";
 
-export const getAppointmentStatusCount = async (
+export const fetchAppointmentStatusCount = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     startDate: string;
@@ -32,7 +32,7 @@ export const getAppointmentStatusCount = async (
   };
 };
 
-export const getDashboardClientList = async (
+export const fetchDashboardClientList = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     offset: number;
@@ -51,7 +51,7 @@ export const getDashboardClientList = async (
   return data;
 };
 
-export const getDashboardTypeList = async (
+export const fetchDashboardTypeList = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     offset: number;
@@ -70,7 +70,7 @@ export const getDashboardTypeList = async (
   return data;
 };
 
-export const getAppointmentStatusMonthlyCount = async (
+export const fetchAppointmentStatusMonthlyCount = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     startDate: string;

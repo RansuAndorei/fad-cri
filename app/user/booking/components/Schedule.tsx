@@ -79,7 +79,7 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
           errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
-            error_function: "fetchOverviewData",
+            error_function: "handleDateChange",
             error_user_email: userData.email,
             error_user_id: userData.id,
           },
@@ -109,8 +109,8 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
               placeholder="Pick a date"
               error={errors.scheduleDate?.message}
               required
-              minDate={moment().format()}
               value={field.value || null}
+              minDate={moment().format()}
               onChange={(value) => {
                 if (value) {
                   handleDateChange(value);

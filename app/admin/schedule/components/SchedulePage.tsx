@@ -29,7 +29,7 @@ import { isError, toUpper } from "lodash";
 import moment, { Moment } from "moment";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { getAppointmentDatabyAdmin, getSchedule } from "../actions";
+import { fetchAppointmentDatabyAdmin, fetchSchedule } from "../actions";
 import SummaryModal from "./SummaryModal";
 
 type DayWithScheduleType = {
@@ -62,7 +62,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   const cardBgIndex = colorScheme === "light" ? 0 : 9;
 
   useEffect(() => {
-    const fetchSchedule = async () => {
+    const fetchScheduleInitialData = async () => {
       if (!userData) return;
 
       try {
@@ -85,7 +85,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
           .second(59)
           .format("YYYY-MM-DD HH:mm:ssZ");
 
-        const schedule = await getSchedule(supabaseClient, {
+        const schedule = await fetchSchedule(supabaseClient, {
           startDate,
           endDate,
         });
@@ -127,7 +127,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
       }
     };
 
-    fetchSchedule();
+    fetchScheduleInitialData();
   }, [currentMonth]);
 
   const scheduleSlotByDay = useMemo(() => {
@@ -166,7 +166,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
 
     try {
       setIsLoading(true);
-      const appointmentData = await getAppointmentDatabyAdmin(supabaseClient, { appointmentId });
+      const appointmentData = await fetchAppointmentDatabyAdmin(supabaseClient, { appointmentId });
       setSelectedAppointment({
         ...appointmentData,
         appointment_user: user,
@@ -198,7 +198,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
     <Box>
       {selectedAppointment && (
         <Modal opened={opened} onClose={close} size="xl" centered>
-          <Flex align="center" justify="space-between" mb="sm">
+          <Flex align="center" justify="space-between" mb="sm" wrap="wrap" gap="xs">
             <Title order={4}>
               Appointment of {selectedAppointment.appointment_user.user_first_name}{" "}
               {selectedAppointment.appointment_user.user_last_name}

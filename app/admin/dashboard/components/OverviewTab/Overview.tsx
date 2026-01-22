@@ -10,10 +10,10 @@ import moment from "moment";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
-  getAppointmentStatusCount,
-  getAppointmentStatusMonthlyCount,
-  getDashboardClientList,
-  getDashboardTypeList,
+  fetchAppointmentStatusCount,
+  fetchAppointmentStatusMonthlyCount,
+  fetchDashboardClientList,
+  fetchDashboardTypeList,
 } from "../../actions";
 import { RadialChartData } from "../Chart/RadialChart";
 import AppointmentStatusTracker from "./AppointmentStatusTracker";
@@ -70,23 +70,23 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
           typeList,
           monthlyRequestData,
         ] = await Promise.all([
-          getAppointmentStatusCount(supabaseClient, {
+          fetchAppointmentStatusCount(supabaseClient, {
             startDate: moment(startDateFilter).format(),
             endDate: moment(endDateFilter).format(),
           }),
-          getDashboardClientList(supabaseClient, {
+          fetchDashboardClientList(supabaseClient, {
             offset: clientOffset,
             limit: ROW_PER_PAGE,
             startDate: moment(startDateFilter).format(),
             endDate: moment(endDateFilter).format(),
           }),
-          getDashboardTypeList(supabaseClient, {
+          fetchDashboardTypeList(supabaseClient, {
             offset: typeOffset,
             limit: ROW_PER_PAGE,
             startDate: moment(startDateFilter).format(),
             endDate: moment(endDateFilter).format(),
           }),
-          getAppointmentStatusMonthlyCount(supabaseClient, {
+          fetchAppointmentStatusMonthlyCount(supabaseClient, {
             startDate: moment(startDateFilter).format(),
             endDate: moment(endDateFilter).format(),
           }),
@@ -136,7 +136,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
     if (!userData) return;
     try {
       setIsFetchingClient(true);
-      const clientList = await getDashboardClientList(supabaseClient, {
+      const clientList = await fetchDashboardClientList(supabaseClient, {
         offset: clientOffset,
         limit: ROW_PER_PAGE,
         startDate: moment(startDateFilter).format(),
@@ -171,7 +171,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
     if (!userData) return;
     try {
       setIsFetchingType(true);
-      const typeList = await getDashboardTypeList(supabaseClient, {
+      const typeList = await fetchDashboardTypeList(supabaseClient, {
         offset: typeOffset,
         limit: ROW_PER_PAGE,
         startDate: moment(startDateFilter).format(),

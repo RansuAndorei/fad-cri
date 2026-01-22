@@ -24,22 +24,6 @@ export const insertError = async (
   if (error) throw error;
 };
 
-export const getUserProfile = async (
-  supabaseClient: SupabaseClient<Database>,
-  params: {
-    userId: string;
-  },
-) => {
-  const { userId } = params;
-  const { data, error } = await supabaseClient
-    .from("user_table")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-};
-
 export const uploadImage = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
@@ -104,12 +88,13 @@ export const fetchHours = async (supabaseClient: SupabaseClient<Database>) => {
   return data as ScheduleRangeType[];
 };
 
-export const fetchGeneralLocation = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchServiceLabelList = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
-    .from("system_setting_table")
-    .select("system_setting_value")
-    .eq("system_setting_key", "GENERAL_LOCATION")
-    .single();
+    .from("service_type_table")
+    .select("service_type_label")
+    .eq("service_type_is_disabled", false)
+    .eq("service_type_is_active", true)
+    .order("service_type_label");
   if (error) throw error;
-  return data.system_setting_value;
+  return data.map((value) => value.service_type_label);
 };

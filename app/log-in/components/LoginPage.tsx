@@ -183,7 +183,7 @@ const LoginPage = () => {
 
               <Center>
                 <Text fz={14} c="dimmed">
-                  Don’t have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link href="/sign-up" style={{ textDecoration: "none" }} color="blue">
                     Sign Up
                   </Link>

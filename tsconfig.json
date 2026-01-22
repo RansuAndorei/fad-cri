@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "app/components/HomePage/Carousel/Carousel"
-  ],
+, "app/components/HeroSection"  ],
   "exclude": ["node_modules"]
 }

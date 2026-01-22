@@ -54,7 +54,7 @@ const TestimonialsSection = () => {
       }}
     >
       <Title order={2} mb={40}>
-        Interdum et malesuada fames
+        What Our Clients Say
       </Title>
       <Flex justify="center" gap="xl" wrap="wrap">
         {data.map(({ name, review }, index) => (

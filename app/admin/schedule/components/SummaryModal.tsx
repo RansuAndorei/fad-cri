@@ -22,7 +22,7 @@ const SummaryModal = ({ appointmentData }: Props) => {
   const appointmentDetails = appointmentData.appointment_detail;
 
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper p={{ base: "xs", sm: "xl" }} shadow="xl" withBorder>
       <Stack gap="md">
         {/* Appointment Card */}
         <Card shadow="sm" radius="md" p="md" withBorder>
@@ -43,7 +43,7 @@ const SummaryModal = ({ appointmentData }: Props) => {
               <strong>Removal Type:</strong>{" "}
               {appointmentDetails.appointment_detail_is_removal_done_by_fad_cri
                 ? "Fad Cri's Work"
-                : "Not Fad Cri’s Work"}
+                : "Not Fad Cri's Work"}
             </Text>
             <Text>
               <strong>Reconstruction:</strong>{" "}
@@ -87,7 +87,7 @@ const SummaryModal = ({ appointmentData }: Props) => {
         {/* Schedule Card */}
         <Card shadow="sm" radius="md" p="md" withBorder>
           <Title order={5} mb={8} c="cyan">
-            Schedule
+            {`Schedule${appointmentData.appointment_is_rescheduled ? " (Rescheduled)" : ""}`}
           </Title>
           <Stack gap={4}>
             <Text>

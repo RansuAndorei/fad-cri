@@ -31,7 +31,7 @@ const Summary = () => {
             {values.removal === "with" && (
               <Text>
                 <strong>Removal Type:</strong>{" "}
-                {values.removalType === "fad" ? "Fad Cri's Work" : "Not Fad Cri’s Work"}
+                {values.removalType === "fad" ? "Fad Cri's Work" : "Not Fad Cri's Work"}
               </Text>
             )}
             <Text>

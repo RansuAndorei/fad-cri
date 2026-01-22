@@ -2,7 +2,7 @@
 
 import Reminders from "@/app/user/booking/components/Reminders";
 import { statusToColor } from "@/utils/functions";
-import { AppointmentType } from "@/utils/types";
+import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import { Badge, Container, Flex, Group, Tabs, Title } from "@mantine/core";
 import { IconBell, IconCalendarCheck, IconCreditCard, IconListDetails } from "@tabler/icons-react";
 import Payment from "./Payment";
@@ -12,9 +12,17 @@ type Props = {
   appointmentData: AppointmentType;
   serverTime: string;
   reminderList: string[];
+  scheduleSlot: ScheduleSlotTableRow[];
+  maxScheduleDateMonth: number;
 };
 
-const AppointmentPage = ({ appointmentData, serverTime, reminderList }: Props) => {
+const AppointmentPage = ({
+  appointmentData,
+  serverTime,
+  reminderList,
+  scheduleSlot,
+  maxScheduleDateMonth,
+}: Props) => {
   return (
     <Container size="md" py="xl">
       <Group mb="md" wrap="nowrap">
@@ -41,7 +49,12 @@ const AppointmentPage = ({ appointmentData, serverTime, reminderList }: Props) =
         </Tabs.List>
 
         <Tabs.Panel value="summary">
-          <Summary appointmentData={appointmentData} serverTime={serverTime} />
+          <Summary
+            appointmentData={appointmentData}
+            serverTime={serverTime}
+            scheduleSlot={scheduleSlot}
+            maxScheduleDateMonth={maxScheduleDateMonth}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel value="reminders">

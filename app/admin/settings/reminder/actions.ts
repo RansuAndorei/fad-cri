@@ -11,7 +11,7 @@ export const insertReminders = async (
   if (error) throw error;
 };
 
-export const getReminders = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchReminders = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("reminder_table")
     .select("*")

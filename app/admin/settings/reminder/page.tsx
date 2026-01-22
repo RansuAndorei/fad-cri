@@ -2,7 +2,7 @@ import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getReminders } from "./actions";
+import { fetchReminders } from "./actions";
 import RemindersPage from "./components/RemindersPage";
 
 const Page = async () => {
@@ -17,7 +17,7 @@ const Page = async () => {
 
   let reminderList: { id: string; order: number; value: string }[] = [];
   try {
-    const reminderData = await getReminders(supabaseClient);
+    const reminderData = await fetchReminders(supabaseClient);
     reminderList = reminderData.map((reminder) => ({
       id: reminder.reminder_id,
       order: reminder.reminder_order,

@@ -18,7 +18,7 @@ export const getServerTime = async (supabaseClient: SupabaseClient<Database>) =>
   return data;
 };
 
-export const getServiceType = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchServiceType = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("service_type_table")
     .select("service_type_label")
@@ -56,12 +56,18 @@ export const getDateAppointments = async (
   const startOfDay = moment(date).startOf("day").utcOffset(8).toISOString();
   const endOfDay = moment(date).endOf("day").utcOffset(8).toISOString();
 
+  const serverTime = await getServerTime(supabaseClient);
+  const serverTimestamp = new Date(serverTime).getTime();
+  const fiveMinutesAgo = new Date(serverTimestamp - 5 * 60 * 1000).toISOString();
+
   const { data, error } = await supabaseClient
     .from("appointment_table")
     .select("appointment_schedule")
     .gte("appointment_schedule", startOfDay)
     .lte("appointment_schedule", endOfDay)
-    .in("appointment_status", ["SCHEDULED", "COMPLETED"])
+    .or(
+      `appointment_status.eq.SCHEDULED,appointment_status.eq.COMPLETED,and(appointment_status.eq.PENDING,appointment_date_created.gte.'${fiveMinutesAgo}')`,
+    )
     .order("appointment_schedule");
   if (error) throw error;
   const timeList = data.map((item) =>
@@ -70,11 +76,34 @@ export const getDateAppointments = async (
   return timeList;
 };
 
-export const getReminders = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchReminders = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("reminder_table")
     .select("*")
     .order("reminder_order");
   if (error) throw error;
   return data;
+};
+
+export const recheckSchedule = async (
+  supabaseClient: SupabaseClient<Database>,
+  params: { schedule: string },
+) => {
+  const { schedule } = params;
+
+  const serverTime = await getServerTime(supabaseClient);
+  const serverTimestamp = new Date(serverTime).getTime();
+  const fiveMinutesAgo = new Date(serverTimestamp - 5 * 60 * 1000).toISOString();
+
+  const { count, error } = await supabaseClient
+    .from("appointment_table")
+    .select("*", { count: "exact", head: true })
+    .eq("appointment_schedule", schedule)
+    .or(
+      `appointment_status.eq.SCHEDULED,appointment_status.eq.COMPLETED,and(appointment_status.eq.PENDING,appointment_date_created.gte.'${fiveMinutesAgo}')`,
+    )
+    .limit(1);
+  if (error) throw error;
+
+  return !count;
 };

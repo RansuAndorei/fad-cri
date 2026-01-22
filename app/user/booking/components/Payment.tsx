@@ -2,7 +2,7 @@
 
 import { insertError, uploadImage } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { formatDecimal } from "@/utils/functions";
+import { combineDateTime, formatDecimal } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AttachmentTableInsert, BookingFormValues, PaymentMethod } from "@/utils/types";
 import {
@@ -23,9 +23,13 @@ import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { getBookingFee } from "../actions";
+import { getBookingFee, recheckSchedule } from "../actions";
 
-const Payment = () => {
+type Props = {
+  handleStepChange: (nextStep: number) => Promise<void>;
+};
+
+const Payment = ({ handleStepChange }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -35,7 +39,7 @@ const Payment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [bookingFee, setBookingFee] = useState(0);
 
-  const { getValues } = useFormContext<BookingFormValues>();
+  const { getValues, setValue } = useFormContext<BookingFormValues>();
 
   useEffect(() => {
     (async () => {
@@ -73,6 +77,21 @@ const Payment = () => {
     try {
       const bookingData = getValues();
       const inspo = bookingData.inspo;
+
+      const isStillAvailable = await recheckSchedule(supabaseClient, {
+        schedule: combineDateTime(new Date(bookingData.scheduleDate), bookingData.scheduleTime),
+      });
+      if (!isStillAvailable) {
+        notifications.show({
+          message: "Sorry, this schedule is no longer available. Please select a different time.",
+          color: "orange",
+        });
+        setValue("scheduleDate", "");
+        setValue("scheduleTime", "");
+        handleStepChange(2);
+        setIsLoading(false);
+        return;
+      }
 
       let inspoData: AttachmentTableInsert | null = null;
       if (inspo) {
@@ -113,6 +132,7 @@ const Payment = () => {
         window.location.href = data.checkout_url;
       }
     } catch (e) {
+      console.log(e);
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",

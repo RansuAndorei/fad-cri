@@ -2,7 +2,7 @@ import { Database } from "@/utils/database";
 import { AppointmentType, ScheduleType } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getSchedule = async (
+export const fetchSchedule = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     startDate: string;
@@ -17,7 +17,7 @@ export const getSchedule = async (
   return data as ScheduleType[];
 };
 
-export const getAppointmentDatabyAdmin = async (
+export const fetchAppointmentDatabyAdmin = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     appointmentId: string;

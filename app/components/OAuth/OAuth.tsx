@@ -30,7 +30,7 @@ const OAuth = () => {
           errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
-            error_function: "handleSignUp",
+            error_function: "handleSignin",
           },
         });
       }

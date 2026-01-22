@@ -1,9 +1,10 @@
 import { insertError } from "@/app/actions";
+import { fetchSystemSettings } from "@/app/admin/settings/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { AppointmentType } from "@/utils/types";
+import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { getReminders, getServerTime } from "../../booking/actions";
+import { fetchReminders, getScheduleSlot, getServerTime } from "../../booking/actions";
 import { getAppointmentData } from "./actions";
 import AppointmentPage from "./components/AppointmentPage";
 
@@ -27,17 +28,23 @@ const Page = async ({ params, searchParams }: Props) => {
 
   let appointmentData: AppointmentType;
   let reminderList: string[] = [];
+  let scheduleSlot: ScheduleSlotTableRow[] = [];
+  let maxScheduleDateMonth: number;
   try {
-    const [appointment, remindersData] = await Promise.all([
+    const [appointment, remindersData, scheduleSlotData, settingsData] = await Promise.all([
       getAppointmentData(supabaseClient, {
         appointmentId,
         userId: user.id,
         isCancelled: status === "cancelled",
       }),
-      getReminders(supabaseClient),
+      fetchReminders(supabaseClient),
+      getScheduleSlot(supabaseClient),
+      fetchSystemSettings(supabaseClient, { keyList: ["MAX_SCHEDULE_DATE_MONTH"] }),
     ]);
     appointmentData = appointment;
     reminderList = remindersData.map((value) => value.reminder_value);
+    scheduleSlot = scheduleSlotData;
+    maxScheduleDateMonth = Number(settingsData.MAX_SCHEDULE_DATE_MONTH.system_setting_value);
   } catch (e) {
     if (isError(e)) {
       const pathname = `/user/appointment/${appointmentId}`;
@@ -60,6 +67,8 @@ const Page = async ({ params, searchParams }: Props) => {
       appointmentData={appointmentData}
       serverTime={serverTime}
       reminderList={reminderList}
+      scheduleSlot={scheduleSlot}
+      maxScheduleDateMonth={maxScheduleDateMonth}
     />
   );
 };
