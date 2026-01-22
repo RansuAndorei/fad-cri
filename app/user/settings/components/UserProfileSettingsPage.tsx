@@ -255,10 +255,10 @@ const UserProfileSettingsPage = () => {
       <Container size="md">
         {/* Header */}
         <Box>
-          <Title order={1} mb="xs" c={theme.colors.cyan[7]}>
+          <Title order={1} mb="xs" c={isDark ? "cyan.0" : "cyan"}>
             My Profile
           </Title>
-          <Text size="lg" c="dimmed">
+          <Text size="lg" c={isDark ? "gray.1" : "dimmed"}>
             Manage your personal information and security
           </Text>
         </Box>
@@ -266,7 +266,7 @@ const UserProfileSettingsPage = () => {
         <Stack gap="lg" mt="xl">
           {/* Avatar Section */}
           <Paper
-            p="xl"
+            p={{ base: "lg", xs: "xl" }}
             radius="lg"
             shadow="sm"
             style={{ border: `2px solid ${theme.colors.cyan[2]}` }}
@@ -322,7 +322,7 @@ const UserProfileSettingsPage = () => {
 
           {/* Personal Information */}
           <Paper
-            p="xl"
+            p={{ base: "lg", xs: "xl" }}
             radius="lg"
             shadow="sm"
             style={{ border: `2px solid ${theme.colors.yellow[2]}` }}
@@ -438,7 +438,7 @@ const UserProfileSettingsPage = () => {
 
           {/* Security Section */}
           <Paper
-            p="xl"
+            p={{ base: "lg", xs: "xl" }}
             radius="lg"
             shadow="sm"
             style={{ border: `2px solid ${theme.colors.cyan[2]}` }}

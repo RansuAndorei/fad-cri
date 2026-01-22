@@ -152,6 +152,7 @@ const Payment = ({ appointmentId, payment }: Props) => {
       setIsLoading(false);
     }
   };
+
   const renderPaymentModal = () => (
     <Modal
       opened={opened}
@@ -193,7 +194,7 @@ const Payment = ({ appointmentId, payment }: Props) => {
   );
 
   return (
-    <Paper p="xl" shadow="xl" withBorder style={{ borderTop: 0 }}>
+    <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" withBorder style={{ borderTop: 0 }}>
       <Stack gap="md">
         <Title c="dimmed" order={3}>
           Payment

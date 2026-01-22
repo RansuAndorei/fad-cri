@@ -37,7 +37,7 @@ const Page = async () => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
   return (

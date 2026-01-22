@@ -112,6 +112,7 @@ const ServiceTypePage = ({ serviceTypeData }: Props) => {
               disabled={isLoading}
               component={Link}
               href={`/admin/settings/service-type/${serviceTypeData.service_type_id}/edit`}
+              w={100}
             >
               Edit
             </Button>
@@ -121,6 +122,7 @@ const ServiceTypePage = ({ serviceTypeData }: Props) => {
               leftSection={<IconTrash size={14} />}
               loading={isLoading}
               onClick={() => deleteModal()}
+              w={100}
             >
               Delete
             </Button>

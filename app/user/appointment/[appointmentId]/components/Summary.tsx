@@ -122,7 +122,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
                 error={errors.scheduleDate?.message}
                 required
                 value={field.value || null}
-                minDate={moment().format()}
+                minDate={moment(serverTime).add(1, "day").format()}
                 onChange={(value) => {
                   if (value) {
                     handleDateChange(value);
@@ -130,7 +130,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
                 }}
                 disabled={isLoading}
                 rightSection={isLoading ? <Loader size={14} /> : null}
-                maxDate={moment().add(maxScheduleDateMonth, "months").format()}
+                maxDate={moment(serverTime).add(maxScheduleDateMonth, "months").format()}
               />
             )}
           />
@@ -337,14 +337,14 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
   };
 
   return (
-    <Paper p="xl" shadow="xl" withBorder style={{ borderTop: 0 }}>
+    <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" withBorder style={{ borderTop: 0 }}>
       <Stack gap="md">
         <Title c="dimmed" order={3}>
           Summary
         </Title>
 
         {/* Appointment Card */}
-        <Card shadow="sm" radius="md" p="md" withBorder>
+        <Card shadow="sm" radius="md" p={{ base: "md", xs: "xl" }} withBorder>
           <Title order={5} mb={8} c="cyan">
             Appointment Details
           </Title>
@@ -375,7 +375,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
 
         {/* Nail Inspiration Card */}
         {appointmentDetails.appointment_nail_design?.attachment_path ? (
-          <Card shadow="sm" radius="md" p="md" withBorder>
+          <Card shadow="sm" radius="md" p={{ base: "md", xs: "xl" }} withBorder>
             <Title order={5} mb={8} c="cyan">
               Nail Design Inspiration
             </Title>
@@ -403,7 +403,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
         ) : null}
 
         {/* Schedule Card */}
-        <Card shadow="sm" radius="md" p="md" withBorder>
+        <Card shadow="sm" radius="md" p={{ base: "md", xs: "xl" }} withBorder>
           <Title order={5} mb={8} c="cyan">
             {`Schedule${isRescheduled ? " (Rescheduled)" : ""}`}
           </Title>

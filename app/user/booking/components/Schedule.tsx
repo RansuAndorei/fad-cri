@@ -17,9 +17,10 @@ import { getDateAppointments } from "../actions";
 type Props = {
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDate: string;
+  serverTime: string;
 };
 
-const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
+const Schedule = ({ scheduleSlot, maxScheduleDate, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -92,7 +93,7 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
   };
 
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper p={{ base: "lg", xs: "xl" }} shadow="xl" withBorder>
       <Stack gap="md">
         <Title c="dimmed" order={3} mb="xs">
           Schedule
@@ -110,7 +111,7 @@ const Schedule = ({ scheduleSlot, maxScheduleDate }: Props) => {
               error={errors.scheduleDate?.message}
               required
               value={field.value || null}
-              minDate={moment().format()}
+              minDate={moment(serverTime).add(1, "day").format()}
               onChange={(value) => {
                 if (value) {
                   handleDateChange(value);

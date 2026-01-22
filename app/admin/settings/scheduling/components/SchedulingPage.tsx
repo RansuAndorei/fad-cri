@@ -33,9 +33,10 @@ import TimeInput from "./TimeInput";
 
 type Props = {
   scheduleSlotData: ScheduleSlotTableRow[];
+  serverTime: string;
 };
 
-const SchedulingPage = ({ scheduleSlotData }: Props) => {
+const SchedulingPage = ({ scheduleSlotData, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
   const pathname = usePathname();
@@ -105,7 +106,7 @@ const SchedulingPage = ({ scheduleSlotData }: Props) => {
 
     try {
       setIsLoading(true);
-      const userOffset = new Date().getTimezoneOffset();
+      const userOffset = new Date(serverTime).getTimezoneOffset();
       const scheduleSlotsWithTZ = scheduleSlots.map((slot) => ({
         ...slot,
         schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm")
@@ -156,13 +157,13 @@ const SchedulingPage = ({ scheduleSlotData }: Props) => {
           </Box>
         </Group>
 
-        <Paper p="xl" shadow="xl" radius="sm">
+        <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" radius="sm">
           <Stack gap="lg">
             {/* Grouped by Day */}
             {groupedSlots.map(({ day, slots }) => (
               <Paper
                 key={day}
-                p="xl"
+                p={{ base: "sm", xs: "xl" }}
                 radius="lg"
                 shadow="xs"
                 style={{ border: `2px solid ${theme.colors.cyan[2]}` }}

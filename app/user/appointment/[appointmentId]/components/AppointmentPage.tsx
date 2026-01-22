@@ -58,7 +58,7 @@ const AppointmentPage = ({
         </Tabs.Panel>
 
         <Tabs.Panel value="reminders">
-          <Reminders reminderList={reminderList} />
+          <Reminders reminderList={reminderList} isWithTopBorder={false} />
         </Tabs.Panel>
 
         <Tabs.Panel value="payment">

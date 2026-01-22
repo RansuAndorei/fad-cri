@@ -6,7 +6,13 @@ import { useUserData } from "@/stores/useUserStore";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
 import { formatTime } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { AppointmentType, ScheduleSlotTableRow, ScheduleType, UserTableRow } from "@/utils/types";
+import {
+  AppointmentStatusEnum,
+  AppointmentType,
+  ScheduleSlotTableRow,
+  ScheduleType,
+  UserTableRow,
+} from "@/utils/types";
 import {
   Badge,
   Box,
@@ -37,11 +43,17 @@ type DayWithScheduleType = {
   day: Moment;
 };
 
+const scheduleStatusToColor = {
+  SCHEDULED: "blue",
+  COMPLETED: "green",
+} as Record<AppointmentStatusEnum, string>;
+
 type Props = {
   scheduleSlot: ScheduleSlotTableRow[];
+  serverTime: string;
 };
 
-const SchedulePage = ({ scheduleSlot }: Props) => {
+const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -49,7 +61,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
   const { colorScheme } = useMantineColorScheme();
   const { setIsLoading } = useLoadingActions();
 
-  const [currentMonth, setCurrentMonth] = useState(moment());
+  const [currentMonth, setCurrentMonth] = useState(moment(serverTime));
   const [days, setDays] = useState<DayWithScheduleType[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [selectedAppointment, setSelectedAppointment] = useState<
@@ -267,9 +279,14 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
         {!isFetching &&
           days.map(({ day }, index) => {
             const isCurrentMonth = day.isSame(currentMonth, "month");
+            let isSameDay = false;
+            if (isCurrentMonth) {
+              isSameDay = moment(day).isSame(serverTime, "day");
+            }
             const dayKey = toUpper(day.format("dddd"));
             const slots = scheduleSlotByDay[dayKey] ?? [];
-            const apptMap = appointmentMapsByDay.get(day.format("YYYY-MM-DD")) ?? new Map();
+            const apptMap: Map<string, AppointmentType & { appointment_user: UserTableRow }> =
+              appointmentMapsByDay.get(day.format("YYYY-MM-DD")) ?? new Map();
 
             const mergedTimes = Array.from(new Set([...slots, ...apptMap.keys()])).sort((a, b) =>
               moment(a, "HH:mm:ssZ").diff(moment(b, "HH:mm:ssZ")),
@@ -286,6 +303,11 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
                     display: !isCurrentMonth && window.innerWidth < 768 ? "none" : "flex",
                     flexDirection: "column",
                     height: "100%",
+                    border: `1px solid ${isSameDay ? "var(--mantine-color-yellow-6)" : "var(--mantine-color-gray-4)"}`,
+                    boxShadow: isSameDay
+                      ? "0 0 0 2px rgba(234, 179, 8, 0.4), 0 0 12px rgba(234, 179, 8, 0.6)"
+                      : "none",
+                    transition: "box-shadow 0.2s ease, border-color 0.2s ease",
                   }}
                 >
                   <Text fw={600} c={"dimmed"}>
@@ -307,7 +329,7 @@ const SchedulePage = ({ scheduleSlot }: Props) => {
                             radius="sm"
                             className="hover-card"
                             style={{
-                              borderLeft: `4px solid ${theme.colors.blue[6]}`,
+                              borderLeft: `4px solid ${theme.colors[scheduleStatusToColor[appointment.appointment_status]][6]}`,
                               cursor: "pointer",
                             }}
                             onClick={() =>

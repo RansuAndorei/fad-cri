@@ -22,7 +22,7 @@ const SummaryModal = ({ appointmentData }: Props) => {
   const appointmentDetails = appointmentData.appointment_detail;
 
   return (
-    <Paper p={{ base: "xs", sm: "xl" }} shadow="xl" withBorder>
+    <Paper p={{ base: "xs", xs: "xl" }} shadow="xl" withBorder>
       <Stack gap="md">
         {/* Appointment Card */}
         <Card shadow="sm" radius="md" p="md" withBorder>

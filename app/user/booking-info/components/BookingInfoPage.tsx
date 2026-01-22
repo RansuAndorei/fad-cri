@@ -48,7 +48,7 @@ const BookingInfoPage = ({ bookingFee, lateFee }: Props) => {
           View My Appointments
         </Button>
       </Flex>
-      <Paper withBorder p="lg" radius="md" shadow="lg">
+      <Paper withBorder p={{ base: "lg", xs: "xl" }} radius="md" shadow="lg">
         <Stack gap="md">
           <Group>
             <IconPin color="#15aabf" size={16} />

@@ -22,7 +22,7 @@ const NailDesign = () => {
   const file = watch("inspo");
 
   return (
-    <Paper p="xl" shadow="xl" withBorder radius="lg">
+    <Paper p={{ base: "lg", xs: "xl" }} shadow="xl" withBorder radius="lg">
       <Stack gap="lg">
         <Group gap="xs">
           <Title order={3}>Nail Design</Title>

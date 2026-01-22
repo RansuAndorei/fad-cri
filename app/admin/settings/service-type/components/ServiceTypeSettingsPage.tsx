@@ -136,12 +136,12 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
           </Box>
         </Group>
 
-        <Paper p={{ base: "xs", sm: "xl" }} shadow="xl" radius="sm">
+        <Paper p={{ base: "xs", xs: "xl" }} shadow="xl" radius="sm">
           {/* Stats */}
           <Flex mb="lg" wrap="wrap" gap="xs">
             <Paper
               p="md"
-              radius="lg"
+              radius="md"
               shadow="sm"
               style={{ border: `2px solid ${theme.colors.yellow[1]}`, flex: 1 }}
             >
@@ -160,7 +160,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
 
             <Paper
               p="md"
-              radius="lg"
+              radius="md"
               shadow="sm"
               style={{ border: `2px solid ${theme.colors.green[1]}`, flex: 1 }}
             >
@@ -179,7 +179,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
 
             <Paper
               p="md"
-              radius="lg"
+              radius="md"
               shadow="sm"
               style={{ border: `2px solid ${theme.colors.red[1]}`, flex: 1 }}
             >
@@ -200,7 +200,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
           {/* Table */}
           <Paper
             p="xl"
-            radius="lg"
+            radius="md"
             shadow="sm"
             style={{ border: `2px solid ${theme.colors.cyan[1]}` }}
           >

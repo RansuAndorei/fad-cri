@@ -25,7 +25,7 @@ const CTASection = ({ icon: Icon, title, description }: Props) => {
 
   return (
     <Paper
-      p={{ base: "xl", sm: 60 }}
+      p={{ base: "xl", xs: 60 }}
       radius="xl"
       shadow="xl"
       style={{

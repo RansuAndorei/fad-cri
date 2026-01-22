@@ -17,7 +17,7 @@ const AppointmentType = ({ serviceTypeOptions }: Props) => {
   const removal = watch("removal");
 
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper p={{ base: "lg", xs: "xl" }} shadow="xl" withBorder>
       <Stack gap="md">
         <Title c="dimmed" order={3} mb="xs">
           Appointment Details

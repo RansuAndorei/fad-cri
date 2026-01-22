@@ -46,14 +46,15 @@ type Props = {
   scheduleList: ScheduleRangeType[];
   generalLocation: string;
   contactNumber: string;
+  serverTime: string;
 };
 
-const AboutPage = ({ scheduleList, generalLocation, contactNumber }: Props) => {
+const AboutPage = ({ scheduleList, generalLocation, contactNumber, serverTime }: Props) => {
   const theme = useMantineTheme();
   const computedColorScheme = useComputedColorScheme();
   const isDark = computedColorScheme === "dark";
 
-  const yearsSince2019 = moment().year() - 2019;
+  const yearsSince2019 = moment(serverTime).year() - 2019;
 
   const team = [
     {
@@ -181,7 +182,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber }: Props) => {
           </SimpleGrid>
 
           {/* Our Story */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Flex align="flex-start" gap="xl" mb="xl" wrap="wrap">
               <ThemeIcon size={70} radius="xl" variant="light" color="cyan">
                 <IconDiamond size={36} />
@@ -280,7 +281,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber }: Props) => {
           </SimpleGrid>
 
           {/* Our Values */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Stack align="center" mb={40}>
               <Badge size="xl" radius="xl" color="violet" variant="light">
                 <Group gap="xs">
@@ -316,7 +317,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber }: Props) => {
           </Paper>
 
           {/* Meet the Team */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Stack align="center" mb={40}>
               <Badge size="xl" radius="xl" color="yellow" variant="light">
                 <Group gap="xs">
@@ -380,7 +381,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber }: Props) => {
           </Paper>
 
           {/* Visit Us */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
               <Stack gap="lg">
                 <Group>

@@ -49,19 +49,20 @@ type DaySchedule = {
 
 type Props = {
   maxScheduleDateMonth: number;
+  serverTime: string;
 };
 
-const ReservationPage = ({ maxScheduleDateMonth }: Props) => {
+const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
   const computedColorScheme = useComputedColorScheme();
   const isDark = computedColorScheme === "dark";
 
-  const maxMonth = moment().add(maxScheduleDateMonth, "months");
+  const maxMonth = moment(serverTime).add(maxScheduleDateMonth, "months");
 
   const [selectedDate, setSelectedDate] = useState<Moment | null>(null);
   const [selectedTime, setSelectedTime] = useState<{ time: string; note?: string } | null>(null);
-  const [currentMonth, setCurrentMonth] = useState(moment());
+  const [currentMonth, setCurrentMonth] = useState(moment(serverTime));
   const [days, setDays] = useState<DaySchedule[]>([]);
   const [isFetching, setIsFetching] = useState(false);
 
@@ -74,18 +75,19 @@ const ReservationPage = ({ maxScheduleDateMonth }: Props) => {
       const endOfMonth = currentMonth.clone().endOf("month").endOf("week");
       const day = startOfMonth.clone();
 
-      const slotsData = await fetchScheduleSlot(supabaseClient);
-      const appointmentsData = await fetchAppointmentPerMonth(supabaseClient, {
-        startOfMonth: startOfMonth.toISOString(),
-        endOfMonth: endOfMonth.toISOString(),
-      });
+      const [slotsData, appointmentsData] = await Promise.all([
+        fetchScheduleSlot(supabaseClient),
+        fetchAppointmentPerMonth(supabaseClient, {
+          startOfMonth: startOfMonth.toISOString(),
+          endOfMonth: endOfMonth.toISOString(),
+        }),
+      ]);
 
       while (day.isSameOrBefore(endOfMonth, "day")) {
         const isCurrentMonth = day.isSame(currentMonth, "month");
-        const isPast = day.isBefore(moment(), "day");
+        const isPast = day.isSameOrBefore(moment(serverTime), "day");
 
         const dayName = day.format("dddd").toUpperCase();
-
         const daySlots = slotsData?.filter((s) => s.schedule_slot_day === dayName) || [];
 
         const bookedTimes =
@@ -185,7 +187,7 @@ const ReservationPage = ({ maxScheduleDateMonth }: Props) => {
           </Stack>
 
           {/* Calendar Section */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Box>
               <Stack align="center" mb={40}>
                 <Title order={2} c="cyan">
@@ -207,7 +209,7 @@ const ReservationPage = ({ maxScheduleDateMonth }: Props) => {
                       variant="light"
                       leftSection={<IconChevronLeft size={16} />}
                       onClick={() => handleMonthChange("prev")}
-                      disabled={isFetching || currentMonth.isSame(moment(), "month")}
+                      disabled={isFetching || currentMonth.isSame(moment(serverTime), "month")}
                       style={{ minWidth: 200 }}
                     >
                       Previous
@@ -261,7 +263,7 @@ const ReservationPage = ({ maxScheduleDateMonth }: Props) => {
                 {!isFetching &&
                   days.map(({ day, slots }, index) => {
                     const isCurrentMonth = day.isSame(currentMonth, "month");
-                    const isPast = day.isBefore(moment(), "day");
+                    const isPast = day.isSameOrBefore(moment(serverTime), "day");
                     const isSelected = selectedDate?.isSame(day, "day");
                     const hasSlots = slots.length > 0;
                     const availableSlots = slots.filter((s) => s.available).length;

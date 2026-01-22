@@ -19,6 +19,7 @@ type Props = {
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDate: string;
   reminderList: string[];
+  serverTime: string;
 };
 
 const BookingPage = ({
@@ -26,6 +27,7 @@ const BookingPage = ({
   scheduleSlot,
   maxScheduleDate,
   reminderList,
+  serverTime,
 }: Props) => {
   const isLoading = useIsLoading();
 
@@ -100,7 +102,11 @@ const BookingPage = ({
               description="Date and Time"
               allowStepSelect={shouldAllowSelectStep(2)}
             >
-              <Schedule scheduleSlot={scheduleSlot} maxScheduleDate={maxScheduleDate} />
+              <Schedule
+                scheduleSlot={scheduleSlot}
+                maxScheduleDate={maxScheduleDate}
+                serverTime={serverTime}
+              />
             </Stepper.Step>
 
             <Stepper.Step
@@ -116,7 +122,7 @@ const BookingPage = ({
               description="Message from Fad Cri"
               allowStepSelect={shouldAllowSelectStep(4)}
             >
-              <Reminders reminderList={reminderList} />
+              <Reminders reminderList={reminderList} isWithTopBorder={true} />
             </Stepper.Step>
 
             <Stepper.Step

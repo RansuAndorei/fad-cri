@@ -36,7 +36,7 @@ const Page = async ({ params }: Props) => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
   return <ServiceTypePage serviceTypeData={serviceTypeData} />;

@@ -106,11 +106,11 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
           </Box>
         </Group>
 
-        <Paper p="xl" shadow="xl" radius="sm">
+        <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" radius="sm">
           <Stack gap="lg">
             {/* General Location */}
             <Paper
-              p="xl"
+              p={{ base: "sm", xs: "xl" }}
               radius="md"
               shadow="xs"
               style={{
@@ -150,7 +150,7 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
 
             {/* Specific Address */}
             <Paper
-              p="xl"
+              p={{ base: "sm", xs: "xl" }}
               radius="md"
               shadow="xs"
               style={{
@@ -191,7 +191,7 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
 
             {/* Pin Location */}
             <Paper
-              p="xl"
+              p={{ base: "sm", xs: "xl" }}
               radius="md"
               shadow="xs"
               style={{
@@ -256,7 +256,7 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
 
             {/* Contact Number */}
             <Paper
-              p="xl"
+              p={{ base: "sm", xs: "xl" }}
               radius="md"
               shadow="xs"
               style={{

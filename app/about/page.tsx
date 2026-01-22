@@ -12,6 +12,7 @@ const Page = async () => {
   let scheduleList: ScheduleRangeType[] = [];
   let generalLocation: string = "";
   let contactNumber: string = "";
+  const serverTime = new Date().toISOString();
   try {
     const [hours, aboutData] = await Promise.all([
       fetchHours(supabaseClient),
@@ -30,7 +31,7 @@ const Page = async () => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
   return (
@@ -38,6 +39,7 @@ const Page = async () => {
       scheduleList={scheduleList}
       generalLocation={generalLocation}
       contactNumber={contactNumber}
+      serverTime={serverTime}
     />
   );
 };

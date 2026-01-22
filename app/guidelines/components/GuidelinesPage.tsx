@@ -176,7 +176,7 @@ const GuidelinesPage = ({
           </Stack>
 
           {/* Policies Grid */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Stack align="center" mb={40}>
               <Badge size="xl" radius="xl" color="violet" variant="light">
                 <Group gap="xs">
@@ -241,7 +241,7 @@ const GuidelinesPage = ({
           </Paper>
 
           {/* Cancellation Fee Breakdown */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Stack align="center" mb={40}>
               <Badge size="xl" radius="xl" color="red" variant="light">
                 <Group gap="xs">
@@ -449,7 +449,7 @@ const GuidelinesPage = ({
           </SimpleGrid>
 
           {/* Contact for Questions */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="lg">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="lg">
             <Stack align="center" gap="lg">
               <ThemeIcon size={80} radius="xl" variant="light" color="cyan">
                 <IconHeartHandshake size={40} />

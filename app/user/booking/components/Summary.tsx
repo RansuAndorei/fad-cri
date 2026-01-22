@@ -9,14 +9,14 @@ const Summary = () => {
   const values = getValues();
 
   return (
-    <Paper p="xl" shadow="xl" withBorder radius="md">
+    <Paper p={{ base: "lg", xs: "xl" }} shadow="xl" withBorder radius="md">
       <Stack gap="lg">
         <Title c="dimmed" order={3}>
           Booking Summary
         </Title>
 
         {/* Appointment Card */}
-        <Card shadow="sm" radius="md" p="md" withBorder>
+        <Card shadow="sm" radius="md" p={{ base: "sm", xs: "xl" }} withBorder>
           <Title order={5} mb={8} c="cyan">
             Appointment Details
           </Title>
@@ -43,7 +43,7 @@ const Summary = () => {
 
         {/* Nail Inspiration Card */}
         {values.inspo && (
-          <Card shadow="sm" radius="md" p="md" withBorder>
+          <Card shadow="sm" radius="md" p={{ base: "sm", xs: "xl" }} withBorder>
             <Title order={5} mb={8} c="cyan">
               Nail Design Inspiration
             </Title>
@@ -71,7 +71,7 @@ const Summary = () => {
         )}
 
         {/* Schedule Card */}
-        <Card shadow="sm" radius="md" p="md" withBorder>
+        <Card shadow="sm" radius="md" p={{ base: "sm", xs: "xl" }} withBorder>
           <Title order={5} mb={8} c="cyan">
             Schedule
           </Title>

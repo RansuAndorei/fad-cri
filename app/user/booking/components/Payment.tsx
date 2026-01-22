@@ -132,7 +132,6 @@ const Payment = ({ handleStepChange }: Props) => {
         window.location.href = data.checkout_url;
       }
     } catch (e) {
-      console.log(e);
       notifications.show({
         message: "Something went wrong. Please try again later.",
         color: "red",
@@ -153,7 +152,7 @@ const Payment = ({ handleStepChange }: Props) => {
   };
 
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper p={{ base: "lg", xs: "xl" }} shadow="xl" withBorder>
       <Stack gap="md">
         <LoadingOverlay visible={isFetchingFee} />
         <Title c="dimmed" order={3}>

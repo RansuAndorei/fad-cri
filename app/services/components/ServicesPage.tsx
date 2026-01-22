@@ -257,7 +257,7 @@ const ServicesPage = ({ services }: Props) => {
           </SimpleGrid>
 
           {/* Why Choose FadCri */}
-          <Paper p={{ base: "xl", sm: 60 }} radius="xl" shadow="xl">
+          <Paper p={{ base: "xl", xs: 60 }} radius="xl" shadow="xl">
             <Stack align="center" gap="xl">
               <Badge size="xl" radius="xl" color="cyan" variant="light">
                 <Group gap="xs">

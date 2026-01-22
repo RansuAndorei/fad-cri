@@ -115,12 +115,12 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
           </Box>
         </Group>
 
-        <Paper p="xl" shadow="xl" radius="sm">
+        <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" radius="sm">
           <Stack gap="lg">
             {/* Booking Fee */}
             <Paper
-              p="xl"
-              radius="lg"
+              p={{ base: "sm", xs: "xl" }}
+              radius="md"
               shadow="xs"
               style={{
                 border: `2px solid ${theme.colors.cyan[2]}`,
@@ -158,8 +158,8 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
 
             {/* Max Schedule Date */}
             <Paper
-              p="xl"
-              radius="lg"
+              p={{ base: "sm", xs: "xl" }}
+              radius="md"
               shadow="xs"
               style={{
                 border: `2px solid ${theme.colors.yellow[2]}`,
@@ -200,8 +200,8 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
 
             {/* Late Fees */}
             <Paper
-              p="xl"
-              radius="lg"
+              p={{ base: "sm", xs: "xl" }}
+              radius="md"
               shadow="xs"
               style={{
                 border: `2px solid ${theme.colors.cyan[2]}`,
@@ -221,7 +221,7 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
               <Stack gap="md">
                 {LATE_FEE_LABEL_LIST.map((label, index) => (
                   <Group key={label} align="center" gap="md">
-                    <Badge size="lg" variant="light" color="cyan" w={200}>
+                    <Badge size="lg" variant="light" color="cyan" w={180}>
                       {label}
                     </Badge>
 

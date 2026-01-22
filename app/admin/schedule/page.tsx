@@ -17,6 +17,7 @@ const Page = async () => {
   }
 
   let scheduleSlot: ScheduleSlotTableRow[] = [];
+  const serverTime = new Date().toISOString();
   try {
     scheduleSlot = await getScheduleSlot(supabaseClient);
   } catch (e) {
@@ -31,10 +32,10 @@ const Page = async () => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
-  return <SchedulePage scheduleSlot={scheduleSlot} />;
+  return <SchedulePage scheduleSlot={scheduleSlot} serverTime={serverTime} />;
 };
 
 export default Page;

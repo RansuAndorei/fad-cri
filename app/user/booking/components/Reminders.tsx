@@ -2,11 +2,17 @@ import { List, Paper, Space, Stack, Text, Title } from "@mantine/core";
 
 type Props = {
   reminderList: string[];
+  isWithTopBorder: boolean;
 };
 
-const Reminders = ({ reminderList }: Props) => {
+const Reminders = ({ reminderList, isWithTopBorder }: Props) => {
   return (
-    <Paper p="xl" shadow="xl" withBorder>
+    <Paper
+      p={{ base: "sm", xs: "xl" }}
+      shadow="xl"
+      withBorder
+      style={{ borderTop: isWithTopBorder ? "1px solid #e5e7eb" : "none" }}
+    >
       <Stack gap="md">
         <Title c="dimmed" order={3}>
           Reminders and Message
@@ -21,7 +27,7 @@ const Reminders = ({ reminderList }: Props) => {
           ))}
         </List>
 
-        <Paper shadow="md" p="md" withBorder>
+        <Paper shadow="md" p={{ base: "sm", xs: "xl" }} withBorder>
           <Title order={4} mb="sm">
             💌 A Message from Fad Cri
           </Title>

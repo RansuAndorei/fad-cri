@@ -9,6 +9,7 @@ const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
 
   let maxScheduleDateMonth: number = 2;
+  const serverTime = new Date().toISOString();
   try {
     const reservationData = await fetchSystemSettings(supabaseClient, {
       keyList: ["MAX_SCHEDULE_DATE_MONTH"],
@@ -24,10 +25,10 @@ const Page = async () => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
-  return <ReservationPage maxScheduleDateMonth={maxScheduleDateMonth} />;
+  return <ReservationPage maxScheduleDateMonth={maxScheduleDateMonth} serverTime={serverTime} />;
 };
 
 export default Page;

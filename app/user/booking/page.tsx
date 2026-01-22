@@ -22,6 +22,7 @@ const Page = async () => {
   let maxDateNumberOfMonths: number = 5;
   let maxScheduleDate: string = "";
   let reminderList: ReminderTableRow[] = [];
+  const serverTime = new Date().toISOString();
   try {
     [serviceTypeOptions, scheduleSlot, maxDateNumberOfMonths, reminderList] = await Promise.all([
       fetchServiceType(supabaseClient),
@@ -43,7 +44,7 @@ const Page = async () => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
 
   return (
@@ -52,6 +53,7 @@ const Page = async () => {
       scheduleSlot={scheduleSlot}
       maxScheduleDate={maxScheduleDate}
       reminderList={reminderList.map((reminder) => reminder.reminder_value)}
+      serverTime={serverTime}
     />
   );
 };

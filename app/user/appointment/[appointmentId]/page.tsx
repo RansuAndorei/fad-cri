@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { fetchReminders, getScheduleSlot, getServerTime } from "../../booking/actions";
+import { fetchReminders, getScheduleSlot } from "../../booking/actions";
 import { getAppointmentData } from "./actions";
 import AppointmentPage from "./components/AppointmentPage";
 
@@ -30,6 +30,7 @@ const Page = async ({ params, searchParams }: Props) => {
   let reminderList: string[] = [];
   let scheduleSlot: ScheduleSlotTableRow[] = [];
   let maxScheduleDateMonth: number;
+  const serverTime = new Date().toISOString();
   try {
     const [appointment, remindersData, scheduleSlotData, settingsData] = await Promise.all([
       getAppointmentData(supabaseClient, {
@@ -58,9 +59,8 @@ const Page = async ({ params, searchParams }: Props) => {
         },
       });
     }
-    redirect("/500");
+    redirect("/error/500");
   }
-  const serverTime = await getServerTime(supabaseClient);
 
   return (
     <AppointmentPage

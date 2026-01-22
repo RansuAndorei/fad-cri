@@ -142,7 +142,7 @@ const AppointmentListPage = ({
           <IconCalendarMonth color="gray" />
           <Title order={2}>Appointment List</Title>
         </Group>
-        <Paper shadow="xl" withBorder p="xl">
+        <Paper shadow="xl" withBorder p={{ base: "xs", xs: "xl" }}>
           <Stack gap="sm">
             <FormProvider {...methods}>
               <form onSubmit={handleSubmit(onSubmit)}>

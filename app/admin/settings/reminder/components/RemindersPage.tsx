@@ -151,12 +151,12 @@ const RemindersPage = ({ reminderList }: Props) => {
           </Box>
         </Group>
 
-        <Paper p="xl" shadow="xl" radius="sm">
+        <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" radius="sm">
           <Stack gap="lg">
             {/* Info Card */}
             <Paper
-              p="md"
-              radius="lg"
+              p={{ base: "sm", xs: "md" }}
+              radius="md"
               shadow="sm"
               style={{
                 border: `2px solid ${theme.colors.yellow[2]}`,
@@ -172,8 +172,8 @@ const RemindersPage = ({ reminderList }: Props) => {
             </Paper>
             {/* List Card */}
             <Paper
-              p="md"
-              radius="lg"
+              p={{ base: "sm", xs: "md" }}
+              radius="md"
               shadow="sm"
               style={{ border: `2px solid ${theme.colors.cyan[2]}` }}
             >
@@ -192,8 +192,8 @@ const RemindersPage = ({ reminderList }: Props) => {
             {reminders.map((reminder, index) => (
               <Paper
                 key={reminder.id}
-                p="lg"
-                radius="lg"
+                p={{ base: "sm", xs: "lg" }}
+                radius="md"
                 shadow="sm"
                 style={{ border: `2px solid ${theme.colors.cyan[2]}` }}
               >
@@ -249,8 +249,8 @@ const RemindersPage = ({ reminderList }: Props) => {
             {/* Empty State */}
             {reminders.length === 0 && (
               <Paper
-                p="xl"
-                radius="lg"
+                p={{ base: "sm", xs: "xl" }}
+                radius="md"
                 shadow="sm"
                 style={{
                   border: `2px dashed ${theme.colors.cyan[2]}`,
