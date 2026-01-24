@@ -21,6 +21,7 @@ const BasicInfo = () => {
           {...register("user_first_name", { required: "First name is required" })}
           error={errors.user_first_name?.message}
           withAsterisk
+          maxLength={50}
         />
         <TextInput
           label="Last Name"
@@ -28,6 +29,7 @@ const BasicInfo = () => {
           {...register("user_last_name", { required: "Last name is required" })}
           error={errors.user_last_name?.message}
           withAsterisk
+          maxLength={50}
         />
         <TextInput
           label="Email"

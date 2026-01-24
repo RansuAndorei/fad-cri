@@ -242,7 +242,7 @@ const UserProfileSettingsPage = () => {
     });
   };
 
-  if (!userProfileData || !userData) return <ProfileSkeleton />;
+  if (!userProfileData || !userData || !userProfile) return <ProfileSkeleton />;
 
   return (
     <Box
@@ -279,8 +279,8 @@ const UserProfileSettingsPage = () => {
                   radius={120}
                   style={{ border: `4px solid ${theme.colors.cyan[5]}` }}
                 >
-                  {userProfileData.user_first_name.charAt(0)}
-                  {userProfileData.user_last_name.charAt(0)}
+                  {userProfile.user_first_name.charAt(0)}
+                  {userProfile.user_last_name.charAt(0)}
                 </Avatar>
                 <FileButton onChange={handleAvatarChange} accept="image/png,image/jpeg">
                   {(props) => (
@@ -308,10 +308,10 @@ const UserProfileSettingsPage = () => {
               </Box>
               <Box>
                 <Text fw={700} size="xl" c={theme.colors.cyan[7]}>
-                  {userProfileData.user_first_name} {userProfileData.user_last_name}
+                  {userProfile.user_first_name} {userProfile.user_last_name}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {userProfileData.user_email}
+                  {userProfile.user_email}
                 </Text>
                 <Badge mt="xs" variant="light" color="cyan">
                   Active Member
@@ -352,6 +352,7 @@ const UserProfileSettingsPage = () => {
                   styles={{
                     input: { border: `2px solid ${theme.colors.yellow[2]}` },
                   }}
+                  maxLength={50}
                 />
                 <TextInput
                   label="Last Name"
@@ -364,6 +365,7 @@ const UserProfileSettingsPage = () => {
                   styles={{
                     input: { border: `2px solid ${theme.colors.yellow[2]}` },
                   }}
+                  maxLength={50}
                 />
               </Group>
 
