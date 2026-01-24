@@ -4,8 +4,9 @@ import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { fetchReminders, fetchScheduleSlot } from "../../booking/actions";
-import { getAppointmentData } from "./actions";
+
+import { getAppointmentData } from "@/app/user/appointment/[appointmentId]/actions";
+import { fetchScheduleSlot } from "@/app/user/booking/actions";
 import AppointmentPage from "./components/AppointmentPage";
 
 type Props = {
@@ -27,23 +28,20 @@ const Page = async ({ params, searchParams }: Props) => {
   }
 
   let appointmentData: AppointmentType;
-  let reminderList: string[] = [];
   let scheduleSlot: ScheduleSlotTableRow[] = [];
   let maxScheduleDateMonth: number;
   const serverTime = new Date().toISOString();
   try {
-    const [appointment, remindersData, scheduleSlotData, settingsData] = await Promise.all([
+    const [appointment, scheduleSlotData, settingsData] = await Promise.all([
       getAppointmentData(supabaseClient, {
         appointmentId,
         userId: user.id,
         isCancelled: status === "cancelled",
       }),
-      fetchReminders(supabaseClient),
       fetchScheduleSlot(supabaseClient),
       fetchSystemSettings(supabaseClient, { keyList: ["MAX_SCHEDULE_DATE_MONTH"] }),
     ]);
     appointmentData = appointment;
-    reminderList = remindersData.map((value) => value.reminder_value);
     scheduleSlot = scheduleSlotData;
     maxScheduleDateMonth = Number(settingsData.MAX_SCHEDULE_DATE_MONTH.system_setting_value);
   } catch (e) {
@@ -53,7 +51,7 @@ const Page = async ({ params, searchParams }: Props) => {
         errorTableInsert: {
           error_message: e.message,
           error_url: pathname,
-          error_function: "getAppointmentData",
+          error_function: "getAdminAppointmentData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -62,11 +60,12 @@ const Page = async ({ params, searchParams }: Props) => {
     redirect("/error/500");
   }
 
+  if (!appointmentData) redirect("/400");
+
   return (
     <AppointmentPage
       appointmentData={appointmentData}
       serverTime={serverTime}
-      reminderList={reminderList}
       scheduleSlot={scheduleSlot}
       maxScheduleDateMonth={maxScheduleDateMonth}
     />

@@ -11,7 +11,10 @@ export const getAppointmentData = async (
   },
 ) => {
   const { data, error } = await supabaseClient.rpc("get_appointment", {
-    input_data: params,
+    input_data: {
+      ...params,
+      adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+    },
   });
   if (error) throw error;
   return data as AppointmentType;

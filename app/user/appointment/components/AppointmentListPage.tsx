@@ -5,7 +5,7 @@ import { useUserData } from "@/stores/useUserStore";
 import { ROW_PER_PAGE } from "@/utils/constants";
 import { formatDate, formatTime, formatWordDate, statusToColor } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
-import { AppointmentStatusEnum, AppointmentTableType } from "@/utils/types";
+import { AppointmentStatusEnum, AppointmentTableType, SelectDataType } from "@/utils/types";
 import {
   ActionIcon,
   Badge,
@@ -24,10 +24,11 @@ import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { getAppointmentList } from "../actions";
+import { fetchAppointmentList } from "../actions";
 import AppointmentFilter from "./AppointmentFilter";
 
 export type AppointmentTableFilterType = {
+  user: string | null;
   type: string | null;
   status: AppointmentStatusEnum | null;
 };
@@ -36,12 +37,14 @@ type Props = {
   initialAppointmentList: AppointmentTableType[];
   initialAppointmentListCount: number;
   serviceTypeOptions: string[];
+  userList?: SelectDataType[];
 };
 
 const AppointmentListPage = ({
   initialAppointmentList,
   initialAppointmentListCount,
   serviceTypeOptions,
+  userList,
 }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const userData = useUserData();
@@ -49,12 +52,14 @@ const AppointmentListPage = ({
   const pathname = usePathname();
   const { colors } = useMantineTheme();
 
+  const isAdmin = userData?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL as string);
+
   const [appointmentList, setAppointmentList] = useState(initialAppointmentList);
   const [appointmentListCount, setAppointmentListCount] = useState(initialAppointmentListCount);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<AppointmentTableType>>({
-    columnAccessor: "appointment_date_created",
+    columnAccessor: "appointment_schedule",
     direction: "desc",
   });
   const [navigatingAppointment, setNavigatingAppointment] = useState<string | null>(null);
@@ -66,7 +71,7 @@ const AppointmentListPage = ({
       return;
     }
     const values = getValues();
-    fetchAppointmentList({ ...values, page });
+    handleFetchAppointmentList({ ...values, page });
   }, [sortStatus]);
 
   const methods = useForm<AppointmentTableFilterType>({
@@ -77,7 +82,9 @@ const AppointmentListPage = ({
   });
   const { getValues, handleSubmit } = methods;
 
-  const fetchAppointmentList = async (formData: AppointmentTableFilterType & { page: number }) => {
+  const handleFetchAppointmentList = async (
+    formData: AppointmentTableFilterType & { page: number },
+  ) => {
     if (!userData) {
       notifications.show({
         message: "User data is not available. Please refresh the page.",
@@ -87,15 +94,16 @@ const AppointmentListPage = ({
     }
     try {
       setIsLoading(true);
-      const { type, status, page } = formData;
+      const { type, status, page, user } = formData;
 
-      const { data, count } = await getAppointmentList(supabaseClient, {
+      const { data, count } = await fetchAppointmentList(supabaseClient, {
         page,
         limit: ROW_PER_PAGE,
         sortStatus,
         userId: userData.id,
         type,
         status,
+        user: isAdmin ? user : null,
       });
       setAppointmentList(data);
       setAppointmentListCount(count);
@@ -105,7 +113,7 @@ const AppointmentListPage = ({
           errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
-            error_function: "fetchAppointmentList",
+            error_function: "handleFetchAppointmentList",
             error_user_id: userData.id,
           },
         });
@@ -123,16 +131,16 @@ const AppointmentListPage = ({
     if (page === newPage) return;
     setPage(newPage);
     const values = getValues();
-    await fetchAppointmentList({ ...values, page: newPage });
+    await handleFetchAppointmentList({ ...values, page: newPage });
   };
 
   const onSubmit = async (data: AppointmentTableFilterType) => {
-    await fetchAppointmentList({ ...data, page: 1 });
+    await handleFetchAppointmentList({ ...data, page: 1 });
   };
 
   const handleRefresh = async () => {
     const values = getValues();
-    await fetchAppointmentList({ ...values, page });
+    await handleFetchAppointmentList({ ...values, page });
   };
 
   return (
@@ -150,6 +158,7 @@ const AppointmentListPage = ({
                   handleRefresh={handleRefresh}
                   isLoading={isLoading}
                   serviceTypeOptions={serviceTypeOptions}
+                  userList={userList}
                 />
               </form>
             </FormProvider>
@@ -176,6 +185,25 @@ const AppointmentListPage = ({
                 },
               }}
               columns={[
+                ...(isAdmin
+                  ? [
+                      {
+                        accessor: "appointment_user",
+                        title: "Name",
+                        render: ({ appointment_user }: AppointmentTableType) => {
+                          if (!appointment_user) return null;
+                          return (
+                            <Text>
+                              {[
+                                appointment_user.user_first_name,
+                                appointment_user.user_last_name,
+                              ].join(" ")}
+                            </Text>
+                          );
+                        },
+                      },
+                    ]
+                  : []),
                 {
                   accessor: "appointment_detail.appointment_detail_type",
                   title: "Service Type",
@@ -220,7 +248,11 @@ const AppointmentListPage = ({
                       onClick={() => {
                         if (navigatingAppointment) return;
                         setNavigatingAppointment(appointment_id);
-                        router.push(`/user/appointment/${appointment_id}`);
+                        router.push(
+                          isAdmin
+                            ? `/admin/schedule/list/${appointment_id}`
+                            : `/user/appointment/${appointment_id}`,
+                        );
                       }}
                       variant="light"
                       disabled={

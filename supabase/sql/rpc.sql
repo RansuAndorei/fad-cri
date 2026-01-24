@@ -125,15 +125,25 @@ RETURNS JSONB
 AS $$
 DECLARE
   input_appointment_id UUID := (input_data->>'appointmentId')::UUID;
-  input_user_id UUID := (input_data->>'userId')::UUID;
+  input_user_id UUID := (input_data->>'userId')::UUID; 
   input_is_cancelled BOOLEAN := (input_data->>'isCancelled')::BOOLEAN;
+  input_admin_email TEXT := (input_data->>'adminEmail')::TEXT;
 
   var_latest_payment_id UUID;
   var_latest_payment_status TEXT;
-  var_latest_payment_date TIMESTAMPTZ; 
+  var_latest_payment_date TIMESTAMPTZ;
+  var_is_admin BOOLEAN := false;
 
   return_data JSONB;
 BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM user_table
+    WHERE user_id = input_user_id
+      AND user_email = input_admin_email
+  )
+  INTO var_is_admin;
+
   WITH base AS (
     SELECT
       appointment_table.*,
@@ -152,9 +162,24 @@ BEGIN
           )
         FROM appointment_detail_table
         WHERE
-          appointment_is_disabled = false
-          AND appointment_detail_appointment_id = appointment_id
+          appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
+      (
+        SELECT TO_JSONB(appointment_completion_table.*) || JSONB_BUILD_OBJECT(
+          'appointment_completion_image',
+          COALESCE(
+            (
+              SELECT TO_JSONB(attachment_table.*)
+              FROM attachment_table
+              WHERE appointment_completion_image_attachment_id = attachment_id
+            ),
+            'null'::JSONB
+          )
+        )
+        FROM appointment_completion_table
+        WHERE
+          appointment_completion_appointment_id = appointment_id
+      ) AS appointment_completion,
       (
         SELECT TO_JSONB(payment_table.*)
         FROM payment_table
@@ -166,7 +191,9 @@ BEGIN
     WHERE
       appointment_is_disabled = false
       AND appointment_id = input_appointment_id
-      AND appointment_user_id = input_user_id
+      AND (
+        var_is_admin OR appointment_user_id = input_user_id
+      )
   )
   SELECT TO_JSONB(base.*) INTO return_data FROM base;
 
@@ -226,9 +253,24 @@ BEGIN
           )
         FROM appointment_detail_table
         WHERE
-          appointment_is_disabled = false
-          AND appointment_detail_appointment_id = appointment_id
+          appointment_detail_appointment_id = appointment_id
       ) AS appointment_detail,
+      (
+        SELECT TO_JSONB(appointment_completion_table.*) || JSONB_BUILD_OBJECT(
+          'appointment_completion_image',
+          COALESCE(
+            (
+              SELECT TO_JSONB(attachment_table.*)
+              FROM attachment_table
+              WHERE appointment_completion_image_attachment_id = attachment_id
+            ),
+            'null'::JSONB
+          )
+        )
+        FROM appointment_completion_table
+        WHERE
+          appointment_completion_appointment_id = appointment_id
+      ) AS appointment_completion,
       (
         SELECT TO_JSONB(payment_table.*)
         FROM payment_table
@@ -651,5 +693,131 @@ BEGIN
   ) grouped_ranges;
 
   RETURN return_data;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fetch_appointment_list(input_data JSONB)
+RETURNS JSONB
+AS $$
+DECLARE
+  input_page INT := COALESCE((input_data->>'page')::INT, 1);
+  input_limit INT := COALESCE((input_data->>'limit')::INT, 10);
+  input_sort_column TEXT := COALESCE((input_data->'sortStatus'->>'columnAccessor')::TEXT, 'appointment_schedule');
+  input_sort_direction TEXT := COALESCE((input_data->'sortStatus'->>'direction')::TEXT, 'asc');
+  input_user_id UUID := COALESCE((input_data->>'userId')::UUID, NULL);
+  input_type TEXT := COALESCE((input_data->>'type')::TEXT, NULL);
+  input_status appointment_status := COALESCE((input_data->>'status')::appointment_status, NULL);
+  input_user UUID := COALESCE((input_data->>'user')::UUID, NULL);
+  input_admin_email TEXT := COALESCE((input_data->>'adminEmail')::TEXT, NULL);
+
+  var_offset INT := (input_page - 1) * input_limit;
+  var_is_admin BOOLEAN := false;
+
+  return_data JSONB;
+  sql_query TEXT;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM user_table
+    WHERE user_id = input_user_id
+      AND user_email = input_admin_email
+  )
+  INTO var_is_admin;
+
+  sql_query := format($f$
+    WITH filtered AS (
+      SELECT
+        appointment_table.*,
+        ROW_TO_JSON(appointment_detail_table.*) AS appointment_detail,
+        CASE WHEN %L THEN TO_JSONB(user_table.*) ELSE NULL END AS appointment_user
+      FROM appointment_table
+      INNER JOIN appointment_detail_table
+        ON appointment_detail_appointment_id = appointment_id
+      LEFT JOIN user_table
+        ON %L AND user_id = appointment_user_id
+      WHERE appointment_is_disabled = FALSE
+        AND (%L AND appointment_user_id = %L OR %L)
+        AND (%L IS NULL OR appointment_detail_type = %L)
+        AND (%L IS NULL OR appointment_status = %L)
+        AND (%L IS NULL OR appointment_user_id = %L)
+    ),
+    counted AS (
+      SELECT *, COUNT(*) OVER() AS total_count
+      FROM filtered
+      ORDER BY %I %s
+      OFFSET %s
+      LIMIT %s
+    )
+    SELECT JSONB_BUILD_OBJECT(
+      'data', JSONB_AGG(TO_JSONB(c) - 'total_count'),
+      'count', MAX(total_count)
+    )
+    FROM counted c;
+  $f$,
+    var_is_admin,
+    var_is_admin,
+    NOT var_is_admin, input_user_id, var_is_admin,
+    input_type, input_type,
+    input_status, input_status,
+    input_user, input_user,
+    input_sort_column, upper(input_sort_direction),
+    var_offset,
+    input_limit
+  );
+
+  EXECUTE sql_query
+  INTO return_data;
+
+  RETURN COALESCE(return_data, JSONB_BUILD_OBJECT('data', '[]'::JSONB, 'count', 0));
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION complete_schedule(input_data JSONB)
+RETURNS VOID
+AS $$
+DECLARE
+  input_appointment_id UUID := (input_data->>'appointmentId')::UUID;
+  input_price INT := (input_data->>'price')::INT;
+  input_image_data JSONB := COALESCE(input_data -> 'imageData', NULL);
+  
+  var_image_attachment_id UUID;
+BEGIN
+  INSERT INTO attachment_table
+  (
+    attachment_name,
+    attachment_path,
+    attachment_bucket,
+    attachment_mime_type,
+    attachment_size
+  )
+  VALUES
+  (
+    input_image_data ->> 'attachment_name',
+    input_image_data ->> 'attachment_path',
+    input_image_data ->> 'attachment_bucket',
+    input_image_data ->> 'attachment_mime_type',
+    (input_image_data ->> 'attachment_size')::BIGINT
+  )
+  RETURNING attachment_id
+  INTO var_image_attachment_id;
+
+  INSERT INTO appointment_completion_table
+  (
+    appointment_completion_price,
+    appointment_completion_appointment_id,
+    appointment_completion_image_attachment_id
+  )
+  VALUES
+  (
+    input_price,
+    input_appointment_id,
+    var_image_attachment_id
+  );
+
+  UPDATE appointment_table 
+  SET
+    appointment_date_updated = NOW(),
+    appointment_status = 'COMPLETED'
+  WHERE appointment_id = input_appointment_id;
 END;
 $$ LANGUAGE plpgsql;

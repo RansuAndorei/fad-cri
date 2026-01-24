@@ -58,8 +58,8 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
   const handleDelete = async (id: string) => {
     if (!userData) return;
 
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await deleteServiceType(supabaseClient, { serviceTypeId: id });
       await handleRefresh();
 
@@ -91,8 +91,8 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
   const handleRefresh = async () => {
     if (!userData) return;
 
-    setIsFetching(true);
     try {
+      setIsFetching(true);
       const serviceTypeData = await getServiceTypeSettings(supabaseClient);
       setServiceTypes(serviceTypeData);
     } catch (e) {

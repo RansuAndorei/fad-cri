@@ -191,8 +191,8 @@ const CreateServiceTypePage = ({ serviceTypeData }: Props) => {
   const handleCreate = async (data: ServiceTypeTableInsert) => {
     if (!userData) return;
 
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const trimmedData = {
         ...data,
         service_type_label: data.service_type_label.trim(),

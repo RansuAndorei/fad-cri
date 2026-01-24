@@ -2,7 +2,7 @@ import { Database } from "@/utils/database";
 import { AppointmentStatusEnum, AppointmentTableType } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getAppointmentList = async (
+export const fetchAppointmentList = async (
   supabaseClient: SupabaseClient<Database>,
   params: {
     page: number;
@@ -14,28 +14,15 @@ export const getAppointmentList = async (
     userId: string | null;
     type: string | null;
     status: AppointmentStatusEnum | null;
+    user: string | null;
   },
 ) => {
-  const { page, limit, sortStatus, userId, type, status } = params;
-
-  let query = supabaseClient
-    .from("appointment_table")
-    .select("*, appointment_detail: appointment_detail_table!inner(*)", { count: "exact" })
-    .eq("appointment_is_disabled", false);
-  if (userId) {
-    query = query.eq("appointment_user_id", userId);
-  }
-  if (type) {
-    query = query.eq("appointment_detail.appointment_detail_type", type);
-  }
-  if (status) {
-    query = query.eq("appointment_status", status);
-  }
-  query = query.order(sortStatus.columnAccessor, { ascending: sortStatus.direction === "asc" });
-  query = query.range((page - 1) * limit, page * limit - 1);
-
-  const { data, count, error } = await query;
+  const { data, error } = await supabaseClient.rpc("fetch_appointment_list", {
+    input_data: {
+      ...params,
+      adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+    },
+  });
   if (error) throw error;
-
-  return { data: data as AppointmentTableType[], count: count ?? 0 };
+  return data as { data: AppointmentTableType[]; count: number };
 };

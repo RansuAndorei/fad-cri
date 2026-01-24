@@ -29,7 +29,7 @@ export const fetchServiceType = async (supabaseClient: SupabaseClient<Database>)
   return data.map((item) => item.service_type_label);
 };
 
-export const getScheduleSlot = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchScheduleSlot = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient.from("schedule_slot_table").select("*");
   if (error) throw error;
   return data;

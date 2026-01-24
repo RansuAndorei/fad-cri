@@ -5,6 +5,7 @@ import {
   IconCalendar,
   IconCalendarCheck,
   IconCategory2,
+  IconClipboard,
   IconClock,
   IconColorSwatch,
   IconCrown,
@@ -14,6 +15,7 @@ import {
   IconHome,
   IconIdBadge,
   IconLayoutDashboard,
+  IconList,
   IconListDetails,
   IconMapPin,
   IconPalette,
@@ -24,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { DaysEnum } from "./types";
 
+export const FETCH_OPTION_LIMIT = 1000;
 export const SMALL_SCREEN = "(max-width: 992px)";
 export const SKIPPED_ERROR_MESSAGES = ["Email already registered."];
 export const TAB_LIST = [
@@ -121,8 +124,21 @@ export const ADMIN_NAVIGATION_ITEMS = [
   {
     id: "schedule",
     label: "Schedule",
-    icon: IconCalendar,
-    path: `/admin/schedule`,
+    icon: IconClipboard,
+    submenu: [
+      {
+        id: "schedule-calendar",
+        label: "Calendar",
+        icon: IconCalendar,
+        path: `/admin/schedule/calendar`,
+      },
+      {
+        id: "schedule-list",
+        label: "List",
+        icon: IconList,
+        path: `/admin/schedule/list`,
+      },
+    ],
   },
   {
     id: "settings",

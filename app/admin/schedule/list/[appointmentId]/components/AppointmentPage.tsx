@@ -1,24 +1,21 @@
 "use client";
 
-import Reminders from "@/app/user/booking/components/Reminders";
+import Completion from "@/app/user/appointment/[appointmentId]/components/Completion";
 import { statusToColor } from "@/utils/functions";
 import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
 import { Badge, Container, Flex, Group, Tabs, Title } from "@mantine/core";
 import {
-  IconBell,
   IconCalendarCheck,
   IconCircleCheck,
   IconCreditCard,
   IconListDetails,
 } from "@tabler/icons-react";
-import Completion from "./Completion";
 import Payment from "./Payment";
 import Summary from "./Summary";
 
 type Props = {
   appointmentData: AppointmentType;
   serverTime: string;
-  reminderList: string[];
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDateMonth: number;
 };
@@ -26,7 +23,6 @@ type Props = {
 const AppointmentPage = ({
   appointmentData,
   serverTime,
-  reminderList,
   scheduleSlot,
   maxScheduleDateMonth,
 }: Props) => {
@@ -47,9 +43,6 @@ const AppointmentPage = ({
           <Tabs.Tab value="summary" leftSection={<IconListDetails size={12} />}>
             Summary
           </Tabs.Tab>
-          <Tabs.Tab value="reminders" leftSection={<IconBell size={12} />}>
-            Reminders
-          </Tabs.Tab>
           <Tabs.Tab value="payment" leftSection={<IconCreditCard size={12} />}>
             Payment
           </Tabs.Tab>
@@ -69,15 +62,8 @@ const AppointmentPage = ({
           />
         </Tabs.Panel>
 
-        <Tabs.Panel value="reminders">
-          <Reminders reminderList={reminderList} isWithTopBorder={false} />
-        </Tabs.Panel>
-
         <Tabs.Panel value="payment">
-          <Payment
-            appointmentId={appointmentData.appointment_id}
-            payment={appointmentData.payment}
-          />
+          <Payment payment={appointmentData.payment} />
         </Tabs.Panel>
 
         {appointmentData.appointment_completion ? (

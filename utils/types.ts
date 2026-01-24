@@ -39,10 +39,17 @@ export type ServiceTypeTableRow = Database["public"]["Tables"]["service_type_tab
 export type ServiceTypeTableInsert = Database["public"]["Tables"]["service_type_table"]["Insert"];
 export type ServiceTypeTableUpdate = Database["public"]["Tables"]["service_type_table"]["Update"];
 
+export type AppointmentCompletionTableRow =
+  Database["public"]["Tables"]["appointment_completion_table"]["Row"];
+export type AppointmentCompletionTableInsert =
+  Database["public"]["Tables"]["appointment_completion_table"]["Insert"];
+export type AppointmentCompletionTableUpdate =
+  Database["public"]["Tables"]["appointment_completion_table"]["Update"];
+
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];
 
-export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO";
+export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO" | "COMPLETED_NAILS";
 
 export type SettingsEnum = Database["public"]["Enums"]["settings"];
 export type DaysEnum = Database["public"]["Enums"]["day"];
@@ -82,6 +89,11 @@ export type AppointmentType = AppointmentTableRow & {
   appointment_detail: AppointmentDetailTableRow & {
     appointment_nail_design: AttachmentTableRow | null;
   };
+  appointment_completion:
+    | (AppointmentCompletionTableRow & {
+        appointment_completion_image: AttachmentTableRow;
+      })
+    | null;
   payment: PaymentTableRow;
 };
 
@@ -89,6 +101,7 @@ export type PaymentMethod = "gcash" | "card";
 
 export type AppointmentTableType = AppointmentTableRow & {
   appointment_detail: AppointmentDetailTableRow;
+  appointment_user: UserTableRow;
 };
 
 export type DashboardClientType = {
@@ -135,4 +148,19 @@ export type ScheduleRangeType = {
   days: DaysEnum[];
   earliest_time: string;
   latest_time: string;
+};
+
+export type SelectDataType = {
+  value: string;
+  label: string;
+};
+
+export type RescheduleScheduleType = {
+  scheduleDate: string;
+  scheduleTime: string;
+};
+
+export type CompleteScheduleType = {
+  image: File | null;
+  price: number;
 };

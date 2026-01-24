@@ -12,6 +12,7 @@ CREATE POLICY buckets_policy ON storage.buckets FOR ALL TO PUBLIC USING (true) W
 
 INSERT INTO storage.buckets(id, name) VALUES ('USER_AVATARS', 'USER_AVATARS');
 INSERT INTO storage.buckets(id, name) VALUES ('NAIL_INSPO', 'NAIL_INSPO');
+INSERT INTO storage.buckets(id, name) VALUES ('COMPLETED_NAILS', 'COMPLETED_NAILS');
 UPDATE storage.buckets SET public = true;
 
 CREATE TYPE gender AS ENUM(
@@ -146,6 +147,15 @@ CREATE TABLE appointment_detail_table(
 
   appointment_detail_appointment_id UUID UNIQUE REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL,
   appointment_detail_inspo_attachment_id UUID REFERENCES attachment_table(attachment_id)
+);
+
+CREATE TABLE appointment_completion_table(
+  appointment_completion_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  appointment_completion_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  appointment_completion_price INT NOT NULL,
+
+  appointment_completion_appointment_id UUID UNIQUE REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL,
+  appointment_completion_image_attachment_id UUID REFERENCES attachment_table(attachment_id)
 );
 
 CREATE TABLE system_setting_table (

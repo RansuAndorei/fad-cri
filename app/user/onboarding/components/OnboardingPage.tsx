@@ -60,9 +60,8 @@ const OnboardingPage = () => {
 
   const onSubmit = async (data: OnboardingFormValues) => {
     if (!userData) return;
-
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       let imageUrl = "";
       if (data.user_avatar) {
         const result = await uploadImage(supabaseClient, {

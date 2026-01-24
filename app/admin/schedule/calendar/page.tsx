@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
-import { getScheduleSlot } from "@/app/user/booking/actions";
+import { fetchScheduleSlot } from "@/app/reservation/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleSlotTableRow } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import SchedulePage from "./components/SchedulePage";
+import CalendarPage from "./components/CalendarPage";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -19,7 +19,7 @@ const Page = async () => {
   let scheduleSlot: ScheduleSlotTableRow[] = [];
   const serverTime = new Date().toISOString();
   try {
-    scheduleSlot = await getScheduleSlot(supabaseClient);
+    scheduleSlot = await fetchScheduleSlot(supabaseClient);
   } catch (e) {
     if (isError(e)) {
       await insertError(supabaseClient, {
@@ -35,7 +35,7 @@ const Page = async () => {
     redirect("/error/500");
   }
 
-  return <SchedulePage scheduleSlot={scheduleSlot} serverTime={serverTime} />;
+  return <CalendarPage scheduleSlot={scheduleSlot} serverTime={serverTime} />;
 };
 
 export default Page;

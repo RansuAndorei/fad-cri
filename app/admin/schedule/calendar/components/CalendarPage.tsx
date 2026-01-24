@@ -1,14 +1,18 @@
 "use client";
 
-import { insertError } from "@/app/actions";
+import { insertError, uploadImage } from "@/app/actions";
+import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
+import { recheckSchedule } from "@/app/user/booking/actions";
 import { useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData } from "@/stores/useUserStore";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
-import { formatTime } from "@/utils/functions";
+import { combineDateTime, formatTime } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   AppointmentStatusEnum,
   AppointmentType,
+  CompleteScheduleType,
+  RescheduleScheduleType,
   ScheduleSlotTableRow,
   ScheduleType,
   UserTableRow,
@@ -35,7 +39,14 @@ import { isError, toUpper } from "lodash";
 import moment, { Moment } from "moment";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { fetchAppointmentDatabyAdmin, fetchSchedule } from "../actions";
+import {
+  cancelAppointment,
+  completeSchedule,
+  fetchAppointmentDatabyAdmin,
+  fetchSchedule,
+} from "../actions";
+import CompleteModal from "./CompleteModal";
+import RescheduleModal from "./RescheduleModal";
 import SummaryModal from "./SummaryModal";
 
 type DayWithScheduleType = {
@@ -53,7 +64,7 @@ type Props = {
   serverTime: string;
 };
 
-const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
+const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -67,80 +78,87 @@ const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
   const [selectedAppointment, setSelectedAppointment] = useState<
     (AppointmentType & { appointment_user: UserTableRow }) | null
   >(null);
-  const [opened, { open, close }] = useDisclosure(false);
+
+  const [
+    selectedAppointmentOpened,
+    { open: openSelectedAppointmentModal, close: closeSelectedAppointmentModal },
+  ] = useDisclosure(false);
+  const [rescheduleModalOpened, { open: openRescheduleModal, close: closeRescheduleModal }] =
+    useDisclosure(false);
+  const [completeModalOpened, { open: openCompleteModal, close: closeCompleteModal }] =
+    useDisclosure(false);
 
   const shadowColor =
     colorScheme === "light" ? "0 4px 12px rgba(0,0,0,0.15)" : "0 4px 12px rgba(255,255,255,0.1)";
   const cardBgIndex = colorScheme === "light" ? 0 : 9;
 
   useEffect(() => {
-    const fetchScheduleInitialData = async () => {
-      if (!userData) return;
-
-      try {
-        setIsFetching(true);
-
-        const days: DayWithScheduleType[] = [];
-        const startOfMonth = currentMonth.clone().startOf("month").startOf("week");
-
-        const startDate = currentMonth
-          .clone()
-          .startOf("month")
-          .startOf("day")
-          .format("YYYY-MM-DD HH:mm:ssZ");
-
-        const endDate = currentMonth
-          .clone()
-          .endOf("month")
-          .hour(23)
-          .minute(59)
-          .second(59)
-          .format("YYYY-MM-DD HH:mm:ssZ");
-
-        const schedule = await fetchSchedule(supabaseClient, {
-          startDate,
-          endDate,
-        });
-
-        const day = startOfMonth.clone();
-        while (days.length < 42) {
-          const matchedSchedule = schedule.filter((s) =>
-            moment(s.appointment_schedule).isSame(day, "day"),
-          );
-          days.push({ day: day.clone(), schedule: matchedSchedule });
-          day.add(1, "day");
-        }
-
-        let removeCount = 0;
-        if (days.slice(-7).every(({ day }) => !day.isSame(currentMonth, "month"))) removeCount = 7;
-        if (days.slice(-14, -7).every(({ day }) => !day.isSame(currentMonth, "month")))
-          removeCount = 14;
-
-        setDays(removeCount ? days.slice(0, -removeCount) : days);
-      } catch (e) {
-        notifications.show({
-          message: "Something went wrong. Please try again later.",
-          color: "red",
-        });
-
-        if (isError(e)) {
-          await insertError(supabaseClient, {
-            errorTableInsert: {
-              error_message: e.message,
-              error_url: pathname,
-              error_function: "fetchSchedule",
-              error_user_email: userData.email,
-              error_user_id: userData.id,
-            },
-          });
-        }
-      } finally {
-        setIsFetching(false);
-      }
-    };
-
     fetchScheduleInitialData();
   }, [currentMonth]);
+
+  const fetchScheduleInitialData = async () => {
+    if (!userData) return;
+    try {
+      setIsFetching(true);
+
+      const days: DayWithScheduleType[] = [];
+      const startOfMonth = currentMonth.clone().startOf("month").startOf("week");
+
+      const startDate = currentMonth
+        .clone()
+        .startOf("month")
+        .startOf("day")
+        .format("YYYY-MM-DD HH:mm:ssZ");
+
+      const endDate = currentMonth
+        .clone()
+        .endOf("month")
+        .hour(23)
+        .minute(59)
+        .second(59)
+        .format("YYYY-MM-DD HH:mm:ssZ");
+
+      const schedule = await fetchSchedule(supabaseClient, {
+        startDate,
+        endDate,
+      });
+
+      const day = startOfMonth.clone();
+      while (days.length < 42) {
+        const matchedSchedule = schedule.filter((s) =>
+          moment(s.appointment_schedule).isSame(day, "day"),
+        );
+        days.push({ day: day.clone(), schedule: matchedSchedule });
+        day.add(1, "day");
+      }
+
+      let removeCount = 0;
+      if (days.slice(-7).every(({ day }) => !day.isSame(currentMonth, "month"))) removeCount = 7;
+      if (days.slice(-14, -7).every(({ day }) => !day.isSame(currentMonth, "month")))
+        removeCount = 14;
+
+      setDays(removeCount ? days.slice(0, -removeCount) : days);
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "fetchSchedule",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const scheduleSlotByDay = useMemo(() => {
     const grouped: Record<string, string[]> = {};
@@ -175,7 +193,6 @@ const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
 
   const handleAppointmentClick = async (appointmentId: string, user: UserTableRow) => {
     if (!userData) return;
-
     try {
       setIsLoading(true);
       const appointmentData = await fetchAppointmentDatabyAdmin(supabaseClient, { appointmentId });
@@ -183,7 +200,7 @@ const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
         ...appointmentData,
         appointment_user: user,
       });
-      open();
+      openSelectedAppointmentModal();
     } catch (e) {
       notifications.show({
         message: "Something went wrong. Please try again later.",
@@ -206,19 +223,167 @@ const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
     }
   };
 
+  const handleCancelAppointment = async (appointmentId: string) => {
+    if (!userData) return;
+    try {
+      setIsLoading(true);
+      await cancelAppointment(supabaseClient, { appointmentId });
+      await fetchScheduleInitialData();
+      setSelectedAppointment(null);
+    } catch (e) {
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleCancelAppointment",
+            error_user_id: userData.id,
+          },
+        });
+      }
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReschedule = async (data: RescheduleScheduleType) => {
+    if (!userData || !selectedAppointment) return;
+    try {
+      setIsLoading(true);
+      const { scheduleDate, scheduleTime } = data;
+
+      const combinedDateAndTime = combineDateTime(new Date(scheduleDate), scheduleTime);
+
+      const isStillAvailable = await recheckSchedule(supabaseClient, {
+        schedule: combineDateTime(new Date(data.scheduleDate), data.scheduleTime),
+      });
+      if (!isStillAvailable) {
+        notifications.show({
+          message: "Sorry, this schedule is no longer available. Please select a different time.",
+          color: "orange",
+        });
+        closeRescheduleModal();
+        openSelectedAppointmentModal();
+        setIsLoading(false);
+        return;
+      }
+
+      await updateAppointment(supabaseClient, {
+        appointmentData: {
+          appointment_schedule: combinedDateAndTime,
+        },
+        appointmentId: selectedAppointment.appointment_id,
+      });
+      await fetchScheduleInitialData();
+
+      closeRescheduleModal();
+      notifications.show({
+        message: "Schedule successfully updated.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleReschedule",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleComplete = async (data: CompleteScheduleType) => {
+    const { image, price } = data;
+    if (!userData || !selectedAppointment || !image) return;
+    try {
+      setIsLoading(true);
+
+      const { publicUrl } = await uploadImage(supabaseClient, {
+        image,
+        bucket: "COMPLETED_NAILS",
+        fileName: image.name,
+      });
+
+      const imageData = {
+        attachment_name: image.name,
+        attachment_path: publicUrl,
+        attachment_bucket: "COMPLETED_NAILS",
+        attachment_mime_type: image.type,
+        attachment_size: image.size,
+      };
+      await completeSchedule(supabaseClient, {
+        appointmentId: selectedAppointment.appointment_id,
+        price,
+        imageData,
+      });
+      await fetchScheduleInitialData();
+
+      closeCompleteModal();
+      notifications.show({
+        message: "Schedule successfully completed.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleComplete",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Box>
       {selectedAppointment && (
-        <Modal opened={opened} onClose={close} size="xl" centered>
+        <Modal
+          opened={selectedAppointmentOpened}
+          onClose={closeSelectedAppointmentModal}
+          size="xl"
+          centered
+        >
           <Flex align="center" justify="space-between" mb="sm" wrap="wrap" gap="xs">
             <Title order={4}>
               Appointment of {selectedAppointment.appointment_user.user_first_name}{" "}
               {selectedAppointment.appointment_user.user_last_name}
             </Title>
-            <Badge>{selectedAppointment.appointment_status}</Badge>
+            <Badge color={scheduleStatusToColor[selectedAppointment.appointment_status]}>
+              {selectedAppointment.appointment_status}
+            </Badge>
           </Flex>
 
-          <SummaryModal appointmentData={selectedAppointment} />
+          <SummaryModal
+            appointmentData={selectedAppointment}
+            handleCancelAppointment={handleCancelAppointment}
+            openRescheduleModal={openRescheduleModal}
+            closeSelectedAppointmentModal={closeSelectedAppointmentModal}
+            openCompleteModal={openCompleteModal}
+          />
         </Modal>
       )}
 
@@ -383,8 +548,26 @@ const SchedulePage = ({ scheduleSlot, serverTime }: Props) => {
             );
           })}
       </Grid>
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        rescheduleModalOpened={rescheduleModalOpened}
+        closeRescheduleModal={closeRescheduleModal}
+        handleReschedule={handleReschedule}
+        serverTime={serverTime}
+        scheduleSlot={scheduleSlot}
+        openSelectedAppointmentModal={openSelectedAppointmentModal}
+      />
+
+      {/* Complete Modal */}
+      <CompleteModal
+        completeModalOpened={completeModalOpened}
+        closeCompleteModal={closeCompleteModal}
+        handleComplete={handleComplete}
+        openSelectedAppointmentModal={openSelectedAppointmentModal}
+      />
     </Box>
   );
 };
 
-export default SchedulePage;
+export default CalendarPage;

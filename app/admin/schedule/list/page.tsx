@@ -1,12 +1,13 @@
 import { insertError } from "@/app/actions";
+import { fetchAppointmentList } from "@/app/user/appointment/actions";
+import AppointmentListPage from "@/app/user/appointment/components/AppointmentListPage";
+import { fetchServiceType } from "@/app/user/booking/actions";
 import { ROW_PER_PAGE } from "@/utils/constants";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { AppointmentTableType } from "@/utils/types";
+import { AppointmentTableType, SelectDataType } from "@/utils/types";
 import { isError } from "lodash";
 import { redirect } from "next/navigation";
-import { fetchServiceType } from "../booking/actions";
-import { fetchAppointmentList } from "./actions";
-import AppointmentListPage from "./components/AppointmentListPage";
+import { fetchUserList } from "./actions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -22,9 +23,9 @@ const Page = async () => {
   let initialAppointmentList: AppointmentTableType[] = [];
   let initialAppointmentListCount = 0;
   let serviceTypeOptions: string[] = [];
-
+  let userList: SelectDataType[] = [];
   try {
-    const [{ data: appointmentListData, count: appointmentListCount }, serviceTypeData] =
+    const [{ data: appointmentListData, count: appointmentListCount }, serviceTypeData, userData] =
       await Promise.all([
         fetchAppointmentList(supabaseClient, {
           page: 1,
@@ -39,19 +40,21 @@ const Page = async () => {
           user: null,
         }),
         fetchServiceType(supabaseClient),
+        fetchUserList(supabaseClient),
       ]);
 
     initialAppointmentList = appointmentListData ?? [];
     initialAppointmentListCount = appointmentListCount ?? 0;
     serviceTypeOptions = serviceTypeData;
+    userList = userData;
   } catch (e) {
     if (isError(e)) {
-      const pathname = `/user/appointment`;
+      const pathname = `/admin/schedule/list`;
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
           error_url: pathname,
-          error_function: "getAppointmentData",
+          error_function: "fetchScheduleListInitialData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -65,6 +68,7 @@ const Page = async () => {
       initialAppointmentList={initialAppointmentList}
       initialAppointmentListCount={initialAppointmentListCount}
       serviceTypeOptions={serviceTypeOptions}
+      userList={userList}
     />
   );
 };

@@ -8,6 +8,45 @@ export type Database = {
   };
   public: {
     Tables: {
+      appointment_completion_table: {
+        Row: {
+          appointment_completion_appointment_id: string;
+          appointment_completion_date_created: string;
+          appointment_completion_id: string;
+          appointment_completion_image_attachment_id: string | null;
+          appointment_completion_price: number;
+        };
+        Insert: {
+          appointment_completion_appointment_id: string;
+          appointment_completion_date_created?: string;
+          appointment_completion_id?: string;
+          appointment_completion_image_attachment_id?: string | null;
+          appointment_completion_price: number;
+        };
+        Update: {
+          appointment_completion_appointment_id?: string;
+          appointment_completion_date_created?: string;
+          appointment_completion_id?: string;
+          appointment_completion_image_attachment_id?: string | null;
+          appointment_completion_price?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "appointment_completion_table_appointment_completion_appoin_fkey";
+            columns: ["appointment_completion_appointment_id"];
+            isOneToOne: true;
+            referencedRelation: "appointment_table";
+            referencedColumns: ["appointment_id"];
+          },
+          {
+            foreignKeyName: "appointment_completion_table_appointment_completion_image__fkey";
+            columns: ["appointment_completion_image_attachment_id"];
+            isOneToOne: false;
+            referencedRelation: "attachment_table";
+            referencedColumns: ["attachment_id"];
+          },
+        ];
+      };
       appointment_detail_table: {
         Row: {
           appointment_detail_appointment_id: string;
@@ -415,6 +454,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      complete_schedule: { Args: { input_data: Json }; Returns: undefined };
+      fetch_appointment_list: { Args: { input_data: Json }; Returns: Json };
       fetch_schedule_slot_time_range_per_day: { Args: never; Returns: Json };
       get_appointment: { Args: { input_data: Json }; Returns: Json };
       get_appointment_by_admin: { Args: { input_data: Json }; Returns: Json };

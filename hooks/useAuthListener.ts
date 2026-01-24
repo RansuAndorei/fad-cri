@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export function useAuthListener() {
-  const { setUserData, setUserProfile, setIsLoading, reset } = useUserActions();
+  const { setUserData, setUserProfile, setIsLoading, reset, setHasInitialized } = useUserActions();
   const mounted = useRef(true);
   const pathname = usePathname();
   const currentUserIdRef = useRef<string | null>(null);
@@ -81,7 +81,10 @@ export function useAuthListener() {
         }
         if (mounted.current) reset();
       } finally {
-        if (mounted.current && !isAuthPage) setIsLoading(false);
+        if (mounted.current && !isAuthPage) {
+          setIsLoading(false);
+          setHasInitialized(true);
+        }
       }
     };
 

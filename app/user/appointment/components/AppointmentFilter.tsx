@@ -1,4 +1,5 @@
 import { APPOINTMENT_STATUS_OPTIONS } from "@/utils/constants";
+import { SelectDataType } from "@/utils/types";
 import { Button, Divider, Flex, Select } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { Controller, useFormContext } from "react-hook-form";
@@ -8,14 +9,34 @@ type Props = {
   handleRefresh: () => Promise<void>;
   isLoading: boolean;
   serviceTypeOptions: string[];
+  userList?: SelectDataType[];
 };
 
-const AppointmentFilter = ({ handleRefresh, isLoading, serviceTypeOptions }: Props) => {
+const AppointmentFilter = ({ handleRefresh, isLoading, serviceTypeOptions, userList }: Props) => {
   const { control } = useFormContext<AppointmentTableFilterType>();
 
   return (
     <Flex gap="xs" wrap="wrap" align="center">
       <Flex gap="xs" align="center" className="flexGrow" justify="center">
+        {userList ? (
+          <Controller
+            control={control}
+            name="user"
+            render={({ field: { value, onChange } }) => (
+              <Select
+                placeholder="Name"
+                data={userList}
+                className="flexGrow"
+                clearable
+                value={value}
+                onChange={(value) => {
+                  onChange(value);
+                  handleRefresh();
+                }}
+              />
+            )}
+          />
+        ) : null}
         <Controller
           control={control}
           name="type"

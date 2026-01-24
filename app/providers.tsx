@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthListener } from "@/hooks/useAuthListener";
-import { useUserIsLoading } from "@/stores/useUserStore";
+import { useUserHasInitialized, useUserIsLoading } from "@/stores/useUserStore";
 import { Center, Flex, Loader, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
@@ -16,6 +16,9 @@ type Props = {
 export function Providers({ children }: Props) {
   useAuthListener();
   const isLoading = useUserIsLoading();
+  const hasInitialized = useUserHasInitialized();
+
+  const showInitialLoader = isLoading && !hasInitialized;
 
   return (
     <MantineProvider
@@ -40,7 +43,7 @@ export function Providers({ children }: Props) {
         <ProgressBar />
         <Notifications />
 
-        {isLoading ? (
+        {showInitialLoader ? (
           <Center h="100vh">
             <Flex gap="xl" align="center">
               <Loader type="dots" size="sm" />
