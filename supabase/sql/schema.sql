@@ -215,6 +215,13 @@ CREATE TABLE schedule_slot_table (
   UNIQUE(schedule_slot_day, schedule_slot_time)
 );
 
+CREATE TABLE blocked_schedule_table (
+  blocked_schedule_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  blocked_schedule_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  blocked_schedule_date DATE NOT NULL,
+  blocked_schedule_time TIMETZ
+);
+
 ALTER TABLE user_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE error_table DISABLE ROW LEVEL SECURITY;
 ALTER TABLE email_resend_table DISABLE ROW LEVEL SECURITY;

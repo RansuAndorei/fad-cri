@@ -39,6 +39,12 @@ export type ServiceTypeTableRow = Database["public"]["Tables"]["service_type_tab
 export type ServiceTypeTableInsert = Database["public"]["Tables"]["service_type_table"]["Insert"];
 export type ServiceTypeTableUpdate = Database["public"]["Tables"]["service_type_table"]["Update"];
 
+export type BlockedScheduleTableRow = Database["public"]["Tables"]["blocked_schedule_table"]["Row"];
+export type BlockedScheduleTableInsert =
+  Database["public"]["Tables"]["blocked_schedule_table"]["Insert"];
+export type BlockedScheduleTableUpdate =
+  Database["public"]["Tables"]["blocked_schedule_table"]["Update"];
+
 export type AppointmentCompletionTableRow =
   Database["public"]["Tables"]["appointment_completion_table"]["Row"];
 export type AppointmentCompletionTableInsert =

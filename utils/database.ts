@@ -169,6 +169,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      blocked_schedule_table: {
+        Row: {
+          blocked_schedule_date: string;
+          blocked_schedule_date_created: string;
+          blocked_schedule_id: string;
+          blocked_schedule_time: string | null;
+        };
+        Insert: {
+          blocked_schedule_date: string;
+          blocked_schedule_date_created?: string;
+          blocked_schedule_id?: string;
+          blocked_schedule_time?: string | null;
+        };
+        Update: {
+          blocked_schedule_date?: string;
+          blocked_schedule_date_created?: string;
+          blocked_schedule_id?: string;
+          blocked_schedule_time?: string | null;
+        };
+        Relationships: [];
+      };
       email_resend_table: {
         Row: {
           email_resend_date_created: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import CTASection from "@/app/components/Shared/CTASection/CTASection";
 import HeroSection from "@/app/components/Shared/HeroSection/HeroSection";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
@@ -75,13 +76,25 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
       const endOfMonth = currentMonth.clone().endOf("month").endOf("week");
       const day = startOfMonth.clone();
 
-      const [slotsData, appointmentsData] = await Promise.all([
+      const [slotsData, appointmentsData, blockedSchedule] = await Promise.all([
         fetchScheduleSlot(supabaseClient),
         fetchAppointmentPerMonth(supabaseClient, {
           startOfMonth: startOfMonth.toISOString(),
           endOfMonth: endOfMonth.toISOString(),
         }),
+        fetchBlockedSchedules(supabaseClient, {
+          startDate: startOfMonth.toISOString(),
+          endDate: endOfMonth.toISOString(),
+        }),
       ]);
+
+      const isBlocked = (date: string, slotTime: string) => {
+        return blockedSchedule.some((blocked) => {
+          if (blocked.blocked_schedule_date !== date) return false;
+          if (!blocked.blocked_schedule_time) return true;
+          return blocked.blocked_schedule_time === slotTime;
+        });
+      };
 
       while (day.isSameOrBefore(endOfMonth, "day")) {
         const isCurrentMonth = day.isSame(currentMonth, "month");
@@ -101,7 +114,9 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
                 const slotTimeHHmm = moment(s.schedule_slot_time, "HH:mm:ssZ").format("HH:mm");
                 return {
                   time: s.schedule_slot_time,
-                  available: !bookedTimes.includes(slotTimeHHmm),
+                  available:
+                    !bookedTimes.includes(slotTimeHHmm) &&
+                    !isBlocked(day.format("YYYY-MM-DD"), s.schedule_slot_time),
                   appointmentId: undefined,
                   note: s.schedule_slot_note || "",
                 };
@@ -111,7 +126,6 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
         schedules.push({ day: day.clone(), slots });
         day.add(1, "day");
       }
-
       let removeCount = 0;
       if (schedules.slice(-7).every(({ day }) => !day.isSame(currentMonth, "month")))
         removeCount = 7;
@@ -154,8 +168,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
 
   const getSlotColor = (available: number, total: number) => {
     const percentage = (available / total) * 100;
-
-    if (percentage === 0) return "gray";
+    if (percentage === 0) return "dark";
     if (percentage <= 24) return "red";
     if (percentage <= 49) return "orange";
     if (percentage <= 74) return "yellow";
@@ -293,7 +306,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
                             <Text fw={600} ta="center" c="cyan">
                               {day.format("D")}
                             </Text>
-                            {hasSlots && (
+                            {!isPast && (
                               <Badge
                                 size="xs"
                                 color={getSlotColor(availableSlots, slots.length)}

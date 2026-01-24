@@ -11,6 +11,7 @@ import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   AppointmentStatusEnum,
   AppointmentType,
+  BlockedScheduleTableRow,
   CompleteScheduleType,
   RescheduleScheduleType,
   ScheduleSlotTableRow,
@@ -18,23 +19,26 @@ import {
   UserTableRow,
 } from "@/utils/types";
 import {
+  ActionIcon,
   Badge,
   Box,
   Button,
   Card,
   Flex,
   Grid,
+  Group,
   Modal,
   Skeleton,
   Stack,
   Text,
   Title,
-  useMantineColorScheme,
+  useComputedColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
-import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight, IconBan, IconX } from "@tabler/icons-react";
 import { isError, toUpper } from "lodash";
 import moment, { Moment } from "moment";
 import { usePathname } from "next/navigation";
@@ -42,8 +46,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   cancelAppointment,
   completeSchedule,
+  deleteBlockedSchedule,
   fetchAppointmentDatabyAdmin,
+  fetchBlockedSchedules,
   fetchSchedule,
+  upsertBlockedSchedule,
 } from "../actions";
 import CompleteModal from "./CompleteModal";
 import RescheduleModal from "./RescheduleModal";
@@ -52,6 +59,7 @@ import SummaryModal from "./SummaryModal";
 type DayWithScheduleType = {
   schedule: ScheduleType[];
   day: Moment;
+  isDayBlocked: boolean;
 };
 
 const scheduleStatusToColor = {
@@ -69,12 +77,15 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
   const pathname = usePathname();
   const userData = useUserData();
   const theme = useMantineTheme();
-  const { colorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme();
+  const isDark = computedColorScheme === "dark";
+
   const { setIsLoading } = useLoadingActions();
 
   const [currentMonth, setCurrentMonth] = useState(moment(serverTime));
   const [days, setDays] = useState<DayWithScheduleType[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [blockedSchedules, setBlockedSchedules] = useState<BlockedScheduleTableRow[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<
     (AppointmentType & { appointment_user: UserTableRow }) | null
   >(null);
@@ -88,9 +99,8 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
   const [completeModalOpened, { open: openCompleteModal, close: closeCompleteModal }] =
     useDisclosure(false);
 
-  const shadowColor =
-    colorScheme === "light" ? "0 4px 12px rgba(0,0,0,0.15)" : "0 4px 12px rgba(255,255,255,0.1)";
-  const cardBgIndex = colorScheme === "light" ? 0 : 9;
+  const shadowColor = isDark ? "0 4px 12px rgba(255,255,255,0.1)" : "0 4px 12px rgba(0,0,0,0.15)";
+  const cardBgIndex = isDark ? 9 : 0;
 
   useEffect(() => {
     fetchScheduleInitialData();
@@ -118,17 +128,33 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         .second(59)
         .format("YYYY-MM-DD HH:mm:ssZ");
 
-      const schedule = await fetchSchedule(supabaseClient, {
-        startDate,
-        endDate,
-      });
+      const [schedule, blockedData] = await Promise.all([
+        fetchSchedule(supabaseClient, { startDate, endDate }),
+        fetchBlockedSchedules(supabaseClient, {
+          startDate: currentMonth.clone().startOf("month").format("YYYY-MM-DD"),
+          endDate: currentMonth.clone().endOf("month").format("YYYY-MM-DD"),
+        }),
+      ]);
+
+      setBlockedSchedules(blockedData);
 
       const day = startOfMonth.clone();
       while (days.length < 42) {
+        const dateKey = day.format("YYYY-MM-DD");
         const matchedSchedule = schedule.filter((s) =>
           moment(s.appointment_schedule).isSame(day, "day"),
         );
-        days.push({ day: day.clone(), schedule: matchedSchedule });
+
+        const isDayBlocked = blockedData.some(
+          (blocked) =>
+            blocked.blocked_schedule_date === dateKey && blocked.blocked_schedule_time === null,
+        );
+
+        days.push({
+          day: day.clone(),
+          schedule: matchedSchedule,
+          isDayBlocked,
+        });
         day.add(1, "day");
       }
 
@@ -149,7 +175,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
           errorTableInsert: {
             error_message: e.message,
             error_url: pathname,
-            error_function: "fetchSchedule",
+            error_function: "fetchScheduleInitialData",
             error_user_email: userData.email,
             error_user_id: userData.id,
           },
@@ -358,6 +384,73 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
     }
   };
 
+  const confirmUpdateDateModal = (
+    date: string,
+    time: string | null,
+    action: "enable" | "disable",
+  ) =>
+    modals.openConfirmModal({
+      title: "Please confirm your action",
+      children: (
+        <Text size="sm">
+          Are you sure you want to {action} this {time ? "time" : "date"}?
+        </Text>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm: () => handleUpdateDate(date, time, action),
+      centered: true,
+      confirmProps: {
+        color: action === "disable" ? "red" : "green",
+      },
+    });
+
+  const handleUpdateDate = async (
+    date: string,
+    time: string | null,
+    action: "enable" | "disable",
+  ) => {
+    if (!userData) return;
+    try {
+      setIsLoading(true);
+
+      if (action === "disable") {
+        await upsertBlockedSchedule(supabaseClient, {
+          day: date,
+          time: time,
+        });
+      } else if (action === "enable") {
+        await deleteBlockedSchedule(supabaseClient, {
+          day: date,
+          time: time,
+        });
+      }
+      await fetchScheduleInitialData();
+
+      notifications.show({
+        message: "Schedule updated.",
+        color: "green",
+      });
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "handleDisableDay",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Box>
       {selectedAppointment && (
@@ -388,11 +481,11 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
       )}
 
       {/* Month Header */}
-      <Card withBorder radius="md" p="sm">
+      <Card withBorder radius="md" p="sm" mb="md">
         <Flex
-          direction={{ base: "column", sm: "row" }} // column on mobile, row on desktop
+          direction={{ base: "column", sm: "row" }}
           align="center"
-          justify={{ base: "center", sm: "space-between" }} // centered on mobile, spread on desktop
+          justify={{ base: "center", sm: "space-between" }}
           gap="sm"
         >
           <Button
@@ -421,6 +514,59 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         </Flex>
       </Card>
 
+      {/* Legend */}
+      <Card withBorder radius="md" p="md" mb="md">
+        <Group gap="lg" wrap="wrap">
+          <Group gap="xs">
+            <Box
+              w={16}
+              h={16}
+              style={(theme) => ({
+                border: `1px dashed ${theme.colors.gray[4]}`,
+                backgroundColor: theme.colors.gray[0],
+              })}
+            />
+            <Text size="sm">Available</Text>
+          </Group>
+
+          <Group gap="xs">
+            <Box
+              w={16}
+              h={16}
+              style={(theme) => ({
+                borderLeft: `4px solid ${theme.colors.blue[6]}`,
+                backgroundColor: "white",
+              })}
+            />
+            <Text size="sm">Scheduled</Text>
+          </Group>
+
+          <Group gap="xs">
+            <Box
+              w={16}
+              h={16}
+              style={(theme) => ({
+                borderLeft: `4px solid ${theme.colors.green[6]}`,
+                backgroundColor: "white",
+              })}
+            />
+            <Text size="sm">Completed</Text>
+          </Group>
+
+          <Group gap="xs">
+            <Box
+              w={16}
+              h={16}
+              style={(theme) => ({
+                border: `1px solid ${theme.colors.red[4]}`,
+                backgroundColor: theme.colors.red[0],
+              })}
+            />
+            <Text size="sm">Blocked</Text>
+          </Group>
+        </Group>
+      </Card>
+
       {/* Day Headers */}
       <Grid columns={7} gutter="xs" mt="xl" visibleFrom="sm" mb="xs">
         {DAYS_OF_THE_WEEK.map((day) => (
@@ -442,20 +588,31 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
           ))}
 
         {!isFetching &&
-          days.map(({ day }, index) => {
+          days.map(({ day, isDayBlocked }, index) => {
             const isCurrentMonth = day.isSame(currentMonth, "month");
             let isSameDay = false;
             if (isCurrentMonth) {
               isSameDay = moment(day).isSame(serverTime, "day");
             }
+
             const dayKey = toUpper(day.format("dddd"));
+            const dateKey = day.format("YYYY-MM-DD");
             const slots = scheduleSlotByDay[dayKey] ?? [];
             const apptMap: Map<string, AppointmentType & { appointment_user: UserTableRow }> =
-              appointmentMapsByDay.get(day.format("YYYY-MM-DD")) ?? new Map();
+              appointmentMapsByDay.get(dateKey) ?? new Map();
+
+            const blockedTimesForDate = blockedSchedules
+              .filter(
+                (b) => b.blocked_schedule_date === dateKey && b.blocked_schedule_time !== null,
+              )
+              .map((b) => b.blocked_schedule_time);
 
             const mergedTimes = Array.from(new Set([...slots, ...apptMap.keys()])).sort((a, b) =>
               moment(a, "HH:mm:ssZ").diff(moment(b, "HH:mm:ssZ")),
             );
+
+            const isWithSchedule = mergedTimes.some((time) => apptMap.get(time));
+            const isFutureDate = dateKey >= serverTime;
 
             return (
               <Grid.Col key={index} span={{ base: 7, sm: 1 }}>
@@ -463,43 +620,101 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
                   withBorder
                   radius="md"
                   p="xs"
-                  style={{
-                    opacity: isCurrentMonth ? 1 : 0,
+                  style={(theme) => ({
+                    opacity: isCurrentMonth ? (isDayBlocked ? 0.5 : 1) : 0,
                     display: !isCurrentMonth && window.innerWidth < 768 ? "none" : "flex",
                     flexDirection: "column",
                     height: "100%",
-                    border: `1px solid ${isSameDay ? "var(--mantine-color-yellow-6)" : "var(--mantine-color-gray-4)"}`,
+                    border: `1px solid ${
+                      isSameDay
+                        ? theme.colors.yellow[6]
+                        : isDayBlocked
+                          ? theme.colors.red[4]
+                          : theme.colors.gray[4]
+                    }`,
+                    backgroundColor: isDayBlocked
+                      ? theme.colors.red[0]
+                      : isDark
+                        ? "black"
+                        : "white",
                     boxShadow: isSameDay
                       ? "0 0 0 2px rgba(234, 179, 8, 0.4), 0 0 12px rgba(234, 179, 8, 0.6)"
                       : "none",
-                    transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-                  }}
+                    transition: "all 0.2s ease",
+                    position: "relative",
+                  })}
                 >
-                  <Text fw={600} c={"dimmed"}>
-                    {day.format("D")}
-                  </Text>
+                  {/* Diagonal stripes for blocked days */}
+                  {isDayBlocked && (
+                    <Box
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: `repeating-linear-gradient(
+                          45deg,
+                          transparent,
+                          transparent 10px,
+                          rgba(239, 68, 68, 0.05) 10px,
+                          rgba(239, 68, 68, 0.05) 20px
+                        )`,
+                        pointerEvents: "none",
+                        borderRadius: "inherit",
+                      }}
+                    />
+                  )}
 
-                  <Stack gap={6} mt={6}>
+                  <Group justify="space-between" mb={4} style={{ position: "relative", zIndex: 1 }}>
+                    <Text fw={600} c={isDayBlocked ? "red" : "dimmed"}>
+                      {day.format("D")}
+                    </Text>
+                    {isDayBlocked && (
+                      <Badge
+                        size="xs"
+                        color="red"
+                        variant="filled"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => confirmUpdateDateModal(dateKey, null, "enable")}
+                      >
+                        Disabled
+                      </Badge>
+                    )}
+                    {!isDayBlocked && isFutureDate && !isWithSchedule && (
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        color="red"
+                        onClick={() => confirmUpdateDateModal(dateKey, null, "disable")}
+                      >
+                        <IconBan size={14} />
+                      </ActionIcon>
+                    )}
+                  </Group>
+
+                  <Stack gap={6} mt={6} style={{ position: "relative", zIndex: 1 }}>
                     {mergedTimes.map((time) => {
                       const appointment = apptMap.get(time);
+                      const isTimeBlocked = blockedTimesForDate.includes(time);
 
                       if (appointment) {
                         const client = appointment.appointment_user;
-
                         return (
                           <Card
                             key={appointment.appointment_id}
                             withBorder
                             p="xs"
                             radius="sm"
-                            className="hover-card"
                             style={{
                               borderLeft: `4px solid ${theme.colors[scheduleStatusToColor[appointment.appointment_status]][6]}`,
-                              cursor: "pointer",
+                              cursor: isCurrentMonth ? "pointer" : "default",
+                              transition: "all 0.2s ease",
                             }}
-                            onClick={() =>
-                              handleAppointmentClick(appointment.appointment_id, client)
-                            }
+                            onClick={() => {
+                              if (!isCurrentMonth) return;
+                              handleAppointmentClick(appointment.appointment_id, client);
+                            }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.transform = "scale(1.02)";
                               e.currentTarget.style.boxShadow = shadowColor;
@@ -519,6 +734,31 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
                         );
                       }
 
+                      if (isTimeBlocked) {
+                        return (
+                          <Card
+                            key={time}
+                            withBorder
+                            p="xs"
+                            radius="sm"
+                            style={(theme) => ({
+                              borderColor: theme.colors.red[4],
+                              backgroundColor: theme.colors.red[0],
+                              opacity: 0.6,
+                              cursor: "pointer",
+                            })}
+                            onClick={() => confirmUpdateDateModal(dateKey, time, "enable")}
+                          >
+                            <Group gap={4} align="center">
+                              <IconX size={12} color={theme.colors.red[6]} />
+                              <Text size="xs" c="red" style={{ textDecoration: "line-through" }}>
+                                {moment(time, "HH:mm:ssZ").format("hh:mm A")}
+                              </Text>
+                            </Group>
+                          </Card>
+                        );
+                      }
+
                       return (
                         <Card
                           key={time}
@@ -526,14 +766,28 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
                           p="xs"
                           radius="sm"
                           bg={theme.colors.gray[cardBgIndex]}
-                          style={{ borderStyle: "dashed", cursor: "pointer" }}
+                          style={{
+                            borderStyle: "dashed",
+                            cursor:
+                              isCurrentMonth && !isDayBlocked && isFutureDate
+                                ? "pointer"
+                                : "default",
+                            transition: "all 0.2s ease",
+                          }}
                           onMouseEnter={(e) => {
+                            if (isDayBlocked || !isFutureDate) return;
                             e.currentTarget.style.transform = "scale(1.02)";
                             e.currentTarget.style.boxShadow = shadowColor;
                           }}
                           onMouseLeave={(e) => {
+                            if (isDayBlocked || !isFutureDate) return;
                             e.currentTarget.style.transform = "scale(1)";
                             e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                          }}
+                          onClick={() => {
+                            if (!isDayBlocked && isFutureDate) {
+                              confirmUpdateDateModal(dateKey, time, "disable");
+                            }
                           }}
                         >
                           <Text size="xs" c="dimmed">

@@ -62,3 +62,51 @@ export const completeSchedule = async (
   });
   if (error) throw error;
 };
+
+export const fetchBlockedSchedules = async (
+  supabaseClient: SupabaseClient<Database>,
+  params: { startDate: string; endDate: string },
+) => {
+  const { startDate, endDate } = params;
+  const { data, error } = await supabaseClient
+    .from("blocked_schedule_table")
+    .select("*")
+    .gte("blocked_schedule_date", startDate)
+    .lte("blocked_schedule_date", endDate);
+  if (error) throw error;
+  return data;
+};
+
+export const upsertBlockedSchedule = async (
+  supabaseClient: SupabaseClient<Database>,
+  params: { day: string; time: string | null },
+) => {
+  const { day, time } = params;
+  const { error } = await supabaseClient.from("blocked_schedule_table").upsert(
+    {
+      blocked_schedule_date: day,
+      blocked_schedule_time: time,
+    },
+    { ignoreDuplicates: true },
+  );
+  if (error) throw error;
+};
+
+export const deleteBlockedSchedule = async (
+  supabaseClient: SupabaseClient<Database>,
+  params: { day: string; time: string | null },
+) => {
+  const { day, time } = params;
+  let query = supabaseClient
+    .from("blocked_schedule_table")
+    .delete()
+    .eq("blocked_schedule_date", day);
+
+  if (time === null) {
+    query = query.is("blocked_schedule_time", null);
+  } else {
+    query = query.eq("blocked_schedule_time", time);
+  }
+  const { error } = await query;
+  if (error) throw error;
+};

@@ -1,4 +1,5 @@
 import { insertError } from "@/app/actions";
+import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
 import { getDateAppointments, recheckSchedule } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
@@ -224,23 +225,45 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
     if (!userData) return;
     try {
       setIsLoading(true);
-      const appointmentList = await getDateAppointments(supabaseClient, { date: value });
+
+      const momentDate = moment(value);
+      const endOfDay = momentDate.clone().endOf("day").toISOString();
+      const [appointmentList, blockedSchedule] = await Promise.all([
+        getDateAppointments(supabaseClient, { date: value }),
+        fetchBlockedSchedules(supabaseClient, {
+          startDate: endOfDay,
+          endDate: endOfDay,
+        }),
+      ]);
 
       const dayName = moment(value).format("dddd");
       const scheduleSlotForTheDay = scheduleSlot.filter(
         (slot) => slot.schedule_slot_day === toUpper(dayName),
       );
 
+      const isBlocked = (slotTime: string) => {
+        return blockedSchedule.some((blocked) => {
+          if (blocked.blocked_schedule_date !== value) return false;
+          if (!blocked.blocked_schedule_time) return true;
+          return blocked.blocked_schedule_time === slotTime;
+        });
+      };
+
       const availableSlot = scheduleSlotForTheDay
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
-        .map((slot) => ({
-          value: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
-          label: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("h:mm A"),
-          note: slot.schedule_slot_note,
-        }));
+        .filter((slot) => !isBlocked(slot.schedule_slot_time))
+        .map((slot) => {
+          const formattedTime = moment(slot.schedule_slot_time, "HH:mm:ss").format("h:mm A");
+
+          return {
+            value: formattedTime,
+            label: formattedTime,
+            note: slot.schedule_slot_note,
+          };
+        });
 
       setAvailableSlot(availableSlot);
-      if (availableSlot.length) {
+      if (availableSlot.length > 0) {
         setValue("scheduleDate", value);
       } else {
         setValue("scheduleDate", "");
