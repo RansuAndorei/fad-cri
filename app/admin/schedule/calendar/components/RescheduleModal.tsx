@@ -1,14 +1,14 @@
 import { insertError } from "@/app/actions";
 import { getDateAppointments } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { formatWordDate } from "@/utils/functions";
+import { formatWordDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { RescheduleScheduleType, ScheduleSlotTableRow } from "@/utils/types";
 import { Alert, Button, Flex, Loader, Modal, Select, Stack } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { toUpper } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -127,7 +127,7 @@ const RescheduleModal = ({
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

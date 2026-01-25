@@ -593,7 +593,7 @@ BEGIN
   FOR return_data IN
     WITH input_settings AS (
       SELECT
-        (value->>'system_setting_key')::TEXT AS system_setting_key,
+        (value->>'system_setting_key')::settings AS system_setting_key,
         (value->>'system_setting_value')::TEXT AS system_setting_value
       FROM JSONB_ARRAY_ELEMENTS(input_data->'settings')
     ),

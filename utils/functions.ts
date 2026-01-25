@@ -110,3 +110,6 @@ export const formatTimeInOperatingHours = (time: string) => {
   const displayHour = hour % 12 || 12;
   return `${displayHour}:${minute.toString().padStart(2, "0")} ${period}`;
 };
+
+export const isAppError = (e: unknown): e is { message: string } =>
+  typeof e === "object" && e !== null && "message" in e;

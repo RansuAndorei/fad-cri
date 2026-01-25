@@ -39,13 +39,14 @@ import {
   IconShieldCheck,
   IconUser,
 } from "@tabler/icons-react";
-import { isEqual, isError } from "lodash";
+import { isEqual } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { resetPassword, updateUser } from "../actions";
 import ProfileSkeleton from "./ProfileSkeleton";
+import { isAppError } from "@/utils/functions";
 
 const UserProfileSettingsPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -169,7 +170,7 @@ const UserProfileSettingsPage = () => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -213,7 +214,7 @@ const UserProfileSettingsPage = () => {
         message: errorMessage,
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

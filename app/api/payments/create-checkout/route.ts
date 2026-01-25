@@ -1,8 +1,8 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { isError } from "lodash";
 import { NextResponse } from "next/server";
 import { insertAppointment, insertPayment } from "./actions";
+import { isAppError } from "@/utils/functions";
 
 export async function POST(req: Request) {
   const supabaseClient = await createSupabaseServerClient();
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       payment_intent_id: data.data.attributes.payment_intent.id,
     });
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

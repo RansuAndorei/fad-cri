@@ -1,10 +1,10 @@
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ServiceTypeTableRow } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { insertError } from "../actions";
 import { getServiceTypeList } from "./actions";
 import ServicesPage from "./components/ServicesPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -13,7 +13,7 @@ const Page = async () => {
   try {
     services = await getServiceTypeList(supabaseClient);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

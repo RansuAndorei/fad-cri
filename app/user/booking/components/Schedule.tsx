@@ -1,14 +1,14 @@
 import { insertError } from "@/app/actions";
 import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { formatWordDate } from "@/utils/functions";
+import { formatWordDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
 import { Alert, Loader, Paper, Select, Stack, Title } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { toUpper } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -103,7 +103,7 @@ const Schedule = ({ scheduleSlot, maxScheduleDate, serverTime }: Props) => {
         color: "red",
       });
 
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

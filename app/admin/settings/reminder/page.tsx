@@ -1,9 +1,9 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { fetchReminders } from "./actions";
 import RemindersPage from "./components/RemindersPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -24,7 +24,7 @@ const Page = async () => {
       value: reminder.reminder_value,
     }));
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

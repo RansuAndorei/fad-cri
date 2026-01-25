@@ -6,7 +6,7 @@ import { recheckSchedule } from "@/app/user/booking/actions";
 import { useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData } from "@/stores/useUserStore";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
-import { combineDateTime, formatTime } from "@/utils/functions";
+import { combineDateTime, formatTime, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   AppointmentStatusEnum,
@@ -39,7 +39,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconArrowLeft, IconArrowRight, IconBan, IconX } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { toUpper } from "lodash";
 import moment, { Moment } from "moment";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -170,7 +170,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         color: "red",
       });
 
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -233,7 +233,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         color: "red",
       });
 
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -257,7 +257,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
       await fetchScheduleInitialData();
       setSelectedAppointment(null);
     } catch (e) {
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -316,7 +316,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -368,7 +368,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -435,7 +435,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

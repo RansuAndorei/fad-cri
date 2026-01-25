@@ -1,10 +1,10 @@
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleRangeType } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { fetchHours, insertError } from "../actions";
 import { fetchSystemSettings } from "../admin/settings/actions";
 import AboutPage from "./components/About";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -22,7 +22,7 @@ const Page = async () => {
     generalLocation = aboutData.GENERAL_LOCATION.system_setting_value;
     contactNumber = aboutData.CONTACT_NUMBER.system_setting_value;
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

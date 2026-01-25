@@ -32,12 +32,12 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { isError } from "lodash";
 import { DataTable } from "mantine-datatable";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { deleteServiceType, getServiceTypeSettings } from "../actions";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   serviceTypeData: ServiceTypeTableRow[];
@@ -72,7 +72,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -100,7 +100,7 @@ const ServiceTypeSettingsPage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

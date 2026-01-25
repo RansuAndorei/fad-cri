@@ -2,9 +2,9 @@ import { insertError } from "@/app/actions";
 import { fetchScheduleSlot } from "@/app/reservation/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleSlotTableRow } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import CalendarPage from "./components/CalendarPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -21,7 +21,7 @@ const Page = async () => {
   try {
     scheduleSlot = await fetchScheduleSlot(supabaseClient);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

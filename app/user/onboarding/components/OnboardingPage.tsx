@@ -2,13 +2,12 @@
 
 import { insertError, insertUser, uploadImage } from "@/app/actions";
 import { useUserActions, useUserData } from "@/stores/useUserStore";
-import { formatDate } from "@/utils/functions";
+import { formatDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { GenderEnum, OnboardingFormValues } from "@/utils/types";
 import { Button, Container, Group, Stepper, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { isError } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -95,7 +94,7 @@ const OnboardingPage = () => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

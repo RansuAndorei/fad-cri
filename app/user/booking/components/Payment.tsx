@@ -2,7 +2,7 @@
 
 import { insertError, uploadImage } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { combineDateTime, formatDecimal } from "@/utils/functions";
+import { combineDateTime, formatDecimal, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AttachmentTableInsert, BookingFormValues, PaymentMethod } from "@/utils/types";
 import {
@@ -19,7 +19,6 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -53,7 +52,7 @@ const Payment = ({ handleStepChange }: Props) => {
           message: "Something went wrong. Please try again later.",
           color: "red",
         });
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -136,7 +135,7 @@ const Payment = ({ handleStepChange }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

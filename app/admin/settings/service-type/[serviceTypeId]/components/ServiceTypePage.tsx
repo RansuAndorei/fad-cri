@@ -2,7 +2,7 @@
 
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { formatPeso } from "@/utils/functions";
+import { formatPeso, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { ServiceTypeTableRow } from "@/utils/types";
 import {
@@ -31,7 +31,6 @@ import {
   IconTrash,
   IconUser,
 } from "@tabler/icons-react";
-import { isError } from "lodash";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -77,7 +76,7 @@ const ServiceTypePage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

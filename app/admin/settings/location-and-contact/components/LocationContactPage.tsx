@@ -20,10 +20,11 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy, IconMap, IconMap2, IconMapPin, IconPhone } from "@tabler/icons-react";
-import { isEqual, isError } from "lodash";
+import { isEqual } from "lodash";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { updateSettings } from "../../actions";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   locationAndContactData: Record<SettingsEnum, string>;
@@ -79,7 +80,7 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

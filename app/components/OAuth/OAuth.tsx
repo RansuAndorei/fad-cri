@@ -1,4 +1,5 @@
 import { insertError } from "@/app/actions";
+import { isAppError } from "@/utils/functions";
 import { FacebookIcon } from "@/utils/icons/FacebookIcon";
 import { GoogleIcon } from "@/utils/icons/GoogleIcon";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -6,7 +7,6 @@ import { Button, Divider, Flex } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 import { Provider } from "@supabase/supabase-js";
-import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 
 const OAuth = () => {
@@ -25,7 +25,7 @@ const OAuth = () => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

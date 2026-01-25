@@ -2,12 +2,12 @@ import { insertError } from "@/app/actions";
 import { fetchSystemSettings } from "@/app/admin/settings/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentType, ScheduleSlotTableRow } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 
 import { getAppointmentData } from "@/app/user/appointment/[appointmentId]/actions";
 import { fetchScheduleSlot } from "@/app/user/booking/actions";
 import AppointmentPage from "./components/AppointmentPage";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   params: Promise<{ appointmentId: string }>;
@@ -45,7 +45,7 @@ const Page = async ({ params, searchParams }: Props) => {
     scheduleSlot = scheduleSlotData;
     maxScheduleDateMonth = Number(settingsData.MAX_SCHEDULE_DATE_MONTH.system_setting_value);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       const pathname = `/user/appointment/${appointmentId}`;
       await insertError(supabaseClient, {
         errorTableInsert: {

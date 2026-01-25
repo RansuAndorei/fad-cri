@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { SettingsEnum } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { getLocationAndContactSettings } from "./actions";
 import LocationContactPage from "./components/LocationContactPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -20,7 +20,7 @@ const Page = async () => {
   try {
     locationAndContactData = await getLocationAndContactSettings(supabaseClient);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

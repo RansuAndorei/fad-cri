@@ -34,7 +34,7 @@ import {
   IconLogout,
   IconSettings,
 } from "@tabler/icons-react";
-import { isError, startCase, toLower } from "lodash";
+import { startCase, toLower } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,6 +42,7 @@ import { useEffect, useState } from "react";
 import ProfileDropdown from "../ProfileDropdown/ProfileDropdown";
 import ColorSchemeToggle from "./ColorSchemeToggle";
 import classes from "./Header.module.css";
+import { isAppError } from "@/utils/functions";
 
 const Header = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -84,7 +85,7 @@ const Header = () => {
         color: "red",
       });
 
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

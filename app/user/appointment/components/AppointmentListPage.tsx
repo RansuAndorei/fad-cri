@@ -3,7 +3,13 @@
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
 import { ROW_PER_PAGE } from "@/utils/constants";
-import { formatDate, formatTime, formatWordDate, statusToColor } from "@/utils/functions";
+import {
+  formatDate,
+  formatTime,
+  formatWordDate,
+  isAppError,
+  statusToColor,
+} from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AppointmentStatusEnum, AppointmentTableType, SelectDataType } from "@/utils/types";
 import {
@@ -19,7 +25,6 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconArrowsMaximize, IconCalendarMonth } from "@tabler/icons-react";
-import { isError } from "lodash";
 import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -108,7 +113,7 @@ const AppointmentListPage = ({
       setAppointmentList(data);
       setAppointmentListCount(count);
     } catch (e) {
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

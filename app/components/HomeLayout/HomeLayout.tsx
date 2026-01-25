@@ -3,11 +3,11 @@ import { fetchSystemSettings } from "@/app/admin/settings/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleRangeType } from "@/utils/types";
 import { Box, Flex } from "@mantine/core";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import Footer from "../Footer/Footer";
 import Header from "../Header/Header";
 import classes from "./HomeLayout.module.css";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   children?: React.ReactNode;
@@ -26,7 +26,7 @@ const HomeLayout = async ({ children }: Props) => {
     scheduleList = hours;
     generalLocation = location.GENERAL_LOCATION.system_setting_value;
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

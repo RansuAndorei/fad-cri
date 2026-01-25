@@ -3,7 +3,7 @@ import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
 import { getDateAppointments, recheckSchedule } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { combineDateTime, formatWordDate } from "@/utils/functions";
+import { combineDateTime, formatWordDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AppointmentType, RescheduleScheduleType, ScheduleSlotTableRow } from "@/utils/types";
 import {
@@ -29,7 +29,7 @@ import { DatePickerInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconExclamationCircle, IconHistory, IconInfoCircle } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { toUpper } from "lodash";
 import moment from "moment";
 
 import { usePathname } from "next/navigation";
@@ -280,7 +280,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -338,7 +338,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

@@ -20,7 +20,6 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { isError } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -28,6 +27,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import validator from "validator";
 import { signInUser } from "../actions";
+import { isAppError } from "@/utils/functions";
 
 const LoginPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -107,7 +107,7 @@ const LoginPage = () => {
         color: "red",
       });
       setIsLoading(false);
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

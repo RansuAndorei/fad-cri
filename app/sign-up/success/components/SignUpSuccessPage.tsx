@@ -15,12 +15,12 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconMail } from "@tabler/icons-react";
-import { isError } from "lodash";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getEmailResendTimer } from "../../actions";
 import { resendEmail } from "../actions";
+import { isAppError } from "@/utils/functions";
 
 const SignUpSuccessPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -45,7 +45,7 @@ const SignUpSuccessPage = () => {
           message: "Something went wrong. Please try again later.",
           color: "red",
         });
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -94,7 +94,7 @@ const SignUpSuccessPage = () => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

@@ -2,9 +2,9 @@
 
 import { insertError } from "@/app/actions";
 import { useUserActions } from "@/stores/useUserStore";
+import { isAppError } from "@/utils/functions";
 import { supabaseClient } from "@/utils/supabase/single-client";
 import { User } from "@supabase/supabase-js";
-import { isError } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -32,7 +32,7 @@ export function useAuthListener() {
 
         return profile;
       } catch (e) {
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -70,7 +70,7 @@ export function useAuthListener() {
           currentUserIdRef.current = null;
         }
       } catch (e) {
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -118,7 +118,7 @@ export function useAuthListener() {
           }
         }
       } catch (e) {
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,

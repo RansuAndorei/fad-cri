@@ -3,7 +3,7 @@
 import { insertError } from "@/app/actions";
 import { getBookingFee } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
-import { formatDecimal, statusToColor } from "@/utils/functions";
+import { formatDecimal, isAppError, statusToColor } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { PaymentMethod, PaymentTableRow } from "@/utils/types";
 import {
@@ -23,7 +23,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconCheck, IconInfoCircle, IconX } from "@tabler/icons-react";
-import { isError, toUpper } from "lodash";
+import { toUpper } from "lodash";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -55,7 +55,7 @@ const Payment = ({ appointmentId, payment }: Props) => {
           message: "Something went wrong. Please try again later.",
           color: "red",
         });
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -138,7 +138,7 @@ const Payment = ({ appointmentId, payment }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

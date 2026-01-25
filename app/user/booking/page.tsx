@@ -1,11 +1,11 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ReminderTableRow, ScheduleSlotTableRow } from "@/utils/types";
-import { isError } from "lodash";
 import moment from "moment";
 import { redirect } from "next/navigation";
 import { fetchReminders, fetchScheduleSlot, fetchServiceType, getMaxScheduleDate } from "./actions";
 import BookingPage from "./components/BookingPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -33,7 +33,7 @@ const Page = async () => {
 
     maxScheduleDate = moment().add(maxDateNumberOfMonths, "months").format();
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

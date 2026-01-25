@@ -1,9 +1,9 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { getBookingInfoSystemSettings } from "./actions";
 import BookingInfoPage from "./components/BookingInfoPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -34,7 +34,7 @@ const Page = async () => {
     });
     lateFee.sort((a, b) => a - b);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

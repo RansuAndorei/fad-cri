@@ -23,13 +23,14 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
-import { isEqual, isError } from "lodash";
+import { isEqual } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { v4 } from "uuid";
 import { updateScheduleSlots } from "../actions";
 import TimeInput from "./TimeInput";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   scheduleSlotData: ScheduleSlotTableRow[];
@@ -125,7 +126,7 @@ const SchedulingPage = ({ scheduleSlotData, serverTime }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

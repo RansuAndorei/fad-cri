@@ -1,6 +1,7 @@
 import { insertError } from "@/app/actions";
 import { useIsLoading, useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData, useUserProfile } from "@/stores/useUserStore";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Avatar,
@@ -15,7 +16,6 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconCalendar, IconChevronDown, IconLogout, IconSettings } from "@tabler/icons-react";
-import { isError } from "lodash";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -44,7 +44,7 @@ const ProfileDropdown = () => {
         color: "red",
       });
 
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

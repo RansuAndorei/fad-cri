@@ -3,6 +3,7 @@
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
 import { LATE_FEE_LABEL_LIST } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { SettingsEnum } from "@/utils/types";
 import {
@@ -22,7 +23,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconCalendar, IconCurrencyPeso, IconDeviceFloppy } from "@tabler/icons-react";
-import { isEqual, isError } from "lodash";
+import { isEqual } from "lodash";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { updateSettings } from "../../actions";
@@ -88,7 +89,7 @@ const FinancialSettingsPage = ({ financialData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

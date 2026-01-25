@@ -1,9 +1,9 @@
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { insertError } from "../actions";
 import { fetchSystemSettings } from "../admin/settings/actions";
 import GuidelinesPage from "./components/GuidelinesPage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -32,7 +32,7 @@ const Page = async () => {
     lateFee3 = Number(guidelinesData.LATE_FEE_3.system_setting_value);
     lateFee4 = Number(guidelinesData.LATE_FEE_4.system_setting_value);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

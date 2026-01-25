@@ -5,7 +5,6 @@ import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { DashboardClientType, DashboardTypeType, StackedBarChartDataType } from "@/utils/types";
 import { Box, Flex, LoadingOverlay, Stack } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { isError } from "lodash";
 import moment from "moment";
 import { usePathname } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -20,6 +19,7 @@ import AppointmentStatusTracker from "./AppointmentStatusTracker";
 import ClientTable from "./ClientTable/ClientTable";
 import MonthlyStatistics from "./MonthlyStatistics";
 import TypeTable from "./TypeTable/TypeTable";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   startDateFilter: Date | null;
@@ -110,7 +110,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
           message: "Something went wrong. Please try again later.",
           color: "red",
         });
-        if (isError(e)) {
+        if (isAppError(e)) {
           await insertError(supabaseClient, {
             errorTableInsert: {
               error_message: e.message,
@@ -151,7 +151,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -186,7 +186,7 @@ const Overview = ({ startDateFilter, endDateFilter, selectedDays, setIsFetching 
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

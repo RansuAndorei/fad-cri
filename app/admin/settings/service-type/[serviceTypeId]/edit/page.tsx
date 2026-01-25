@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ServiceTypeTableRow } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import CreateServiceTypePage from "../../create/components/CreateServiceTypePage";
 import { fetchServiceType } from "../actions";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   params: Promise<{ serviceTypeId: string }>;
@@ -25,7 +25,7 @@ const Page = async ({ params }: Props) => {
   try {
     serviceTypeData = await fetchServiceType(supabaseClient, { serviceTypeId: serviceTypeId });
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,

@@ -10,10 +10,10 @@ export const fetchScheduleList = async (supabaseClient: SupabaseClient<Database>
     .select("*")
     .order("schedule_slot_time");
   if (error) throw error;
-
+  console.log(data);
   return data.map((slot) => ({
     ...slot,
-    schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm:ssZ").format("HH:mm"),
+    schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm:ssZ").local().format("HH:mm"),
   }));
 };
 

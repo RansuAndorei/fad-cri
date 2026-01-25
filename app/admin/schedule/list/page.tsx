@@ -5,9 +5,9 @@ import { fetchServiceType } from "@/app/user/booking/actions";
 import { ROW_PER_PAGE } from "@/utils/constants";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentTableType, SelectDataType } from "@/utils/types";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { fetchUserList } from "./actions";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -48,7 +48,7 @@ const Page = async () => {
     serviceTypeOptions = serviceTypeData;
     userList = userData;
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       const pathname = `/admin/schedule/list`;
       await insertError(supabaseClient, {
         errorTableInsert: {

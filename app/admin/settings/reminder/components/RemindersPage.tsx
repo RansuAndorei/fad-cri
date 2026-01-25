@@ -20,12 +20,13 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconBell, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
-import { isEqualWith, isError } from "lodash";
+import { isEqualWith } from "lodash";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { v4 } from "uuid";
 import { insertReminders } from "../actions";
 import ReminderEditor from "./ReminderEditor";
+import { isAppError } from "@/utils/functions";
 
 type Props = {
   reminderList: { id: string; order: number; value: string }[];
@@ -125,7 +126,7 @@ const RemindersPage = ({ reminderList }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

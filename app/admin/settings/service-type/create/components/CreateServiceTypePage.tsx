@@ -23,12 +23,12 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy, IconGripVertical, IconPlus, IconTrash } from "@tabler/icons-react";
-import { isError } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { insertServiceType, updateServiceType } from "../../actions";
 import { checkServiceType } from "../actions";
+import { isAppError } from "@/utils/functions";
 
 type DraggableListProps = {
   label: string;
@@ -173,7 +173,7 @@ const CreateServiceTypePage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -211,7 +211,7 @@ const CreateServiceTypePage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,
@@ -250,7 +250,7 @@ const CreateServiceTypePage = ({ serviceTypeData }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-      if (isError(e)) {
+      if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
             error_message: e.message,

@@ -1,8 +1,8 @@
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { isError } from "lodash";
 import { redirect } from "next/navigation";
 import { fetchServiceLabelList, insertError } from "./actions";
 import HomePage from "./components/HomePage/HomePage";
+import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -11,7 +11,7 @@ const Page = async () => {
   try {
     serviceList = await fetchServiceLabelList(supabaseClient);
   } catch (e) {
-    if (isError(e)) {
+    if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
