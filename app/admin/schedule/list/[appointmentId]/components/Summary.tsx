@@ -35,6 +35,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { fetchBlockedSchedules } from "../../../calendar/actions";
+import { TIME_FORMAT } from "@/utils/constants";
 
 type Props = {
   appointmentData: AppointmentType;
@@ -253,7 +254,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
         .filter((slot) => !isBlocked(slot.schedule_slot_time))
         .map((slot) => {
-          const formattedTime = moment(slot.schedule_slot_time, "HH:mm:ss").format("h:mm A");
+          const formattedTime = moment(slot.schedule_slot_time, TIME_FORMAT).format("h:mm A");
 
           return {
             value: formattedTime,
@@ -303,10 +304,10 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
       setIsLoading(true);
       const { scheduleDate, scheduleTime } = data;
 
-      const combinedDateAndTime = combineDateTime(new Date(scheduleDate), scheduleTime);
+      const combinedDateAndTime = combineDateTime(scheduleDate, scheduleTime);
 
       const isStillAvailable = await recheckSchedule(supabaseClient, {
-        schedule: combineDateTime(new Date(data.scheduleDate), data.scheduleTime),
+        schedule: combineDateTime(data.scheduleDate, data.scheduleTime),
       });
       if (!isStillAvailable) {
         notifications.show({

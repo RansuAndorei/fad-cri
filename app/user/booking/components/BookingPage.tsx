@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsLoading } from "@/stores/useLoadingStore";
-import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
+import { BookingFormValues, ScheduleSlotTableRow, SelectDataType } from "@/utils/types";
 import { Button, Container, Group, Stepper, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconCalendarPlus } from "@tabler/icons-react";
@@ -15,7 +15,7 @@ import Schedule from "./Schedule";
 import Summary from "./Summary";
 
 type Props = {
-  serviceTypeOptions: string[];
+  serviceTypeOptions: (SelectDataType & { disabled: boolean })[];
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDate: string;
   reminderList: string[];

@@ -246,6 +246,33 @@ export type Database = {
           },
         ];
       };
+      faq_table: {
+        Row: {
+          faq_answer: string;
+          faq_category: Database["public"]["Enums"]["faq_category"];
+          faq_date_created: string;
+          faq_id: string;
+          faq_order: number;
+          faq_question: string;
+        };
+        Insert: {
+          faq_answer: string;
+          faq_category: Database["public"]["Enums"]["faq_category"];
+          faq_date_created?: string;
+          faq_id?: string;
+          faq_order: number;
+          faq_question: string;
+        };
+        Update: {
+          faq_answer?: string;
+          faq_category?: Database["public"]["Enums"]["faq_category"];
+          faq_date_created?: string;
+          faq_id?: string;
+          faq_order?: number;
+          faq_question?: string;
+        };
+        Relationships: [];
+      };
       payment_table: {
         Row: {
           payment_amount: number;
@@ -514,12 +541,20 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      upsert_faqs: { Args: { input_data: Json }; Returns: undefined };
       upsert_reminders: { Args: { input_data: Json }; Returns: undefined };
       upsert_schedule_slot: { Args: { input_data: Json }; Returns: undefined };
     };
     Enums: {
       appointment_status: "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
       day: "SUNDAY" | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY";
+      faq_category:
+        | "GENERAL_INFORMATION"
+        | "BOOKING_AND_APPOINTMENTS"
+        | "PRICING_AND_PAYMENT"
+        | "SERVICES_AND_NAIL_CARE"
+        | "HEALTH_AND_SAFETY"
+        | "CONTACT_AND_SUPPORT";
       gender: "MALE" | "FEMALE" | "OTHER";
       payment_status: "PENDING" | "PAID" | "FAILED" | "CANCELLED";
       settings:
@@ -529,10 +564,10 @@ export type Database = {
         | "LATE_FEE_2"
         | "LATE_FEE_3"
         | "LATE_FEE_4"
-        | "GENERAL_LOCATION"
         | "SPECIFIC_ADDRESS"
         | "PIN_LOCATION"
-        | "CONTACT_NUMBER";
+        | "CONTACT_NUMBER"
+        | "EMAIL";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -660,6 +695,14 @@ export const Constants = {
     Enums: {
       appointment_status: ["PENDING", "SCHEDULED", "COMPLETED", "CANCELLED"],
       day: ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
+      faq_category: [
+        "GENERAL_INFORMATION",
+        "BOOKING_AND_APPOINTMENTS",
+        "PRICING_AND_PAYMENT",
+        "SERVICES_AND_NAIL_CARE",
+        "HEALTH_AND_SAFETY",
+        "CONTACT_AND_SUPPORT",
+      ],
       gender: ["MALE", "FEMALE", "OTHER"],
       payment_status: ["PENDING", "PAID", "FAILED", "CANCELLED"],
       settings: [
@@ -669,10 +712,10 @@ export const Constants = {
         "LATE_FEE_2",
         "LATE_FEE_3",
         "LATE_FEE_4",
-        "GENERAL_LOCATION",
         "SPECIFIC_ADDRESS",
         "PIN_LOCATION",
         "CONTACT_NUMBER",
+        "EMAIL",
       ],
     },
   },

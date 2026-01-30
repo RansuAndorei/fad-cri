@@ -6,8 +6,10 @@ import { redirect } from "next/navigation";
 
 import { getAppointmentData } from "@/app/user/appointment/[appointmentId]/actions";
 import { fetchScheduleSlot } from "@/app/user/booking/actions";
-import AppointmentPage from "./components/AppointmentPage";
+import { DATE_AND_TIME_FORMAT, TIME_ZONE } from "@/utils/constants";
 import { isAppError } from "@/utils/functions";
+import moment from "moment-timezone";
+import AppointmentPage from "./components/AppointmentPage";
 
 type Props = {
   params: Promise<{ appointmentId: string }>;
@@ -30,7 +32,7 @@ const Page = async ({ params, searchParams }: Props) => {
   let appointmentData: AppointmentType;
   let scheduleSlot: ScheduleSlotTableRow[] = [];
   let maxScheduleDateMonth: number;
-  const serverTime = new Date().toISOString();
+  const serverTime = moment.tz(TIME_ZONE).format(DATE_AND_TIME_FORMAT);
   try {
     const [appointment, scheduleSlotData, settingsData] = await Promise.all([
       getAppointmentData(supabaseClient, {

@@ -1,17 +1,17 @@
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ServiceTypeTableRow } from "@/utils/types";
 import { redirect } from "next/navigation";
 import { insertError } from "../actions";
-import { getServiceTypeList } from "./actions";
+import { fetchServiceTypeList } from "../user/booking/actions";
 import ServicesPage from "./components/ServicesPage";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
 
   let services: ServiceTypeTableRow[];
   try {
-    services = await getServiceTypeList(supabaseClient);
+    services = await fetchServiceTypeList(supabaseClient);
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {

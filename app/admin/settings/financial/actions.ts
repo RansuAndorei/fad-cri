@@ -2,7 +2,7 @@ import { Database } from "@/utils/database";
 import { SettingsEnum } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getFinancialSettings = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchFinancialSettings = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("system_setting_table")
     .select("system_setting_key, system_setting_value")

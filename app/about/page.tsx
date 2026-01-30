@@ -1,26 +1,34 @@
+import { DATE_AND_TIME_FORMAT, TIME_ZONE } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { ScheduleRangeType } from "@/utils/types";
+import moment from "moment-timezone";
 import { redirect } from "next/navigation";
 import { fetchHours, insertError } from "../actions";
 import { fetchSystemSettings } from "../admin/settings/actions";
 import AboutPage from "./components/About";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
 
   let scheduleList: ScheduleRangeType[] = [];
-  let generalLocation: string = "";
+  let specificAddress: string = "";
   let contactNumber: string = "";
-  const serverTime = new Date().toISOString();
+  let pinLocation: string = "";
+  let email: string = "";
+  const serverTime = moment.tz(TIME_ZONE).format(DATE_AND_TIME_FORMAT);
   try {
     const [hours, aboutData] = await Promise.all([
       fetchHours(supabaseClient),
-      fetchSystemSettings(supabaseClient, { keyList: ["GENERAL_LOCATION", "CONTACT_NUMBER"] }),
+      fetchSystemSettings(supabaseClient, {
+        keyList: ["SPECIFIC_ADDRESS", "CONTACT_NUMBER", "PIN_LOCATION", "EMAIL"],
+      }),
     ]);
     scheduleList = hours;
-    generalLocation = aboutData.GENERAL_LOCATION.system_setting_value;
+    specificAddress = aboutData.SPECIFIC_ADDRESS.system_setting_value;
     contactNumber = aboutData.CONTACT_NUMBER.system_setting_value;
+    pinLocation = aboutData.PIN_LOCATION.system_setting_value;
+    email = aboutData.EMAIL.system_setting_value;
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {
@@ -37,9 +45,11 @@ const Page = async () => {
   return (
     <AboutPage
       scheduleList={scheduleList}
-      generalLocation={generalLocation}
+      specificAddress={specificAddress}
       contactNumber={contactNumber}
       serverTime={serverTime}
+      pinLocation={pinLocation}
+      email={email}
     />
   );
 };

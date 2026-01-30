@@ -2,16 +2,11 @@ import { Database } from "@/utils/database";
 import { SettingsEnum } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export const getLocationAndContactSettings = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchLocationAndContactSettings = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("system_setting_table")
     .select("system_setting_key, system_setting_value")
-    .in("system_setting_key", [
-      "GENERAL_LOCATION",
-      "SPECIFIC_ADDRESS",
-      "PIN_LOCATION",
-      "CONTACT_NUMBER",
-    ]);
+    .in("system_setting_key", ["EMAIL", "SPECIFIC_ADDRESS", "PIN_LOCATION", "CONTACT_NUMBER"]);
 
   if (error) throw error;
 

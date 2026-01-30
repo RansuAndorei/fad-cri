@@ -26,10 +26,12 @@ import Location from "./Location";
 
 type Props = {
   scheduleList: ScheduleRangeType[];
-  generalLocation: string;
+  specificAddress: string;
+  pinLocation: string;
+  email: string;
 };
 
-const Footer = ({ scheduleList, generalLocation }: Props) => {
+const Footer = ({ scheduleList, specificAddress, pinLocation, email }: Props) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
   const theme = useMantineTheme();
@@ -74,7 +76,7 @@ const Footer = ({ scheduleList, generalLocation }: Props) => {
             </Stack>
           </Stack>
           <Hours scheduleList={scheduleList} />
-          <Location generalLocation={generalLocation} />
+          <Location specificAddress={specificAddress} pinLocation={pinLocation} />
         </Flex>
       </Box>
 
@@ -109,10 +111,7 @@ const Footer = ({ scheduleList, generalLocation }: Props) => {
             color="gray"
             variant="subtle"
             onClick={() => {
-              window.open(
-                "https://mail.google.com/mail/?view=cm&fs=1&to=fadcri@gmail.com",
-                "_blank",
-              );
+              window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, "_blank");
             }}
           >
             <IconBrandGmail size={18} stroke={1.5} />

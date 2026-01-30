@@ -3,6 +3,7 @@
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
 import { DAYS_OF_THE_WEEK } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { DaysEnum, ScheduleSlotTableRow } from "@/utils/types";
 import {
@@ -24,20 +25,17 @@ import {
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
 import { isEqual } from "lodash";
-import moment from "moment";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { v4 } from "uuid";
 import { updateScheduleSlots } from "../actions";
 import TimeInput from "./TimeInput";
-import { isAppError } from "@/utils/functions";
 
 type Props = {
   scheduleSlotData: ScheduleSlotTableRow[];
-  serverTime: string;
 };
 
-const SchedulingPage = ({ scheduleSlotData, serverTime }: Props) => {
+const SchedulingPage = ({ scheduleSlotData }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
   const pathname = usePathname();
@@ -107,14 +105,8 @@ const SchedulingPage = ({ scheduleSlotData, serverTime }: Props) => {
 
     try {
       setIsLoading(true);
-      const userOffset = new Date(serverTime).getTimezoneOffset();
-      const scheduleSlotsWithTZ = scheduleSlots.map((slot) => ({
-        ...slot,
-        schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm")
-          .utcOffset(-userOffset)
-          .format("HH:mm:ssZ"),
-      }));
-      await updateScheduleSlots(supabaseClient, { scheduleSlots: scheduleSlotsWithTZ });
+
+      await updateScheduleSlots(supabaseClient, { scheduleSlots });
       setInitialScheduleSlot(scheduleSlots);
 
       notifications.show({

@@ -174,6 +174,7 @@ const ServicesPage = ({ services }: Props) => {
                     <Title order={3} c="white" mb={4}>
                       {service.service_type_label}
                     </Title>
+
                     <Text c="white" size="sm" opacity={0.95} fw={500}>
                       {service.service_type_subtext}
                     </Text>
@@ -185,9 +186,20 @@ const ServicesPage = ({ services }: Props) => {
                     gap="md"
                     style={{ backgroundColor: isDark ? theme.colors["gray"][9] : "white" }}
                   >
-                    <Text c="dimmed" style={{ lineHeight: 1.6 }}>
-                      {service.service_type_description}
-                    </Text>
+                    <Stack gap="xs">
+                      <Flex justify="flex-end">
+                        <Badge
+                          size="sm"
+                          color={service.service_type_is_active ? "green" : "red"}
+                          variant="light"
+                        >
+                          {service.service_type_is_active ? "Available" : "Unavailable"}
+                        </Badge>
+                      </Flex>
+                      <Text c="dimmed" style={{ lineHeight: 1.6 }}>
+                        {service.service_type_description}
+                      </Text>
+                    </Stack>
 
                     <Divider />
 
@@ -229,6 +241,7 @@ const ServicesPage = ({ services }: Props) => {
                       fullWidth
                       radius="xl"
                       size="md"
+                      mt="xs"
                       variant="gradient"
                       gradient={{ from: color[6], to: color[9], deg: 45 }}
                       onClick={() =>

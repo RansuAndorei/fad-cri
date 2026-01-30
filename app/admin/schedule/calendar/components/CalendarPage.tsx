@@ -5,7 +5,12 @@ import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
 import { recheckSchedule } from "@/app/user/booking/actions";
 import { useLoadingActions } from "@/stores/useLoadingStore";
 import { useUserData } from "@/stores/useUserStore";
-import { DAYS_OF_THE_WEEK } from "@/utils/constants";
+import {
+  DATE_AND_TIME_FORMAT,
+  DATE_FORMAT,
+  DAYS_OF_THE_WEEK,
+  TIME_FORMAT,
+} from "@/utils/constants";
 import { combineDateTime, formatTime, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
@@ -118,7 +123,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         .clone()
         .startOf("month")
         .startOf("day")
-        .format("YYYY-MM-DD HH:mm:ssZ");
+        .format(DATE_AND_TIME_FORMAT);
 
       const endDate = currentMonth
         .clone()
@@ -126,13 +131,13 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         .hour(23)
         .minute(59)
         .second(59)
-        .format("YYYY-MM-DD HH:mm:ssZ");
+        .format(DATE_AND_TIME_FORMAT);
 
       const [schedule, blockedData] = await Promise.all([
         fetchSchedule(supabaseClient, { startDate, endDate }),
         fetchBlockedSchedules(supabaseClient, {
-          startDate: currentMonth.clone().startOf("month").format("YYYY-MM-DD"),
-          endDate: currentMonth.clone().endOf("month").format("YYYY-MM-DD"),
+          startDate: currentMonth.clone().startOf("month").format(DATE_FORMAT),
+          endDate: currentMonth.clone().endOf("month").format(DATE_FORMAT),
         }),
       ]);
 
@@ -140,7 +145,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
 
       const day = startOfMonth.clone();
       while (days.length < 42) {
-        const dateKey = day.format("YYYY-MM-DD");
+        const dateKey = day.format(DATE_FORMAT);
         const matchedSchedule = schedule.filter((s) =>
           moment(s.appointment_schedule).isSame(day, "day"),
         );
@@ -202,10 +207,10 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
     for (const { day, schedule } of days) {
       const map = new Map<string, ScheduleType>();
       for (const appt of schedule) {
-        const timeKey = moment(appt.appointment_schedule).utcOffset(8).format("HH:mm:ss+08");
+        const timeKey = moment(appt.appointment_schedule).format(TIME_FORMAT);
         map.set(timeKey, appt);
       }
-      maps.set(day.format("YYYY-MM-DD"), map);
+      maps.set(day.format(DATE_FORMAT), map);
     }
 
     return maps;
@@ -232,7 +237,6 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
         message: "Something went wrong. Please try again later.",
         color: "red",
       });
-
       if (isAppError(e)) {
         await insertError(supabaseClient, {
           errorTableInsert: {
@@ -282,10 +286,10 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
       setIsLoading(true);
       const { scheduleDate, scheduleTime } = data;
 
-      const combinedDateAndTime = combineDateTime(new Date(scheduleDate), scheduleTime);
+      const combinedDateAndTime = combineDateTime(scheduleDate, scheduleTime);
 
       const isStillAvailable = await recheckSchedule(supabaseClient, {
-        schedule: combineDateTime(new Date(data.scheduleDate), data.scheduleTime),
+        schedule: combinedDateAndTime,
       });
       if (!isStillAvailable) {
         notifications.show({
@@ -596,7 +600,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
             }
 
             const dayKey = toUpper(day.format("dddd"));
-            const dateKey = day.format("YYYY-MM-DD");
+            const dateKey = day.format(DATE_FORMAT);
             const slots = scheduleSlotByDay[dayKey] ?? [];
             const apptMap: Map<string, AppointmentType & { appointment_user: UserTableRow }> =
               appointmentMapsByDay.get(dateKey) ?? new Map();
@@ -608,7 +612,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
               .map((b) => b.blocked_schedule_time);
 
             const mergedTimes = Array.from(new Set([...slots, ...apptMap.keys()])).sort((a, b) =>
-              moment(a, "HH:mm:ssZ").diff(moment(b, "HH:mm:ssZ")),
+              moment(a, TIME_FORMAT).diff(moment(b, TIME_FORMAT)),
             );
 
             const isWithSchedule = mergedTimes.some((time) => apptMap.get(time));
@@ -752,7 +756,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
                             <Group gap={4} align="center">
                               <IconX size={12} color={theme.colors.red[6]} />
                               <Text size="xs" c="red" style={{ textDecoration: "line-through" }}>
-                                {moment(time, "HH:mm:ssZ").format("hh:mm A")}
+                                {moment(time, TIME_FORMAT).format("hh:mm A")}
                               </Text>
                             </Group>
                           </Card>
@@ -791,7 +795,7 @@ const CalendarPage = ({ scheduleSlot, serverTime }: Props) => {
                           }}
                         >
                           <Text size="xs" c="dimmed">
-                            {moment(time, "HH:mm:ssZ").format("hh:mm A")}
+                            {moment(time, TIME_FORMAT).format("hh:mm A")}
                           </Text>
                         </Card>
                       );

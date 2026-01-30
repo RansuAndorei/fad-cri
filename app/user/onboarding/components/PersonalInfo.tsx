@@ -1,4 +1,4 @@
-import { GENDER_OPTION } from "@/utils/constants";
+import { DATE_FORMAT, GENDER_OPTION } from "@/utils/constants";
 import { OnboardingFormValues } from "@/utils/types";
 import { Paper, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
@@ -40,8 +40,8 @@ const PersonalInfo = () => {
           render={({ field }) => (
             <DateInput
               label="Birth Date"
-              placeholder="YYYY-MM-DD"
-              valueFormat="YYYY-MM-DD"
+              placeholder={DATE_FORMAT}
+              valueFormat={DATE_FORMAT}
               {...field}
               error={errors.user_birth_date?.message}
               withAsterisk

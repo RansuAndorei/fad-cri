@@ -1,3 +1,4 @@
+import { DATE_AND_TIME_FORMAT, TIME_FORMAT } from "@/utils/constants";
 import { Database } from "@/utils/database";
 import { SupabaseClient } from "@supabase/supabase-js";
 import moment from "moment";
@@ -18,15 +19,15 @@ export const getServerTime = async (supabaseClient: SupabaseClient<Database>) =>
   return data;
 };
 
-export const fetchServiceType = async (supabaseClient: SupabaseClient<Database>) => {
+export const fetchServiceTypeList = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("service_type_table")
-    .select("service_type_label")
+    .select("*")
     .eq("service_type_is_disabled", false)
     .order("service_type_label");
   if (error) throw error;
   if (!data) throw new Error("No service types found");
-  return data.map((item) => item.service_type_label);
+  return data;
 };
 
 export const fetchScheduleSlot = async (supabaseClient: SupabaseClient<Database>) => {
@@ -53,8 +54,8 @@ export const getDateAppointments = async (
 ) => {
   const { date } = params;
 
-  const startOfDay = moment(date).startOf("day").utcOffset(8).toISOString();
-  const endOfDay = moment(date).endOf("day").utcOffset(8).toISOString();
+  const startOfDay = moment(date).startOf("day").format(DATE_AND_TIME_FORMAT);
+  const endOfDay = moment(date).endOf("day").format(DATE_AND_TIME_FORMAT);
 
   const serverTime = await getServerTime(supabaseClient);
   const serverTimestamp = new Date(serverTime).getTime();
@@ -70,9 +71,7 @@ export const getDateAppointments = async (
     )
     .order("appointment_schedule");
   if (error) throw error;
-  const timeList = data.map((item) =>
-    moment(item.appointment_schedule).utcOffset(8).format("HH:mm:ss+08"),
-  );
+  const timeList = data.map((item) => moment(item.appointment_schedule).format(TIME_FORMAT));
   return timeList;
 };
 

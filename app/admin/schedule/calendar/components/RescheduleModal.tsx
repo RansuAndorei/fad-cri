@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { fetchBlockedSchedules } from "../actions";
+import { TIME_FORMAT } from "@/utils/constants";
 
 type Props = {
   rescheduleModalOpened: boolean;
@@ -100,7 +101,7 @@ const RescheduleModal = ({
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
         .filter((slot) => !isBlocked(slot.schedule_slot_time))
         .map((slot) => {
-          const formattedTime = moment(slot.schedule_slot_time, "HH:mm:ss").format("h:mm A");
+          const formattedTime = moment(slot.schedule_slot_time, TIME_FORMAT).format("h:mm A");
 
           return {
             value: formattedTime,

@@ -2,6 +2,7 @@
 
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   ActionIcon,
@@ -26,7 +27,6 @@ import { useState } from "react";
 import { v4 } from "uuid";
 import { insertReminders } from "../actions";
 import ReminderEditor from "./ReminderEditor";
-import { isAppError } from "@/utils/functions";
 
 type Props = {
   reminderList: { id: string; order: number; value: string }[];
@@ -147,7 +147,7 @@ const RemindersPage = ({ reminderList }: Props) => {
       <Stack>
         <Group>
           <Box>
-            <Title order={2}> Customer Reminders</Title>
+            <Title order={2}>Customer Reminders</Title>
             <Text c="dimmed">Manage messages shown to clients before booking</Text>
           </Box>
         </Group>
@@ -165,7 +165,7 @@ const RemindersPage = ({ reminderList }: Props) => {
               }}
             >
               <Group>
-                <IconBell size={20} color={theme.colors.yellow[7]} />
+                <IconBell size={16} color={theme.colors.yellow[7]} />
                 <Text size="sm" fw={500} c="yellow.8">
                   These reminders will be displayed to customers during the booking process
                 </Text>

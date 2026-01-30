@@ -1,9 +1,12 @@
 "use client";
 
+import { insertError } from "@/app/actions";
 import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import CTASection from "@/app/components/Shared/CTASection/CTASection";
 import HeroSection from "@/app/components/Shared/HeroSection/HeroSection";
-import { DAYS_OF_THE_WEEK } from "@/utils/constants";
+import { useUserData } from "@/stores/useUserStore";
+import { DATE_FORMAT, DAYS_OF_THE_WEEK, TIME_FORMAT } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import {
   Alert,
@@ -23,6 +26,7 @@ import {
   useComputedColorScheme,
   useMantineTheme,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
   IconCalendar,
@@ -33,6 +37,7 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import moment, { Moment } from "moment";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { fetchAppointmentPerMonth, fetchScheduleSlot } from "../actions";
 
@@ -57,6 +62,8 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const theme = useMantineTheme();
   const computedColorScheme = useComputedColorScheme();
+  const userData = useUserData();
+  const pathname = usePathname();
   const isDark = computedColorScheme === "dark";
 
   const maxMonth = moment(serverTime).add(maxScheduleDateMonth, "months");
@@ -68,6 +75,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
   const [isFetching, setIsFetching] = useState(false);
 
   const fetchSchedule = async () => {
+    if (!userData) return;
     try {
       setIsFetching(true);
 
@@ -106,21 +114,18 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
         const bookedTimes =
           appointmentsData
             ?.filter((a) => moment(a.appointment_schedule).isSame(day, "day"))
-            .map((a) => moment(a.appointment_schedule).format("HH:mm")) || [];
+            .map((a) => moment(a.appointment_schedule).format(TIME_FORMAT)) || [];
 
         const slots: TimeSlot[] =
           isCurrentMonth && !isPast
-            ? daySlots.map((s) => {
-                const slotTimeHHmm = moment(s.schedule_slot_time, "HH:mm:ssZ").format("HH:mm");
-                return {
-                  time: s.schedule_slot_time,
-                  available:
-                    !bookedTimes.includes(slotTimeHHmm) &&
-                    !isBlocked(day.format("YYYY-MM-DD"), s.schedule_slot_time),
-                  appointmentId: undefined,
-                  note: s.schedule_slot_note || "",
-                };
-              })
+            ? daySlots.map((s) => ({
+                time: s.schedule_slot_time,
+                available:
+                  !bookedTimes.includes(s.schedule_slot_time) &&
+                  !isBlocked(day.format(DATE_FORMAT), s.schedule_slot_time),
+                appointmentId: undefined,
+                note: s.schedule_slot_note || "",
+              }))
             : [];
 
         schedules.push({ day: day.clone(), slots });
@@ -133,8 +138,22 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
         removeCount = 14;
 
       setDays(removeCount ? schedules.slice(0, -removeCount) : schedules);
-    } catch (error) {
-      console.error("Error fetching schedule:", error);
+    } catch (e) {
+      notifications.show({
+        message: "Something went wrong. Please try again later.",
+        color: "red",
+      });
+      if (isAppError(e)) {
+        await insertError(supabaseClient, {
+          errorTableInsert: {
+            error_message: e.message,
+            error_url: pathname,
+            error_function: "fetchSchedule",
+            error_user_email: userData.email,
+            error_user_id: userData.id,
+          },
+        });
+      }
     } finally {
       setIsFetching(false);
     }
@@ -168,7 +187,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
 
   const getSlotColor = (available: number, total: number) => {
     const percentage = (available / total) * 100;
-    if (percentage === 0) return "dark";
+    if (percentage === 0 || total === 0) return "dark";
     if (percentage <= 24) return "red";
     if (percentage <= 49) return "orange";
     if (percentage <= 74) return "yellow";
@@ -312,7 +331,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
                                 color={getSlotColor(availableSlots, slots.length)}
                                 variant="light"
                                 fullWidth
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: hasSlots && !isPast ? "pointer" : "not-allowed" }}
                               >
                                 {availableSlots} slots
                               </Badge>
@@ -352,7 +371,7 @@ const ReservationPage = ({ maxScheduleDateMonth, serverTime }: Props) => {
                             },
                           }}
                         >
-                          {moment(slot.time, "HH:mm:ssZ").format("h:mm A")}
+                          {moment(slot.time, TIME_FORMAT).format("h:mm A")}
                         </Button>
                       ))}
                     </SimpleGrid>

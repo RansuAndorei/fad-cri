@@ -1,19 +1,21 @@
 import { insertError } from "@/app/actions";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 import { insertAppointment, insertPayment } from "./actions";
-import { isAppError } from "@/utils/functions";
 
 export async function POST(req: Request) {
   const supabaseClient = await createSupabaseServerClient();
   const pathname = new URL(req.url).pathname;
-  const { amount, method, bookingData, inspoData, userId, userEmail } = await req.json();
+  const { amount, method, bookingData, inspoData, userId, userEmail, combinedDateAndTime } =
+    await req.json();
 
   try {
     const appointmentId = await insertAppointment(supabaseClient, {
       bookingData,
       inspoData,
       userId,
+      combinedDateAndTime,
     });
     const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 

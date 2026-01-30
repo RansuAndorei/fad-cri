@@ -3,6 +3,7 @@
 import { insertError } from "@/app/actions";
 import OAuth from "@/app/components/OAuth/OAuth";
 import { SMALL_SCREEN } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { LogInFormValues } from "@/utils/types";
 import {
@@ -27,7 +28,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import validator from "validator";
 import { signInUser } from "../actions";
-import { isAppError } from "@/utils/functions";
 
 const LoginPage = () => {
   const supabaseClient = createSupabaseBrowserClient();

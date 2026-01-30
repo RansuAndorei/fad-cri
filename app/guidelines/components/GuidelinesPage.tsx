@@ -1,4 +1,3 @@
-// app/guidelines/page.tsx
 "use client";
 
 import CTASection from "@/app/components/Shared/CTASection/CTASection";
@@ -44,6 +43,7 @@ type Props = {
   lateFee2: number;
   lateFee3: number;
   lateFee4: number;
+  email: string;
 };
 
 const GuidelinesPage = ({
@@ -53,6 +53,7 @@ const GuidelinesPage = ({
   lateFee2,
   lateFee3,
   lateFee4,
+  email,
 }: Props) => {
   const theme = useMantineTheme();
   const computedColorScheme = useComputedColorScheme();
@@ -78,7 +79,7 @@ const GuidelinesPage = ({
       points: [
         `${formatPeso(bookingFee)} booking fee required to secure appointment`,
         "Booking fee applies to total service cost",
-        "Accept cash, GCash, credit/debit cards",
+        "Accept cash and GCash",
         "Payment due at time of service",
         "Prices subject to change without notice",
       ],
@@ -486,7 +487,7 @@ const GuidelinesPage = ({
                     <Text size="xs" c="dimmed" fw={600}>
                       Email Us
                     </Text>
-                    <Text fw={700}>fadcri@gmail.com</Text>
+                    <Text fw={700}>{email}</Text>
                   </Box>
                 </Group>
               </Group>

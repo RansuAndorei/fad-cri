@@ -14,18 +14,25 @@ import {
   IconHeart,
   IconHome,
   IconIdBadge,
+  IconInfoCircle,
   IconLayoutDashboard,
   IconList,
   IconListDetails,
+  IconMail,
   IconMapPin,
   IconPalette,
   IconQuestionMark,
   IconSettings,
   IconSparkles,
   IconStar,
+  TablerIcon,
 } from "@tabler/icons-react";
-import { DaysEnum } from "./types";
+import { DaysEnum, FAQCategoryEnum } from "./types";
 
+export const TIME_ZONE = "Asia/Manila";
+export const DATE_FORMAT = "YYYY-MM-DD";
+export const TIME_FORMAT = "HH:mm:ss";
+export const DATE_AND_TIME_FORMAT = `${DATE_FORMAT} ${TIME_FORMAT}`;
 export const FETCH_OPTION_LIMIT = 1000;
 export const SMALL_SCREEN = "(max-width: 992px)";
 export const SKIPPED_ERROR_MESSAGES = ["Email already registered."];
@@ -173,7 +180,13 @@ export const ADMIN_NAVIGATION_ITEMS = [
         id: "reminders",
         label: "Reminders",
         icon: IconBell,
-        path: `/admin/settings/reminder`,
+        path: `/admin/settings/reminders`,
+      },
+      {
+        id: "faqs",
+        label: "FAQs",
+        icon: IconQuestionMark,
+        path: `/admin/settings/faqs`,
       },
     ],
   },
@@ -214,3 +227,43 @@ export const FEATURE_ICONS = [
   IconColorSwatch,
   IconHeart,
 ];
+
+export const FAQS_DATA: Record<
+  FAQCategoryEnum,
+  {
+    label: string;
+    icon: TablerIcon;
+    color: string;
+  }
+> = {
+  GENERAL_INFORMATION: {
+    label: "General Information",
+    icon: IconInfoCircle,
+    color: "cyan",
+  },
+  BOOKING_AND_APPOINTMENTS: {
+    label: "Booking & Appointments",
+    icon: IconCalendar,
+    color: "yellow",
+  },
+  PRICING_AND_PAYMENT: {
+    label: "Pricing & Payment",
+    icon: IconCurrencyPeso,
+    color: "teal",
+  },
+  SERVICES_AND_NAIL_CARE: {
+    label: "Services & Nail Care",
+    icon: IconPalette,
+    color: "pink",
+  },
+  HEALTH_AND_SAFETY: {
+    label: "Health & Safety",
+    icon: IconHeart,
+    color: "red",
+  },
+  CONTACT_AND_SUPPORT: {
+    label: "Contact & Support",
+    icon: IconMail,
+    color: "violet",
+  },
+};

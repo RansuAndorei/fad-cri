@@ -1,10 +1,10 @@
-import { BookingFormValues } from "@/utils/types";
+import { BookingFormValues, SelectDataType } from "@/utils/types";
 import { Anchor, Paper, Radio, Select, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
 import { Controller, useFormContext } from "react-hook-form";
 
 type Props = {
-  serviceTypeOptions: string[];
+  serviceTypeOptions: (SelectDataType & { disabled: boolean })[];
 };
 
 const AppointmentType = ({ serviceTypeOptions }: Props) => {

@@ -1,8 +1,10 @@
+import { TIME_ZONE } from "@/utils/constants";
 import { formatWordDate, statusToColorHex } from "@/utils/functions";
 import { MonthlySalesDataTypeWithTotal } from "@/utils/types";
 import { Box, Center, Flex, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconChartBar, IconSquareRoundedFilled } from "@tabler/icons-react";
 import { capitalize } from "lodash";
+import moment from "moment-timezone";
 import { useEffect, useState } from "react";
 import StackedBarChart from "../Chart/StackedBarChart";
 
@@ -56,8 +58,8 @@ const MonthlyStatistics = ({ startDateFilter, endDateFilter, monthlyChartData }:
     setChartData(newChartData);
   };
 
-  const startDate = formatWordDate(startDateFilter ?? new Date());
-  const endDate = formatWordDate(endDateFilter ?? new Date());
+  const startDate = formatWordDate(startDateFilter ?? moment.tz(TIME_ZONE).toDate());
+  const endDate = formatWordDate(endDateFilter ?? moment.tz(TIME_ZONE).toDate());
   const xAxisChartLabel = startDate === endDate ? startDate : `${startDate} to ${endDate}`;
 
   useEffect(() => {

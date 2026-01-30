@@ -1,9 +1,9 @@
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { insertError } from "../actions";
 import { fetchSystemSettings } from "../admin/settings/actions";
 import GuidelinesPage from "./components/GuidelinesPage";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -14,6 +14,7 @@ const Page = async () => {
   let lateFee2: number = 500;
   let lateFee3: number = 1000;
   let lateFee4: number = 2000;
+  let email: string = "";
   try {
     const guidelinesData = await fetchSystemSettings(supabaseClient, {
       keyList: [
@@ -23,6 +24,7 @@ const Page = async () => {
         "LATE_FEE_2",
         "LATE_FEE_3",
         "LATE_FEE_4",
+        "EMAIL",
       ],
     });
     contactNumber = guidelinesData.CONTACT_NUMBER.system_setting_value;
@@ -31,6 +33,7 @@ const Page = async () => {
     lateFee2 = Number(guidelinesData.LATE_FEE_2.system_setting_value);
     lateFee3 = Number(guidelinesData.LATE_FEE_3.system_setting_value);
     lateFee4 = Number(guidelinesData.LATE_FEE_4.system_setting_value);
+    email = guidelinesData.EMAIL.system_setting_value;
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {
@@ -52,6 +55,7 @@ const Page = async () => {
       lateFee2={lateFee2}
       lateFee3={lateFee3}
       lateFee4={lateFee4}
+      email={email}
     />
   );
 };

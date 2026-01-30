@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { SettingsEnum } from "@/utils/types";
 import { redirect } from "next/navigation";
-import { getFinancialSettings } from "./actions";
+import { fetchFinancialSettings } from "./actions";
 import FinancialSettingsPage from "./components/FinancialSettingsPage";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -18,7 +18,7 @@ const Page = async () => {
 
   let financialData: Record<SettingsEnum, string>;
   try {
-    financialData = await getFinancialSettings(supabaseClient);
+    financialData = await fetchFinancialSettings(supabaseClient);
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {

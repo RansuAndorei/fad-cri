@@ -1,6 +1,7 @@
 import { insertError } from "@/app/actions";
 import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import { useUserData } from "@/stores/useUserStore";
+import { TIME_FORMAT } from "@/utils/constants";
 import { formatWordDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { BookingFormValues, ScheduleSlotTableRow } from "@/utils/types";
@@ -74,7 +75,7 @@ const Schedule = ({ scheduleSlot, maxScheduleDate, serverTime }: Props) => {
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
         .filter((slot) => !isBlocked(slot.schedule_slot_time))
         .map((slot) => {
-          const formattedTime = moment(slot.schedule_slot_time, "HH:mm:ss").format("h:mm A");
+          const formattedTime = moment(slot.schedule_slot_time, TIME_FORMAT).format("h:mm A");
 
           return {
             value: formattedTime,

@@ -1,3 +1,4 @@
+import { TablerIcon } from "@tabler/icons-react";
 import { Database } from "./database";
 
 export type ErrorTableRow = Database["public"]["Tables"]["error_table"]["Row"];
@@ -52,6 +53,10 @@ export type AppointmentCompletionTableInsert =
 export type AppointmentCompletionTableUpdate =
   Database["public"]["Tables"]["appointment_completion_table"]["Update"];
 
+export type FAQTableRow = Database["public"]["Tables"]["faq_table"]["Row"];
+export type FAQTableInsert = Database["public"]["Tables"]["faq_table"]["Insert"];
+export type FAQTableUpdate = Database["public"]["Tables"]["faq_table"]["Update"];
+
 export type GenderEnum = Database["public"]["Enums"]["gender"];
 export type AppointmentStatusEnum = Database["public"]["Enums"]["appointment_status"];
 
@@ -59,6 +64,7 @@ export type AttachmentBucketType = "USER_AVATARS" | "NAIL_INSPO" | "COMPLETED_NA
 
 export type SettingsEnum = Database["public"]["Enums"]["settings"];
 export type DaysEnum = Database["public"]["Enums"]["day"];
+export type FAQCategoryEnum = Database["public"]["Enums"]["faq_category"];
 
 export type LogInFormValues = {
   email: string;
@@ -169,4 +175,20 @@ export type RescheduleScheduleType = {
 export type CompleteScheduleType = {
   image: File | null;
   price: number;
+};
+
+export type FAQType = {
+  id: string;
+  category: string;
+  icon?: TablerIcon;
+  color: string;
+  faqList: {
+    question: string;
+    answer: string;
+  }[];
+};
+
+export type FAQSettingsType = FAQTableRow & {
+  questionError?: string;
+  answerError?: string;
 };

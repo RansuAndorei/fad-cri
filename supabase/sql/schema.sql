@@ -52,10 +52,19 @@ CREATE TYPE settings AS ENUM (
   'LATE_FEE_2',
   'LATE_FEE_3',
   'LATE_FEE_4',
-  'GENERAL_LOCATION',
   'SPECIFIC_ADDRESS',
   'PIN_LOCATION',
-  'CONTACT_NUMBER'
+  'CONTACT_NUMBER',
+  'EMAIL'
+);
+
+CREATE TYPE faq_category AS ENUM (
+  'GENERAL_INFORMATION',
+  'BOOKING_AND_APPOINTMENTS',
+  'PRICING_AND_PAYMENT',
+  'SERVICES_AND_NAIL_CARE',
+  'HEALTH_AND_SAFETY',
+  'CONTACT_AND_SUPPORT'
 );
 
 CREATE TABLE attachment_table (
@@ -130,7 +139,7 @@ CREATE TABLE appointment_table(
   appointment_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   appointment_date_updated TIMESTAMPTZ,
   appointment_is_disabled BOOLEAN DEFAULT FALSE NOT NULL,
-  appointment_schedule TIMESTAMPTZ NOT NULL,
+  appointment_schedule TIMESTAMP NOT NULL,
   appointment_status appointment_status DEFAULT 'PENDING' NOT NULL,
   appointment_is_rescheduled BOOLEAN DEFAULT FALSE NOT NULL,
   appointment_schedule_note TEXT,
@@ -173,6 +182,15 @@ CREATE TABLE reminder_table (
   reminder_value TEXT NOT NULL
 );
 
+CREATE TABLE faq_table (
+  faq_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
+  faq_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  faq_order INT NOT NULL,
+  faq_category faq_category NOT NULL,
+  faq_question TEXT NOT NULL,
+  faq_answer TEXT NOT NULL
+);
+
 CREATE TABLE payment_table (
   payment_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   payment_date_created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -203,13 +221,13 @@ CREATE TABLE payment_table (
   payment_failure_code TEXT,
 
   -- Linking
-  payment_appointment_id UUID REFERENCES appointment_table(appointment_id) NOT NULL
+  payment_appointment_id UUID REFERENCES appointment_table(appointment_id) ON DELETE CASCADE NOT NULL 
 );
 
 CREATE TABLE schedule_slot_table (
   schedule_slot_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   schedule_slot_day day NOT NULL,
-  schedule_slot_time TIME WITH TIME ZONE NOT NULL,
+  schedule_slot_time TIME NOT NULL,
   schedule_slot_note TEXT,
 
   UNIQUE(schedule_slot_day, schedule_slot_time)
@@ -219,7 +237,7 @@ CREATE TABLE blocked_schedule_table (
   blocked_schedule_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
   blocked_schedule_date_created TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   blocked_schedule_date DATE NOT NULL,
-  blocked_schedule_time TIMETZ
+  blocked_schedule_time TIME
 );
 
 ALTER TABLE user_table DISABLE ROW LEVEL SECURITY;

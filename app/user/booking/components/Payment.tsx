@@ -77,9 +77,15 @@ const Payment = ({ handleStepChange }: Props) => {
       const bookingData = getValues();
       const inspo = bookingData.inspo;
 
+      const combinedDateAndTime = combineDateTime(
+        bookingData.scheduleDate,
+        bookingData.scheduleTime,
+      );
+
       const isStillAvailable = await recheckSchedule(supabaseClient, {
-        schedule: combineDateTime(new Date(bookingData.scheduleDate), bookingData.scheduleTime),
+        schedule: combinedDateAndTime,
       });
+
       if (!isStillAvailable) {
         notifications.show({
           message: "Sorry, this schedule is no longer available. Please select a different time.",
@@ -118,6 +124,8 @@ const Payment = ({ handleStepChange }: Props) => {
           bookingData,
           inspoData,
           userId: userData.id,
+          userEmail: userData.email,
+          combinedDateAndTime,
         }),
       });
 
@@ -173,7 +181,6 @@ const Payment = ({ handleStepChange }: Props) => {
           <Radio.Group value={method} onChange={(val) => setMethod(val as PaymentMethod)}>
             <Stack>
               <Radio value="gcash" label="GCash" />
-              <Radio value="card" label="Credit/Debit Card" />
             </Stack>
           </Radio.Group>
 

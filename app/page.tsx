@@ -1,8 +1,8 @@
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { fetchServiceLabelList, insertError } from "./actions";
 import HomePage from "./components/HomePage/HomePage";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();

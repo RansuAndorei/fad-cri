@@ -2,19 +2,14 @@ import { Database } from "@/utils/database";
 import { ScheduleSlotTableRow } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-import moment from "moment";
-
 export const fetchScheduleList = async (supabaseClient: SupabaseClient<Database>) => {
   const { data, error } = await supabaseClient
     .from("schedule_slot_table")
     .select("*")
     .order("schedule_slot_time");
   if (error) throw error;
-  console.log(data);
-  return data.map((slot) => ({
-    ...slot,
-    schedule_slot_time: moment(slot.schedule_slot_time, "HH:mm:ssZ").local().format("HH:mm"),
-  }));
+
+  return data;
 };
 
 export const updateScheduleSlots = async (

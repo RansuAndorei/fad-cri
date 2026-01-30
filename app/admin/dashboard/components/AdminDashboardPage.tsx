@@ -1,9 +1,10 @@
 "use client";
 
+import { DATE_FORMAT, TIME_ZONE } from "@/utils/constants";
 import { Box, Container, Flex, Select, Stack, Title } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { IconCalendarEvent } from "@tabler/icons-react";
-import moment from "moment";
+import moment from "moment-timezone";
 import { useEffect, useState } from "react";
 import Overview from "./OverviewTab/Overview";
 
@@ -18,9 +19,9 @@ const AdminDashboardPage = () => {
   const [selectedDays, setSelectedDays] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(true);
 
-  const currentDate = moment().toDate();
+  const currentDate = moment.tz(TIME_ZONE).toDate();
   const firstDayOfCurrentYear = moment({
-    year: moment().year(),
+    year: moment.tz(TIME_ZONE).year(),
     month: 0,
     day: 1,
   }).toDate();
@@ -67,7 +68,7 @@ const AdminDashboardPage = () => {
                   dropdownType="popover"
                   minDate={new Date("2025-01-01")}
                   maxDate={currentDate}
-                  valueFormat="YYYY-MM-DD"
+                  valueFormat={DATE_FORMAT}
                   w={120}
                 />
                 <DatePickerInput
@@ -79,7 +80,7 @@ const AdminDashboardPage = () => {
                   dropdownType="popover"
                   minDate={startDateFilter || new Date()}
                   maxDate={currentDate}
-                  valueFormat="YYYY-MM-DD"
+                  valueFormat={DATE_FORMAT}
                   w={120}
                 />
               </>

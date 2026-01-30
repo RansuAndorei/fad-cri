@@ -3,6 +3,7 @@ import { fetchBlockedSchedules } from "@/app/admin/schedule/calendar/actions";
 import { updateAppointment } from "@/app/api/paymongo/webhook/actions";
 import { getDateAppointments, recheckSchedule } from "@/app/user/booking/actions";
 import { useUserData } from "@/stores/useUserStore";
+import { TIME_FORMAT } from "@/utils/constants";
 import { combineDateTime, formatWordDate, isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { AppointmentType, RescheduleScheduleType, ScheduleSlotTableRow } from "@/utils/types";
@@ -28,9 +29,10 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconExclamationCircle, IconHistory, IconInfoCircle } from "@tabler/icons-react";
+import { IconExclamationCircle, IconHistory, IconInfoCircle, IconMap } from "@tabler/icons-react";
 import { toUpper } from "lodash";
 import moment from "moment";
+import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -41,9 +43,18 @@ type Props = {
   serverTime: string;
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDateMonth: number;
+  specificAddress: string;
+  pinLocation: string;
 };
 
-const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMonth }: Props) => {
+const Summary = ({
+  appointmentData,
+  serverTime,
+  scheduleSlot,
+  maxScheduleDateMonth,
+  specificAddress,
+  pinLocation,
+}: Props) => {
   const supabaseClient = createSupabaseBrowserClient();
   const pathname = usePathname();
   const userData = useUserData();
@@ -253,7 +264,7 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
         .filter((slot) => !appointmentList.includes(slot.schedule_slot_time))
         .filter((slot) => !isBlocked(slot.schedule_slot_time))
         .map((slot) => {
-          const formattedTime = moment(slot.schedule_slot_time, "HH:mm:ss").format("h:mm A");
+          const formattedTime = moment(slot.schedule_slot_time, TIME_FORMAT).format("h:mm A");
 
           return {
             value: formattedTime,
@@ -303,10 +314,10 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
       setIsLoading(true);
       const { scheduleDate, scheduleTime } = data;
 
-      const combinedDateAndTime = combineDateTime(new Date(scheduleDate), scheduleTime);
+      const combinedDateAndTime = combineDateTime(scheduleDate, scheduleTime);
 
       const isStillAvailable = await recheckSchedule(supabaseClient, {
-        schedule: combineDateTime(new Date(data.scheduleDate), data.scheduleTime),
+        schedule: combineDateTime(data.scheduleDate, data.scheduleTime),
       });
       if (!isStillAvailable) {
         notifications.show({
@@ -432,6 +443,21 @@ const Summary = ({ appointmentData, serverTime, scheduleSlot, maxScheduleDateMon
             <Text>
               <strong>Time:</strong> {moment(schedule).format("h:mm A")}
             </Text>
+            <Flex align="center" gap="xs">
+              <Text>
+                <strong>Address:</strong> {specificAddress}
+              </Text>
+              <ActionIcon
+                variant="light"
+                component={Link}
+                href={pinLocation}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <IconMap size={16} />
+              </ActionIcon>
+            </Flex>
+
             {appointmentData.appointment_schedule_note ? (
               <Alert
                 icon={<IconInfoCircle size={16} />}

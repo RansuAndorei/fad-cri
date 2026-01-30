@@ -5,6 +5,8 @@ import { ScheduleSlotTableRow } from "@/utils/types";
 import { redirect } from "next/navigation";
 import CalendarPage from "./components/CalendarPage";
 import { isAppError } from "@/utils/functions";
+import moment from "moment-timezone";
+import { DATE_AND_TIME_FORMAT, TIME_ZONE } from "@/utils/constants";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -17,7 +19,7 @@ const Page = async () => {
   }
 
   let scheduleSlot: ScheduleSlotTableRow[] = [];
-  const serverTime = new Date().toISOString();
+  const serverTime = moment.tz(TIME_ZONE).format(DATE_AND_TIME_FORMAT);
   try {
     scheduleSlot = await fetchScheduleSlot(supabaseClient);
   } catch (e) {

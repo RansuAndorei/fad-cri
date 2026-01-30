@@ -2,6 +2,7 @@
 
 import { insertError } from "@/app/actions";
 import { useUserData } from "@/stores/useUserStore";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { SettingsEnum } from "@/utils/types";
 import {
@@ -19,12 +20,11 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconDeviceFloppy, IconMap, IconMap2, IconMapPin, IconPhone } from "@tabler/icons-react";
+import { IconDeviceFloppy, IconMail, IconMap, IconMap2, IconPhone } from "@tabler/icons-react";
 import { isEqual } from "lodash";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { updateSettings } from "../../actions";
-import { isAppError } from "@/utils/functions";
 
 type Props = {
   locationAndContactData: Record<SettingsEnum, string>;
@@ -45,10 +45,8 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
   const handleSave = async () => {
     if (!userData) return;
 
-    const { GENERAL_LOCATION, SPECIFIC_ADDRESS, PIN_LOCATION, CONTACT_NUMBER } =
-      locationAndContactSettings;
+    const { SPECIFIC_ADDRESS, PIN_LOCATION, CONTACT_NUMBER } = locationAndContactSettings;
     const errors: string[] = [];
-    if (!GENERAL_LOCATION.trim()) errors.push("General location");
     if (!SPECIFIC_ADDRESS.trim()) errors.push("Specific address");
     if (!PIN_LOCATION.trim()) errors.push("PIN location");
     if (!CONTACT_NUMBER.trim()) errors.push("Contact number");
@@ -109,46 +107,6 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
 
         <Paper p={{ base: "sm", xs: "xl" }} shadow="xl" radius="sm">
           <Stack gap="lg">
-            {/* General Location */}
-            <Paper
-              p={{ base: "sm", xs: "xl" }}
-              radius="md"
-              shadow="xs"
-              style={{
-                border: `2px solid ${theme.colors.cyan[2]}`,
-              }}
-            >
-              <Group mb="md">
-                <IconMapPin size={24} color={theme.colors.cyan[6]} />
-                <Box>
-                  <Text fw={600} size="lg" c="cyan.8">
-                    General Location
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    City or municipality
-                  </Text>
-                </Box>
-              </Group>
-
-              <TextInput
-                size="md"
-                value={locationAndContactSettings.GENERAL_LOCATION}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setLocationAndContactSettings((prev) => ({
-                    ...prev,
-                    GENERAL_LOCATION: value,
-                  }));
-                }}
-                placeholder="e.g., Obando, Bulacan"
-                styles={{
-                  input: {
-                    border: `2px solid ${theme.colors.cyan[2]}`,
-                  },
-                }}
-              />
-            </Paper>
-
             {/* Specific Address */}
             <Paper
               p={{ base: "sm", xs: "xl" }}
@@ -300,6 +258,47 @@ const LocationContactPage = ({ locationAndContactData }: Props) => {
                   },
                 }}
                 leftSection={<Text>+63</Text>}
+              />
+            </Paper>
+
+            {/* Email */}
+            <Paper
+              p={{ base: "sm", xs: "xl" }}
+              radius="md"
+              shadow="xs"
+              style={{
+                border: `2px solid ${theme.colors.cyan[2]}`,
+              }}
+            >
+              <Group mb="md">
+                <IconMail size={24} color={theme.colors.cyan[5]} />
+                <Box>
+                  <Text fw={600} size="lg" c="cyan.8">
+                    Email
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    Email for inquiries
+                  </Text>
+                </Box>
+              </Group>
+
+              <TextInput
+                type="email"
+                value={locationAndContactSettings.EMAIL}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = e.currentTarget.value.trim();
+                  setLocationAndContactSettings((prev) => ({
+                    ...prev,
+                    EMAIL: value,
+                  }));
+                }}
+                placeholder="name@example.com"
+                size="md"
+                styles={(theme) => ({
+                  input: {
+                    border: `2px solid ${theme.colors.cyan[2]}`,
+                  },
+                })}
               />
             </Paper>
 

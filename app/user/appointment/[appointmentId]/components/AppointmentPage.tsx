@@ -21,6 +21,8 @@ type Props = {
   reminderList: string[];
   scheduleSlot: ScheduleSlotTableRow[];
   maxScheduleDateMonth: number;
+  specificAddress: string;
+  pinLocation: string;
 };
 
 const AppointmentPage = ({
@@ -29,6 +31,8 @@ const AppointmentPage = ({
   reminderList,
   scheduleSlot,
   maxScheduleDateMonth,
+  specificAddress,
+  pinLocation,
 }: Props) => {
   return (
     <Container size="md" py="xl">
@@ -66,6 +70,8 @@ const AppointmentPage = ({
             serverTime={serverTime}
             scheduleSlot={scheduleSlot}
             maxScheduleDateMonth={maxScheduleDateMonth}
+            specificAddress={specificAddress}
+            pinLocation={pinLocation}
           />
         </Tabs.Panel>
 

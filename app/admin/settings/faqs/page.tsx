@@ -1,9 +1,10 @@
 import { insertError } from "@/app/actions";
-import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import { fetchReminders } from "./actions";
-import RemindersPage from "./components/RemindersPage";
 import { isAppError } from "@/utils/functions";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { FAQSettingsType } from "@/utils/types";
+import { redirect } from "next/navigation";
+import { fetchFAQs } from "./actions";
+import FAQSettingsPage from "./components/FAQSettingsPage";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -15,21 +16,16 @@ const Page = async () => {
     redirect("/");
   }
 
-  let reminderList: { id: string; order: number; value: string }[] = [];
+  let faqList: FAQSettingsType[] = [];
   try {
-    const reminderData = await fetchReminders(supabaseClient);
-    reminderList = reminderData.map((reminder) => ({
-      id: reminder.reminder_id,
-      order: reminder.reminder_order,
-      value: reminder.reminder_value,
-    }));
+    faqList = await fetchFAQs(supabaseClient);
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {
         errorTableInsert: {
           error_message: e.message,
-          error_url: "/admin/settings/reminder",
-          error_function: "fetchReminderInitialData",
+          error_url: "/admin/settings/faqs",
+          error_function: "fetchFAQsInitialData",
           error_user_email: user.email,
           error_user_id: user.id,
         },
@@ -38,7 +34,7 @@ const Page = async () => {
     redirect("/error/500");
   }
 
-  return <RemindersPage reminderList={reminderList} />;
+  return <FAQSettingsPage faqList={faqList} />;
 };
 
 export default Page;

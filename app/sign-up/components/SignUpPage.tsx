@@ -3,6 +3,7 @@
 import { insertError } from "@/app/actions";
 import OAuth from "@/app/components/OAuth/OAuth";
 import { SMALL_SCREEN } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 import { SignUpFormValues } from "@/utils/types";
 import {
@@ -28,7 +29,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import validator from "validator";
 import { checkIfEmailExists, signUpUser } from "../actions";
 import PasswordInputWithStrengthMeter from "./PasswordInputWithStrengthMeter";
-import { isAppError } from "@/utils/functions";
 
 const SignUpPage = () => {
   const supabaseClient = createSupabaseBrowserClient();
@@ -62,6 +62,7 @@ const SignUpPage = () => {
       const isEmailExists = await checkIfEmailExists(supabaseClient, {
         email: data.email,
       });
+
       if (isEmailExists) {
         notifications.show({
           message: "Email already registered and onboarded.",
@@ -76,7 +77,15 @@ const SignUpPage = () => {
         email: data.email,
         password: data.password,
       });
-      if (customError) throw customError;
+      if (customError && customError === "Email already registered.") {
+        notifications.show({
+          message: "This email is already registered. Please go to the Log In page.",
+          color: "orange",
+          autoClose: false,
+        });
+        setIsLoading(false);
+        return;
+      }
 
       notifications.show({
         message: "Confirmation email sent. Please check your email inbox to proceed.",

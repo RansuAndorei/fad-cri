@@ -1,13 +1,13 @@
 import { insertError } from "@/app/actions";
 import { fetchAppointmentList } from "@/app/user/appointment/actions";
 import AppointmentListPage from "@/app/user/appointment/components/AppointmentListPage";
-import { fetchServiceType } from "@/app/user/booking/actions";
+import { fetchServiceTypeList } from "@/app/user/booking/actions";
 import { ROW_PER_PAGE } from "@/utils/constants";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { AppointmentTableType, SelectDataType } from "@/utils/types";
 import { redirect } from "next/navigation";
 import { fetchUserList } from "./actions";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -39,13 +39,13 @@ const Page = async () => {
           status: null,
           user: null,
         }),
-        fetchServiceType(supabaseClient),
+        fetchServiceTypeList(supabaseClient),
         fetchUserList(supabaseClient),
       ]);
 
     initialAppointmentList = appointmentListData ?? [];
     initialAppointmentListCount = appointmentListCount ?? 0;
-    serviceTypeOptions = serviceTypeData;
+    serviceTypeOptions = serviceTypeData.map((value) => value.service_type_label);
     userList = userData;
   } catch (e) {
     if (isAppError(e)) {

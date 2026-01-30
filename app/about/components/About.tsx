@@ -44,12 +44,21 @@ import Link from "next/link";
 
 type Props = {
   scheduleList: ScheduleRangeType[];
-  generalLocation: string;
+  specificAddress: string;
   contactNumber: string;
   serverTime: string;
+  pinLocation: string;
+  email: string;
 };
 
-const AboutPage = ({ scheduleList, generalLocation, contactNumber, serverTime }: Props) => {
+const AboutPage = ({
+  scheduleList,
+  specificAddress,
+  contactNumber,
+  serverTime,
+  pinLocation,
+  email,
+}: Props) => {
   const theme = useMantineTheme();
   const computedColorScheme = useComputedColorScheme();
   const isDark = computedColorScheme === "dark";
@@ -441,7 +450,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber, serverTime }:
                       <Text fw={600} size="sm" c="dimmed">
                         Email
                       </Text>
-                      <Text size="md">fadcri@gmail.com</Text>
+                      <Text size="md">{email}</Text>
                     </Box>
                   </Group>
                 </Stack>
@@ -468,7 +477,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber, serverTime }:
                   transition: "transform 0.2s ease",
                 }}
                 component={Link}
-                href={`https://www.google.com/maps/search/?api=1&query=${generalLocation}`}
+                href={pinLocation}
                 target="_blank"
                 rel="noopener noreferrer"
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-8px)")}
@@ -488,7 +497,7 @@ const AboutPage = ({ scheduleList, generalLocation, contactNumber, serverTime }:
                   }}
                 >
                   <Text fw={700} c="cyan">
-                    📍 {generalLocation}
+                    📍 {specificAddress}
                   </Text>
                   <Text size="sm" c="dimmed">
                     Click for directions

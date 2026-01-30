@@ -168,7 +168,6 @@ const Payment = ({ appointmentId, payment }: Props) => {
           <Radio.Group value={method} onChange={(val) => setMethod(val as PaymentMethod)}>
             <Stack>
               <Radio value="gcash" label="GCash" />
-              <Radio value="card" label="Credit/Debit Card" />
             </Stack>
           </Radio.Group>
 

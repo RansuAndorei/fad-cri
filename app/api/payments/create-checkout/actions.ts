@@ -1,5 +1,4 @@
 import { Database } from "@/utils/database";
-import { combineDateTime } from "@/utils/functions";
 import { AttachmentTableInsert, BookingFormValues, PaymentTableInsert } from "@/utils/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
@@ -9,18 +8,17 @@ export const insertAppointment = async (
     bookingData: Omit<BookingFormValues, "inspo">;
     inspoData: AttachmentTableInsert;
     userId: string;
+    combinedDateAndTime: string;
   },
 ) => {
-  const { bookingData, inspoData, userId } = params;
-  const { scheduleDate, scheduleTime, removal, removalType, reconstruction } = bookingData;
-
-  if (!scheduleDate) throw new Error("Missing Schedule Date.");
+  const { bookingData, inspoData, userId, combinedDateAndTime } = params;
+  const { removal, removalType, reconstruction } = bookingData;
 
   const { data, error } = await supabaseClient.rpc("insert_appointment", {
     input_data: {
       ...bookingData,
       inspoData,
-      schedule: combineDateTime(new Date(scheduleDate), scheduleTime),
+      schedule: combinedDateAndTime,
       isWithRemoval: removal === "with",
       isRemovalDoneByFadCri: removalType === "fad",
       isWithReconstruction: reconstruction === "with",

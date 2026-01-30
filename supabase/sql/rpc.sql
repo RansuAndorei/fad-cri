@@ -47,7 +47,7 @@ DECLARE
   input_is_with_removal BOOLEAN := (input_data ->> 'isWithRemoval')::BOOLEAN;
   input_is_removal_done_by_fad_cri BOOLEAN := (input_data ->> 'isRemovalDoneByFadCri')::BOOLEAN;
   input_is_with_reconstruction BOOLEAN := (input_data ->> 'isWithReconstruction')::BOOLEAN;
-  input_schedule TIMESTAMPTZ := (input_data ->> 'schedule')::TIMESTAMPTZ;
+  input_schedule TIMESTAMP := (input_data ->> 'schedule')::TIMESTAMP;
   input_schedule_note TEXT := (input_data ->> 'scheduleNote')::TEXT;
   input_user_id UUID := (input_data ->> 'userId')::UUID;
   input_inspo_data JSONB := COALESCE(input_data -> 'inspoData', NULL);
@@ -302,7 +302,7 @@ DECLARE
   input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
   input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
   input_appointment_status_list appointment_status[] := ARRAY(
-    SELECT jsonb_array_elements_text((input_data->'appointmentStatusList')::JSONB)
+    SELECT JSONB_ARRAY_ELEMENTS_TEXT((input_data->'appointmentStatusList')::JSONB)
   );
 
   var_status appointment_status;
@@ -322,8 +322,8 @@ BEGIN
       AND appointment_date_created >= input_start_date
       AND appointment_date_created <= input_end_date;
 
-    var_data := var_data || jsonb_build_array(
-      jsonb_build_object(
+    var_data := var_data || JSONB_BUILD_ARRAY(
+      JSONB_BUILD_OBJECT(
         'label', var_status,
         'value', var_status_count
       )
@@ -332,7 +332,7 @@ BEGIN
     var_total_count := var_total_count + var_status_count;
   END LOOP;
 
-  return_data := jsonb_build_object(
+  return_data := JSONB_BUILD_OBJECT(
     'data', var_data,
     'totalCount', var_total_count
   );
@@ -462,7 +462,7 @@ DECLARE
   var_status_data JSONB;
   var_monthly_data JSONB := '[]'::JSONB;
 BEGIN
-  FOR var_month IN SELECT * FROM jsonb_array_elements(input_month_ranges)
+  FOR var_month IN SELECT * FROM JSONB_ARRAY_ELEMENTS(input_month_ranges)
   LOOP
     DECLARE
       var_start_of_month TIMESTAMPTZ := (var_month->>'start_of_month')::TIMESTAMPTZ;
@@ -522,8 +522,8 @@ CREATE OR REPLACE FUNCTION get_schedule(input_data JSONB)
 RETURNS JSONB
 AS $$
 DECLARE
-  input_start_date TIMESTAMPTZ := (input_data->>'startDate')::TIMESTAMPTZ;
-  input_end_date TIMESTAMPTZ := (input_data->>'endDate')::TIMESTAMPTZ;
+  input_start_date TIMESTAMP := (input_data->>'startDate')::TIMESTAMP;
+  input_end_date TIMESTAMP := (input_data->>'endDate')::TIMESTAMP;
 
   return_data JSONB;
 BEGIN
@@ -573,7 +573,7 @@ BEGIN
   DELETE FROM reminder_table WHERE true;
 
   FOR input_reminder IN 
-    SELECT * FROM jsonb_array_elements(input_data->'reminders')
+    SELECT * FROM JSONB_ARRAY_ELEMENTS(input_data->'reminders')
   LOOP
     INSERT INTO reminder_table (reminder_order, reminder_value)
     VALUES (
@@ -819,5 +819,34 @@ BEGIN
     appointment_date_updated = NOW(),
     appointment_status = 'COMPLETED'
   WHERE appointment_id = input_appointment_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION upsert_faqs(input_data JSONB)
+RETURNS VOID
+AS $$
+DECLARE
+  input_category faq_category := (input_data ->> 'category')::faq_category;
+  input_faq JSONB;
+BEGIN
+  DELETE FROM faq_table
+  WHERE faq_category = input_category;
+
+  FOR input_faq IN
+    SELECT * FROM JSONB_ARRAY_ELEMENTS(input_data->'faqs')
+  LOOP
+    INSERT INTO faq_table (
+      faq_order,
+      faq_category,
+      faq_question,
+      faq_answer
+    )
+    VALUES (
+      (input_faq->>'faq_order')::INT,
+      (input_faq->>'faq_category')::faq_category,
+      (input_faq->>'faq_question')::TEXT,
+      (input_faq->>'faq_answer')::TEXT
+    );
+  END LOOP;
 END;
 $$ LANGUAGE plpgsql;

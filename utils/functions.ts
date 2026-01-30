@@ -1,6 +1,6 @@
 import { capitalize, toNumber } from "lodash";
-import moment from "moment";
-import { DEFAULT_MANTINE_COLOR_LIST } from "./constants";
+import moment from "moment-timezone";
+import { DATE_AND_TIME_FORMAT, DEFAULT_MANTINE_COLOR_LIST } from "./constants";
 
 export const mobileNumberFormatter = (number: string) => {
   return `+63 (${number.slice(0, 3)}) ${number.slice(3, 6)} ${number.slice(6)}`;
@@ -30,7 +30,7 @@ export const formatDecimal = (value: number | string, places = 2): string => {
   return toNumber(value).toFixed(places);
 };
 
-export const combineDateTime = (date: Date, time: string) => {
+export const combineDateTime = (date: string, time: string) => {
   const [timePart, meridiem] = time.split(" ");
   const [hourStr, minuteStr] = timePart.split(":");
   let hour = parseInt(hourStr, 10);
@@ -47,7 +47,7 @@ export const combineDateTime = (date: Date, time: string) => {
       minute,
       second: 0,
     })
-    .toISOString();
+    .format(DATE_AND_TIME_FORMAT);
 };
 
 export const statusToColor = (status: string) => {

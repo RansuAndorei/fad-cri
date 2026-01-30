@@ -7,10 +7,11 @@ export const checkIfEmailExists = async (
     email: string;
   },
 ) => {
+  const { email } = params;
   const { count, error } = await supabaseClient
     .from("user_table")
-    .select("*", { head: true })
-    .eq("user_email", params.email);
+    .select("*", { count: "exact", head: true })
+    .eq("user_email", email);
   if (error) throw error;
   return Boolean(count);
 };

@@ -1,10 +1,10 @@
 import { insertError } from "@/app/actions";
+import { isAppError } from "@/utils/functions";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import { SettingsEnum } from "@/utils/types";
 import { redirect } from "next/navigation";
-import { getLocationAndContactSettings } from "./actions";
+import { fetchLocationAndContactSettings } from "./actions";
 import LocationContactPage from "./components/LocationContactPage";
-import { isAppError } from "@/utils/functions";
 
 const Page = async () => {
   const supabaseClient = await createSupabaseServerClient();
@@ -18,7 +18,7 @@ const Page = async () => {
 
   let locationAndContactData: Record<SettingsEnum, string>;
   try {
-    locationAndContactData = await getLocationAndContactSettings(supabaseClient);
+    locationAndContactData = await fetchLocationAndContactSettings(supabaseClient);
   } catch (e) {
     if (isAppError(e)) {
       await insertError(supabaseClient, {
